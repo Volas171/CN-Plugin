@@ -122,6 +122,7 @@ public class Main extends Plugin {
                 core.items.add(Items.plastanium, 1000000);
                 core.items.add(Items.phasefabric, 1000000);
                 core.items.add(Items.surgealloy, 1000000);
+                Call.sendMessage("[scarlet]<Admin> [lightgray]" + player.name + " [lightgray] has given 1mil resources to core.");
             } else {
                 player.sendMessage("You must be [scarlet]admin [white]to use this command.");
             }
