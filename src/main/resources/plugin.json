@@ -1,7 +1,6 @@
 {
-  "name": "PluginOne",
+  "name": "CN-Plugin",
   "author": "L0615T1C5.216AC:9437 [Impact Phd]",
-  "main": "pluginOne.OnePlugin",
-  "description": "Logis' first plugin",
-  "version": 1.0
+  "description": "CN's Plugin, has a few features.",
+  "version": 104.0
 }
