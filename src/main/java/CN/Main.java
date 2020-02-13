@@ -52,6 +52,7 @@ public class Main extends Plugin {
                         break;
                     case "info":
                         Call.onInfoMessage("[accent]Resources needed[white]:\n5k \uF838 [#d99d73]copper\n[white]5k \uF837 [#8c7fa9]lead\n[white]4k \uF832 [#8da1e3]titanium[white]\n3.5k \uF831 [#f9a3c7]thorium[white]\n2k \uF82F [#53565c]Silicon[white]\n1.5k \uF82E [#cbd97f]plastanium[white]\n500 \uF82D [#f4ba6e]Phase fabric[white]\n1.25k \uF82C [#f3e979]Surge Alloy");
+                        break;
                     default:
                         player.sendMessage("Use args on or off.");
                         break;
@@ -124,7 +125,7 @@ public class Main extends Plugin {
                 core.items.add(Items.plastanium, 1000000);
                 core.items.add(Items.phasefabric, 1000000);
                 core.items.add(Items.surgealloy, 1000000);
-                Call.sendMessage("[scarlet]<Admin> [lightgray]" + player.name + " [lightgray] has given 1mil resources to core.");
+                Call.sendMessage("[scarlet]<Admin> [lightgray]" + player.name + " [white] has given 1mil resources to core.");
             } else {
                 player.sendMessage("You must be [scarlet]admin [white]to use this command.");
             }
@@ -133,6 +134,7 @@ public class Main extends Plugin {
         //change team
         handler.<Player>register("ateam","<team...>", "[scarlet]<Admin> [lightgray]- Changes team", (arg, player) -> {
             if (!player.isAdmin){
+                player.sendMessage("You must be [scarlet]admin [white]to use this command.");
                 return;
             }
 
