@@ -32,7 +32,7 @@ public class Main extends Plugin {
         });
 
         //Spawn reaper at high cost
-        handler.<Player>register("reaper","[I/O]", "Summons a [royal]Reaper [gray]at a high cost.", (arg, player) -> {
+        handler.<Player>register("reaper","[Info]", "Summons a [royal]Reaper [gray]at a high cost.", (arg, player) -> {
 
             if(arg.length == 1 && player.isAdmin){
                 switch (arg[0]) {
@@ -50,6 +50,8 @@ public class Main extends Plugin {
                         baseUnit.add();
                         Call.sendMessage("[salmon]Summon[white]: [scarlet]<Admin> [lightgray]" + player.name + "[white] has summoned a [royal]Reaper [white]at no cost.");
                         break;
+                    case "info":
+                        Call.onInfoMessage("[accent]Resources needed[white]:\n5k \uF838 [#d99d73]copper\n[white]5k \uF837 [#8c7fa9]lead\n[white]4k \uF832 [#8da1e3]titanium[white]\n3.5k \uF831 [#f9a3c7]thorium[white]\n2k \uF82F [#53565c]Silicon[white]\n1.5k \uF82E [#cbd97f]plastanium[white]\n500 \uF82D [#f4ba6e]Phase fabric[white]\n1.25k \uF82C [#f3e979]Surge Alloy");
                     default:
                         player.sendMessage("Use args on or off.");
                         break;
