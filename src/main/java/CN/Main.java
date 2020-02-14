@@ -32,9 +32,17 @@ public class Main extends Plugin {
         });
 
         //Spawn reaper at high cost
-        handler.<Player>register("reaper","[Info]", "Summons a [royal]Reaper [gray]at a high cost.", (arg, player) -> {
+        handler.<Player>register("reaper","[Info]", "Summons a [royal]Reaper [gray]at a high cost. do /reaper arg info", (arg, player) -> {
+            if(arg.length == 1){
+                if (!player.isAdmin) {
+                    if (arg[1].equals("info")) {
+                        Call.onInfoMessage("[accent]Resources needed[white]:\n5k \uF838 [#d99d73]copper\n[white]5k \uF837 [#8c7fa9]lead\n[white]4k \uF832 [#8da1e3]titanium[white]\n3.5k \uF831 [#f9a3c7]thorium[white]\n2k \uF82F [#53565c]Silicon[white]\n1.5k \uF82E [#cbd97f]plastanium[white]\n500 \uF82D [#f4ba6e]Phase fabric[white]\n1.25k \uF82C [#f3e979]Surge Alloy");
+                    } else {
+                        player.sendMessage("[salmon]Summon[white]: You must be [scarlet]<Admin> [white] to use arguments.");
+                    }
+                    return;
+                }
 
-            if(arg.length == 1 && player.isAdmin){
                 switch (arg[0]) {
                     case "off":
                         this.reaperEnable = false;
@@ -51,18 +59,19 @@ public class Main extends Plugin {
                         Call.sendMessage("[salmon]Summon[white]: [scarlet]<Admin> [lightgray]" + player.name + "[white] has summoned a [royal]Reaper [white]at no cost.");
                         break;
                     case "info":
-                        Call.onInfoMessage("[accent]Resources needed[white]:\n5k \uF838 [#d99d73]copper\n[white]5k \uF837 [#8c7fa9]lead\n[white]4k \uF832 [#8da1e3]titanium[white]\n3.5k \uF831 [#f9a3c7]thorium[white]\n2k \uF82F [#53565c]Silicon[white]\n1.5k \uF82E [#cbd97f]plastanium[white]\n500 \uF82D [#f4ba6e]Phase fabric[white]\n1.25k \uF82C [#f3e979]Surge Alloy");
+                        player.sendMessage("[accent]Resources needed[white]:\n5k \uF838 [#d99d73]copper\n[white]5k \uF837 [#8c7fa9]lead\n[white]4k \uF832 [#8da1e3]titanium[white]\n3.5k \uF831 [#f9a3c7]thorium[white]\n2k \uF82F [#53565c]Silicon[white]\n1.5k \uF82E [#cbd97f]plastanium[white]\n500 \uF82D [#f4ba6e]Phase fabric[white]\n1.25k \uF82C [#f3e979]Surge Alloy");
                         break;
                     default:
-                        player.sendMessage("Use args on or off.");
+                        player.sendMessage("[scarlet]<Admin> [white]Use args info, on or off.");
                         break;
                 }
             } else if (this.reaperEnable) {
+                //"[salmon]Summon[white]: [scarlet]///-///WARNING///-///\n/[white]Summon exceeded 15[scarlet]-/\n///-//////-//////-///"
                 Teams.TeamData teamData = state.teams.get(Team.sharded);
                 CoreBlock.CoreEntity core = teamData.cores.first();
                 if (core.items.has(Items.copper, 5000) && core.items.has(Items.lead, 5000) && core.items.has(Items.titanium, 4000) && core.items.has(Items.thorium, 3500) && core.items.has(Items.silicon, 2000) && core.items.has(Items.plastanium, 1500) && core.items.has(Items.phasefabric, 500) && core.items.has(Items.surgealloy, 1250)) {
                     BaseUnit baseUnit = UnitTypes.reaper.create(Team.sharded);
-                    baseUnit.set(5, 5);
+                    baseUnit.set(25, 25);
                     baseUnit.add();
                     //
                     core.items.remove(Items.copper, 5000);
@@ -77,33 +86,31 @@ public class Main extends Plugin {
                     Call.sendMessage("[white]" + player.name + "[white] has summoned a [royal]Reaper[white].");
                 } else {
                     Call.sendMessage("[salmon]Summon[white]: " + player.name + "[lightgray] tried[white] to summon a [royal]Reaper[white].");
-                    player.sendMessage("[salmon]Summon[lightgray]: Not enough resources to spawn [royal]Reaper[white].");
-                    player.sendMessage("[salmon]Summon[lightgray]: Resources needed: [white]5k [#d99d73]copper[white], 5k [#8c7fa9]lead[white], 4k [#8da1e3]titanium[white], 3.5k [#f9a3c7]thorium[white], 2k [#53565c]Silicon[white], 1.5k [#cbd97f]plastanium[white], 500 [#f4ba6e]Phase fabric[white] and 1.25k [#f3e979]Surge Alloy[white].");
-                    core.items.remove(Items.thorium, 1);
+                    player.sendMessage("[salmon]Summon[white]: Not enough resources to spawn [royal]Reaper[white].");
+                    player.sendMessage("[salmon]Summon[white]: Do [lightgray]`/reaper info` [white]to see required resources.");
                 }
             } else {
                 player.sendMessage("[salmon]Summon[lightgray]: Reaper is off");
             }
         });
 
+        //-----ADMINS-----//
+
         //un-admins players
         handler.<Player>register("uap", "<code...>","[scarlet]<Admin> [lightgray]- Code", (arg, player) -> {
             if(!player.isAdmin){
-                player.sendMessage("You must be [scarlet]admin [white]to use this command.");
+                player.sendMessage("[white]You must be [scarlet]<Admin> [white]to use this command.");
                 return;
             }
 
             netServer.admins.unAdminPlayer(arg[0]);
-            netServer.admins.adminPlayer("","");
             player.sendMessage("unAdmin: " + arg[0]);
         });
-
-        //-----ADMINS-----//
 
         //Triggers game over if admin
         handler.<Player>register("agameover", "[scarlet]<Admin> [lightgray]- Game over.", (arg, player) -> {
             if(!player.isAdmin) {
-                player.sendMessage("You must be [scarlet]admin [white]to use this command.");
+                player.sendMessage("[white]You must be [scarlet]<Admin> [white]to use this command.");
                 return;
             }
             Events.fire(new EventType.GameOverEvent(Team.crux));
@@ -127,14 +134,14 @@ public class Main extends Plugin {
                 core.items.add(Items.surgealloy, 1000000);
                 Call.sendMessage("[scarlet]<Admin> [lightgray]" + player.name + " [white] has given 1mil resources to core.");
             } else {
-                player.sendMessage("You must be [scarlet]admin [white]to use this command.");
+                player.sendMessage("[white]You must be [scarlet]<Admin> [white]to use this command.");
             }
         });
 
         //change team
         handler.<Player>register("ateam","<team...>", "[scarlet]<Admin> [lightgray]- Changes team", (arg, player) -> {
             if (!player.isAdmin){
-                player.sendMessage("You must be [scarlet]admin [white]to use this command.");
+                player.sendMessage("[white]You must be [scarlet]<Admin> [white]to use this command.");
                 return;
             }
 
@@ -163,7 +170,7 @@ public class Main extends Plugin {
                     return;
             }
             player.setTeam(setTeam);
-            player.sendMessage("[salmon]CT[lightgray]: Changed team to " + arg[0]);
+            player.sendMessage("[salmon]CT[white]: Changed team to " + arg[0]);
         });
     }
 }
