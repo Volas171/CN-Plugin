@@ -1,9 +1,7 @@
 package CN;
 
 //-----imports-----//
-
 import arc.Events;
-import arc.math.Mathf;
 import arc.util.CommandHandler;
 import mindustry.entities.type.Player;
 import mindustry.game.EventType;
@@ -18,7 +16,6 @@ import mindustry.entities.type.BaseUnit;
 import static mindustry.Vars.*;
 
 public class Main extends Plugin {
-    public Main(){}
 
     private boolean reaperEnable = true;
 
@@ -32,11 +29,11 @@ public class Main extends Plugin {
         });
 
         //Spawn reaper at high cost
-        handler.<Player>register("reaper","[Info]", "Summons a [royal]Reaper [gray]at a high cost. do /reaper arg info", (arg, player) -> {
+        handler.<Player>register("reaper","[Info]", "Summons a [royal]Reaper [gray]at a high cost. do /reaper info", (arg, player) -> {
             if(arg.length == 1){
                 if (!player.isAdmin) {
-                    if (arg[1].equals("info")) {
-                        Call.onInfoMessage("[accent]Resources needed[white]:\n5k \uF838 [#d99d73]copper\n[white]5k \uF837 [#8c7fa9]lead\n[white]4k \uF832 [#8da1e3]titanium[white]\n3.5k \uF831 [#f9a3c7]thorium[white]\n2k \uF82F [#53565c]Silicon[white]\n1.5k \uF82E [#cbd97f]plastanium[white]\n500 \uF82D [#f4ba6e]Phase fabric[white]\n1.25k \uF82C [#f3e979]Surge Alloy");
+                    if (arg[0].equals("info")) {
+                        Call.onInfoMessage(player.con,"[accent]Resources needed[white]:\n5k \uF838 [#d99d73]copper\n[white]5k \uF837 [#8c7fa9]lead\n[white]4k \uF832 [#8da1e3]titanium[white]\n3.5k \uF831 [#f9a3c7]thorium[white]\n2k \uF82F [#53565c]Silicon[white]\n1.5k \uF82E [#cbd97f]plastanium[white]\n500 \uF82D [#f4ba6e]Phase fabric[white]\n1.25k \uF82C [#f3e979]Surge Alloy");
                     } else {
                         player.sendMessage("[salmon]Summon[white]: You must be [scarlet]<Admin> [white] to use arguments.");
                     }
@@ -59,7 +56,7 @@ public class Main extends Plugin {
                         Call.sendMessage("[salmon]Summon[white]: [scarlet]<Admin> [lightgray]" + player.name + "[white] has summoned a [royal]Reaper [white]at no cost.");
                         break;
                     case "info":
-                        player.sendMessage("[accent]Resources needed[white]:\n5k \uF838 [#d99d73]copper\n[white]5k \uF837 [#8c7fa9]lead\n[white]4k \uF832 [#8da1e3]titanium[white]\n3.5k \uF831 [#f9a3c7]thorium[white]\n2k \uF82F [#53565c]Silicon[white]\n1.5k \uF82E [#cbd97f]plastanium[white]\n500 \uF82D [#f4ba6e]Phase fabric[white]\n1.25k \uF82C [#f3e979]Surge Alloy");
+                        Call.onInfoMessage(player.con,"[accent]Resources needed[white]:\n5k \uF838 [#d99d73]copper\n[white]5k \uF837 [#8c7fa9]lead\n[white]4k \uF832 [#8da1e3]titanium[white]\n3.5k \uF831 [#f9a3c7]thorium[white]\n2k \uF82F [#53565c]Silicon[white]\n1.5k \uF82E [#cbd97f]plastanium[white]\n500 \uF82D [#f4ba6e]Phase fabric[white]\n1.25k \uF82C [#f3e979]Surge Alloy");
                         break;
                     default:
                         player.sendMessage("[scarlet]<Admin> [white]Use args info, on or off.");
@@ -68,6 +65,7 @@ public class Main extends Plugin {
             } else if (this.reaperEnable) {
                 //"[salmon]Summon[white]: [scarlet]///-///WARNING///-///\n/[white]Summon exceeded 15[scarlet]-/\n///-//////-//////-///"
                 Teams.TeamData teamData = state.teams.get(Team.sharded);
+
                 CoreBlock.CoreEntity core = teamData.cores.first();
                 if (core.items.has(Items.copper, 5000) && core.items.has(Items.lead, 5000) && core.items.has(Items.titanium, 4000) && core.items.has(Items.thorium, 3500) && core.items.has(Items.silicon, 2000) && core.items.has(Items.plastanium, 1500) && core.items.has(Items.phasefabric, 500) && core.items.has(Items.surgealloy, 1250)) {
                     BaseUnit baseUnit = UnitTypes.reaper.create(Team.sharded);
