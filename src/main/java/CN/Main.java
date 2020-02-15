@@ -65,11 +65,10 @@ public class Main extends Plugin {
             } else if (this.reaperEnable) {
                 //"[salmon]Summon[white]: [scarlet]///-///WARNING///-///\n/[white]Summon exceeded 15[scarlet]-/\n///-//////-//////-///"
                 Teams.TeamData teamData = state.teams.get(Team.sharded);
-
                 CoreBlock.CoreEntity core = teamData.cores.first();
                 if (core.items.has(Items.copper, 5000) && core.items.has(Items.lead, 5000) && core.items.has(Items.titanium, 4000) && core.items.has(Items.thorium, 3500) && core.items.has(Items.silicon, 2000) && core.items.has(Items.plastanium, 1500) && core.items.has(Items.phasefabric, 500) && core.items.has(Items.surgealloy, 1250)) {
                     BaseUnit baseUnit = UnitTypes.reaper.create(Team.sharded);
-                    baseUnit.set(25, 25);
+                    baseUnit.set(player.x, player.y);
                     baseUnit.add();
                     //
                     core.items.remove(Items.copper, 5000);
@@ -84,8 +83,7 @@ public class Main extends Plugin {
                     Call.sendMessage("[white]" + player.name + "[white] has summoned a [royal]Reaper[white].");
                 } else {
                     Call.sendMessage("[salmon]Summon[white]: " + player.name + "[lightgray] tried[white] to summon a [royal]Reaper[white].");
-                    player.sendMessage("[salmon]Summon[white]: Not enough resources to spawn [royal]Reaper[white].");
-                    player.sendMessage("[salmon]Summon[white]: Do [lightgray]`/reaper info` [white]to see required resources.");
+                    player.sendMessage("[salmon]Summon[white]: Not enough resources to spawn [royal]Reaper[white]. Do [lightgray]`/reaper info` [white]to see required resources.");
                 }
             } else {
                 player.sendMessage("[salmon]Summon[lightgray]: Reaper is off");
