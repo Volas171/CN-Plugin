@@ -35,7 +35,7 @@ public class Main extends Plugin {
         });
 
         //Summons Entities
-        handler.<Player>register("summon","[Info]", "Summons a [royal]Reaper [gray]at a high cost. do /reaper info", (arg, player) -> {
+        handler.<Player>register("summon","[unit] [Info]", "Summons a [royal]Reaper [gray]at a high cost. do /reaper info", (arg, player) -> {
             String unit = "none";
             //decider section
             if (arg.length != 0) {
@@ -51,6 +51,9 @@ public class Main extends Plugin {
                                     case "off":
                                         reaperEnable = false;
                                         player.sendMessage("[salmon]Summon[white]: [lightgray]Reaper [white]turned [lightgray]off[white].");
+                                        break;
+                                    case "info":
+                                        Call.onInfoMessage(player.con,"[accent]Resources needed[white]:\n5k \uF838 [#d99d73]copper\n[white]5k \uF837 [#8c7fa9]lead\n[white]4k \uF832 [#8da1e3]titanium[white]\n3.5k \uF831 [#f9a3c7]thorium[white]\n2k \uF82F [#53565c]Silicon[white]\n1.5k \uF82E [#cbd97f]plastanium[white]\n500 \uF82D [#f4ba6e]Phase fabric[white]\n1.25k \uF82C [#f3e979]Surge Alloy");
                                         break;
                                     default:
                                         player.sendMessage("[salmon]Summon[white]: Reaper args contains [lightgray]on[white]/[lightgray]off[white].");
@@ -71,15 +74,18 @@ public class Main extends Plugin {
                             if (player.isAdmin) {
                                 switch (arg[1]) {
                                     case "on":
-                                        reaperEnable = true;
-                                        player.sendMessage("[salmon]Summon[white]: [lightgray]Reaper [white]turned [lightgray]on[white].");
+                                        lichEnable = true;
+                                        player.sendMessage("[salmon]Summon[white]: [lightgray]Lich [white]turned [lightgray]on[white].");
                                         break;
                                     case "off":
-                                        reaperEnable = false;
-                                        player.sendMessage("[salmon]Summon[white]: [lightgray]Reaper [white]turned [lightgray]off[white].");
+                                        lichEnable = false;
+                                        player.sendMessage("[salmon]Summon[white]: [lightgray]Lich [white]turned [lightgray]off[white].");
+                                        break;
+                                    case "info":
+                                        Call.onInfoMessage(player.con,"[accent]Resources needed[white]:\n3.5k \uF838 [#d99d73]copper\n[white]3.5k \uF837 [#8c7fa9]lead\n[white]2k \uF836 [#ebeef5]metaglass[white]\n[white]1.3k \uF835 [#b2c6d2]graphite[white]\n[white]1.3k \uF832 [#8da1e3]titanium[white]\n1.5k \uF831 [#f9a3c7]thorium[white]\n1.3k \uF82F [#53565c]Silicon[white]\n500 \uF82E [#cbd97f]plastanium[white]\n500 \uF82C [#f3e979]Surge Alloy");
                                         break;
                                     default:
-                                        player.sendMessage("[salmon]Summon[white]: Reaper args contains [lightgray]on[white]/[lightgray]off[white].");
+                                        player.sendMessage("[salmon]Summon[white]: Lich args contains [lightgray]on[white]/[lightgray]off[white].");
                                         break;
                                 }
                             } else if (arg[1].equals("info")){
@@ -99,7 +105,7 @@ public class Main extends Plugin {
                         } else {
                             player.sendMessage(mba);
                         }
-                        break;
+                        return;
                     case "off":
                         if (player.isAdmin) {
                             summonEnable = false;
@@ -107,7 +113,7 @@ public class Main extends Plugin {
                         } else {
                             player.sendMessage(mba);
                         }
-                        break;
+                        return;
                     default:
                         if (player.isAdmin) {
                             player.sendMessage("Summon: arg[0] = reaper, lich, on or off.");
@@ -182,10 +188,9 @@ public class Main extends Plugin {
                         player.sendMessage("ERROR");
                         break;
                 }
-            } else {
-                player.sendMessage("[salmon]Summon[white]: Summon is disabled.");
+            } else if (arg.length == 1){
+                player.sendMessage("[salmon]Summon[white]: [salmon]Summon[white] is disabled.");
             }
-
         });
 
         handler.<Player>register("myteam","[Info]", "Summons a [royal]Reaper [gray]at a high cost. do /reaper info", (arg, player) -> {
