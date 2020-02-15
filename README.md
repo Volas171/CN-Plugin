@@ -1,5 +1,5 @@
 ### Description
-CN Plugin. Has useful commands, admin commands and a reaper spawner.
+CN's Official Plugin. Has useful commands, admin commands and a reaper spawner.
 
 ### Building a Jar
 
