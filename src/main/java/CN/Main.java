@@ -171,7 +171,7 @@ public class Main extends Plugin {
                                 core.items.remove(Items.plastanium, 500);
                                 core.items.remove(Items.surgealloy, 350);
                                 //
-                                BaseUnit baseUnit = UnitTypes.reaper.create(player.getTeam());
+                                BaseUnit baseUnit = UnitTypes.lich.create(player.getTeam());
                                 baseUnit.set(player.x, player.y);
                                 baseUnit.add();
                                 ;
@@ -193,88 +193,80 @@ public class Main extends Plugin {
             }
         });
 
-        handler.<Player>register("myteam","[Info]", "Summons a [royal]Reaper [gray]at a high cost. do /reaper info", (arg, player) -> {
+        handler.<Player>register("myteam","[Info]", "Gives team info", (arg, player) -> {
             String x = player.getTeam().name;
             player.sendMessage("Your team is " + x);
         });
 
         //-----ADMINS-----//
 
-        //un-admins players
-        handler.<Player>register("uap", "<code...>","[scarlet]<Admin> [lightgray]- Code", (arg, player) -> {
+        handler.<Player>register("a","<Command> [1]", "[scarlet]<Admin> [lightgray]- Admin commands", (arg, player) -> {
             if(!player.isAdmin){
                 player.sendMessage(mba);
                 return;
             }
-
-            netServer.admins.unAdminPlayer(arg[0]);
-            player.sendMessage("unAdmin: " + arg[0]);
-        });
-
-        //Triggers game over if admin
-        handler.<Player>register("agameover", "[scarlet]<Admin> [lightgray]- Game over.", (arg, player) -> {
-            if(!player.isAdmin) {
-                player.sendMessage(mba);
-                return;
-            }
-            Events.fire(new EventType.GameOverEvent(Team.crux));
-            Call.sendMessage("[scarlet]<Admin> [lightgray]" + player.name + "[white] has ended the game.");
-        });
-
-        //1 mil resources
-        handler.<Player>register("ainf", "[scarlet]<Admin> [lightgray]- " + "1 million resouces", (args, player) -> {
-            if(player.isAdmin) {
-                Teams.TeamData teamData = state.teams.get(Team.sharded);
-                CoreBlock.CoreEntity core = teamData.cores.first();
-                core.items.add(Items.copper, 1000000);
-                core.items.add(Items.lead, 1000000);
-                core.items.add(Items.metaglass, 1000000);
-                core.items.add(Items.graphite, 1000000);
-                core.items.add(Items.titanium, 1000000);
-                core.items.add(Items.thorium, 1000000);
-                core.items.add(Items.silicon, 1000000);
-                core.items.add(Items.plastanium, 1000000);
-                core.items.add(Items.phasefabric, 1000000);
-                core.items.add(Items.surgealloy, 1000000);
-                Call.sendMessage("[scarlet]<Admin> [lightgray]" + player.name + " [white] has given 1mil resources to core.");
-            } else {
-                player.sendMessage(mba);
-            }
-        });
-
-        //change team
-        handler.<Player>register("ateam","<team...>", "[scarlet]<Admin> [lightgray]- Changes team", (arg, player) -> {
-            if (!player.isAdmin){
-                player.sendMessage(mba);
-                return;
-            }
-
-            Team setTeam;
             switch (arg[0]) {
-                case "sharded":
-                    setTeam = Team.sharded;
+                //un admin player - un-admins uuid, even if player is offline.
+                case "uap":
+                    netServer.admins.unAdminPlayer(arg[1]);
+                    player.sendMessage("unAdmin: " + arg[1]);
                     break;
-                case "blue":
-                    setTeam = Team.blue;
+                //gameover - triggers gameover for admins team.
+                case "gameover":
+                    Events.fire(new EventType.GameOverEvent(player.getTeam()));
+                    Call.sendMessage("[scarlet]<Admin> [lightgray]" + player.name + "[white] has ended the game.");
                     break;
-                case "crux":
-                    setTeam = Team.crux;
+                case "inf":
+                    Teams.TeamData teamData = state.teams.get(player.getTeam());
+                    CoreBlock.CoreEntity core = teamData.cores.first();
+                    core.items.add(Items.copper, 1000000);
+                    core.items.add(Items.lead, 1000000);
+                    core.items.add(Items.metaglass, 1000000);
+                    core.items.add(Items.graphite, 1000000);
+                    core.items.add(Items.titanium, 1000000);
+                    core.items.add(Items.thorium, 1000000);
+                    core.items.add(Items.silicon, 1000000);
+                    core.items.add(Items.plastanium, 1000000);
+                    core.items.add(Items.phasefabric, 1000000);
+                    core.items.add(Items.surgealloy, 1000000);
+                    Call.sendMessage("[scarlet]<Admin> [lightgray]" + player.name + " [white] has given 1mil resources to core.");
                     break;
-                case "derelict":
-                    setTeam = Team.derelict;
+                //team - changes team.
+                case "team":
+                    Team setTeam;
+                    switch (arg[1]) {
+                        case "sharded":
+                            setTeam = Team.sharded;
+                            break;
+                        case "blue":
+                            setTeam = Team.blue;
+                            break;
+                        case "crux":
+                            setTeam = Team.crux;
+                            break;
+                        case "derelict":
+                            setTeam = Team.derelict;
+                            break;
+                        case "green":
+                            setTeam = Team.green;
+                            break;
+                        case "purple":
+                            setTeam = Team.purple;
+                            break;
+                        default:
+                            player.sendMessage("[salmon]CT[lightgray]: Available teams: [accent]Sharded, [royal]Blue[lightgray], [scarlet]Crux[lightgray], [lightgray]Derelict[lightgray], [forest]Green[lightgray], [purple]Purple[lightgray].");
+                            return;
+                    }
+                    player.setTeam(setTeam);
+                    player.sendMessage("[salmon]CT[white]: Changed team to " + arg[1]);
                     break;
-                case "green":
-                    setTeam = Team.green;
+                //test commands.
+                case "test":
                     break;
-                case "purple":
-                    setTeam = Team.purple;
-                    break;
+                //if none of the above commands used.
                 default:
-                    player.sendMessage("[salmon]CT[lightgray]: Available teams: Sharded, [royal]Blue[lightgray], [scarlet]Crux[lightgray], Derelict[lightgray], [forest]Green[lightgray], [purple]Purple[lightgray].");
-                    return;
+                    player.sendMessage("\tAvailable Commands:\nuap\ngameover\ninf\nteam");
             }
-            player.setTeam(setTeam);
-            player.sendMessage("[salmon]CT[white]: Changed team to " + arg[0]);
         });
     }
 }
