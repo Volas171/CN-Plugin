@@ -194,8 +194,42 @@ public class Main extends Plugin {
         });
 
         handler.<Player>register("myteam","[Info]", "Gives team info", (arg, player) -> {
-            String x = player.getTeam().name;
-            player.sendMessage("Your team is " + x);
+            Teams.TeamData teamData = state.teams.get(player.getTeam());
+            CoreBlock.CoreEntity core = teamData.cores.first();
+            String playerTeam = player.getTeam().name;
+            switch (playerTeam) {
+                case "sharded":
+                    playerTeam = "[accent] " + playerTeam;
+                    break;
+                case "crux":
+                    playerTeam = "[scarlet] " + playerTeam;
+                    break;
+                case "blue":
+                    playerTeam = "[royal] " + playerTeam;
+                    break;
+                case "derelict":
+                    playerTeam = "[gray] " + playerTeam;
+                    break;
+                case "green":
+                    playerTeam = "[lime] " + playerTeam;
+                    break;
+                case "purple":
+                    playerTeam = "[purple] " + playerTeam;
+                    break;
+            }
+            player.sendMessage(
+                    "Your team is " + playerTeam +
+                    "\n[accent]Core Resources[white]:" +
+                    "\n[white]" + core.items.get(Items.copper) +        " \uF838 [#d99d73]copper" +
+                    "\n[white]" + core.items.get(Items.lead) +          " \uF837 [#8c7fa9]lead" +
+                    "\n[white]" + core.items.get(Items.metaglass) +     " \uF836 [#ebeef5]metaglass" +
+                    "\n[white]" + core.items.get(Items.graphite) +      " \uF835 [#b2c6d2]graphite" +
+                    "\n[white]" + core.items.get(Items.titanium) +      " \uF832 [#8da1e3]titanium" +
+                    "\n[white]" + core.items.get(Items.thorium) +       " \uF831 [#f9a3c7]thorium" +
+                    "\n[white]" + core.items.get(Items.silicon) +       " \uF82F [#53565c]Silicon" +
+                    "\n[white]" + core.items.get(Items.plastanium) +    " \uF82E [#cbd97f]plastanium[white]" +
+                    "\n[white]" + core.items.get(Items.phasefabric) +   " \uF82D [#f4ba6e]phase fabric[white]" +
+                    "\n[white]" + core.items.get(Items.surgealloy) +    " \uF82C [#f3e979]surge alloy");
         });
 
         //-----ADMINS-----//
@@ -233,32 +267,39 @@ public class Main extends Plugin {
                     break;
                 //team - changes team.
                 case "team":
+                    String setTeamColor = "[#ffffff]";
                     Team setTeam;
                     switch (arg[1]) {
                         case "sharded":
                             setTeam = Team.sharded;
+                            setTeamColor = "[accent]";
                             break;
                         case "blue":
                             setTeam = Team.blue;
+                            setTeamColor = "[accent]";
                             break;
                         case "crux":
                             setTeam = Team.crux;
+                            setTeamColor = "[accent]";
                             break;
                         case "derelict":
                             setTeam = Team.derelict;
+                            setTeamColor = "[accent]";
                             break;
                         case "green":
                             setTeam = Team.green;
+                            setTeamColor = "[accent]";
                             break;
                         case "purple":
                             setTeam = Team.purple;
+                            setTeamColor = "[accent]";
                             break;
                         default:
                             player.sendMessage("[salmon]CT[lightgray]: Available teams: [accent]Sharded, [royal]Blue[lightgray], [scarlet]Crux[lightgray], [lightgray]Derelict[lightgray], [forest]Green[lightgray], [purple]Purple[lightgray].");
                             return;
                     }
                     player.setTeam(setTeam);
-                    player.sendMessage("[salmon]CT[white]: Changed team to " + arg[1]);
+                    player.sendMessage("[salmon]CT[white]: Changed team to " + setTeamColor + arg[1] + "[white].");
                     break;
                 //test commands.
                 case "test":
