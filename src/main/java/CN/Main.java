@@ -234,7 +234,7 @@ public class Main extends Plugin {
 
         //-----ADMINS-----//
 
-        handler.<Player>register("a","<Command> [1]", "[scarlet]<Admin> [lightgray]- Admin commands", (arg, player) -> {
+        handler.<Player>register("a","<Info> [1]", "[scarlet]<Admin> [lightgray]- Admin commands", (arg, player) -> {
             if(!player.isAdmin){
                 player.sendMessage(mba);
                 return;
@@ -276,26 +276,26 @@ public class Main extends Plugin {
                             break;
                         case "blue":
                             setTeam = Team.blue;
-                            setTeamColor = "[accent]";
+                            setTeamColor = "[royal]";
                             break;
                         case "crux":
                             setTeam = Team.crux;
-                            setTeamColor = "[accent]";
+                            setTeamColor = "[scarlet]";
                             break;
                         case "derelict":
                             setTeam = Team.derelict;
-                            setTeamColor = "[accent]";
+                            setTeamColor = "[gray]";
                             break;
                         case "green":
                             setTeam = Team.green;
-                            setTeamColor = "[accent]";
+                            setTeamColor = "[lime]";
                             break;
                         case "purple":
                             setTeam = Team.purple;
-                            setTeamColor = "[accent]";
+                            setTeamColor = "[purple]";
                             break;
                         default:
-                            player.sendMessage("[salmon]CT[lightgray]: Available teams: [accent]Sharded, [royal]Blue[lightgray], [scarlet]Crux[lightgray], [lightgray]Derelict[lightgray], [forest]Green[lightgray], [purple]Purple[lightgray].");
+                            player.sendMessage("[salmon]CT[lightgray]: Available teams: [accent]Sharded, [royal]Blue[lightgray], [scarlet]Crux[lightgray], [lightgray]Derelict[lightgray], [lime]Green[lightgray], [purple]Purple[lightgray].");
                             return;
                     }
                     player.setTeam(setTeam);
@@ -304,9 +304,16 @@ public class Main extends Plugin {
                 //test commands.
                 case "test":
                     break;
+                case "info":
+                    player.sendMessage("\tAvailable Commands:" +
+                            "\nuap"         +
+                            "\ngameover"    +
+                            "\ninf"         +
+                            "\nteam");
+                    break;
                 //if none of the above commands used.
                 default:
-                    player.sendMessage("\tAvailable Commands:\nuap\ngameover\ninf\nteam");
+                    player.sendMessage(arg[0] + " Is not a command. Do `/a info` to see all available commands");
             }
         });
     }
