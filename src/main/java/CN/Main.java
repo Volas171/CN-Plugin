@@ -360,6 +360,7 @@ public class Main extends Plugin {
                         }
                     } else if (arg.length > 2 && arg[1].equals("uuid")) {
                         player.sendMessage("[white]Player Name: " + netServer.admins.getInfo(arg[2]).lastName +
+                                "\n[white]Names Used: " + netServer.admins.getInfo(arg[2]).names +
                                 "\n[white]IP: " + netServer.admins.getInfo(arg[2]).lastIP +
                                 "\n[white]Times Joined: " + netServer.admins.getInfo(arg[2]).timesJoined +
                                 "\n[white]Times Kicked: " + netServer.admins.getInfo(arg[2]).timesKicked);
