@@ -275,6 +275,7 @@ public class Main extends Plugin {
                     } else {
                         player.sendMessage("[salmon]CT[white]: Un Admins Player, do `/a uap <UUID>`.");
                     }
+                    break;
 
                 //gameover - triggers gameover for admins team.
                 case "gameover": //Game is over
