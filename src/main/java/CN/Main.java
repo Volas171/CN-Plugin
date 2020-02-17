@@ -371,8 +371,8 @@ public class Main extends Plugin {
                     }
                     break;
                 case "pardon": //Un-Bans players
-                    if (arg.length >= 2) {
-                        if (arg[2].equals("kick")) {
+                    if (arg.length > 1) {
+                        if (arg.length > 2 && arg[2].equals("kick")) {
                             netServer.admins.getInfo(arg[1]).timesKicked = 0;
                             player.sendMessage("[salmon]pardon[white]: Set `times kicked` to 0 for UUID " + arg[1] + ".");
                         }
@@ -380,7 +380,7 @@ public class Main extends Plugin {
                             netServer.admins.unbanPlayerID(arg[1]);
                             player.sendMessage("[salmon]pardon[white]: Unbanned player UUID " + arg[1] + ".");
                         } else {
-                            player.sendMessage("[salmon]pardon[white]: UUID " + arg[1] + " wasn't found or isn't banned.");
+                            player.sendMessage("[salmon]pardon[white]: UUID [lightgray]" + arg[1] + "[white] wasn't found or isn't banned.");
                         }
                     } else {
                         player.sendMessage("[salmon]pardon[white]: Pardon, uses uuid to un-ban players. use arg kick to reset kicks.");
