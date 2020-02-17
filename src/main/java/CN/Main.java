@@ -2,12 +2,15 @@ package CN;
 
 //-----imports-----//
 import arc.Events;
+import arc.struct.Array;
 import arc.util.CommandHandler;
+import arc.util.Log;
 import mindustry.entities.type.Player;
 import mindustry.game.EventType;
 import mindustry.game.Team;
 import mindustry.game.Teams;
 import mindustry.gen.Call;
+import mindustry.net.Administration;
 import mindustry.plugin.Plugin;
 import mindustry.world.blocks.storage.CoreBlock;
 import mindustry.content.Items;
@@ -24,18 +27,41 @@ public class Main extends Plugin {
     private boolean reaperEnable = true;
     private boolean lichEnable = true;
     private String mba = "[white]You must be [scarlet]<Admin> [white]to use this command.";
+    private boolean autoBan = true;
+
+    public Main() throws InterruptedException {
+        Events.on(EventType.PlayerJoin.class, event -> {
+            Player player = event.player;
+            if (autoBan) {
+                if (player.getInfo().timesKicked > (player.getInfo().timesJoined / 2)) {
+                    String playerID = player.getInfo().id;
+                    netServer.admins.banPlayer(playerID);
+                    Log.info("Banned " + playerID + " for 2*(Kick) > (join)");
+                    player.con.kick("Banned for being kicked almost every time you join.\nIf you want to appeal, give the previous as reason.");
+                } else if (player.getInfo().timesKicked > 15) {
+                    String playerID = player.getInfo().id;
+                    netServer.admins.banPlayer(playerID);
+                    Log.info("Banned " + playerID + " for Kick > 15.");
+                    player.con.kick("Banned for being kicked than 15.\nIf you want to appeal, give the previous as reason.");
+                }
+            }
+            if(player.getInfo().timesKicked == 10) {
+                Call.onInfoMessage(player.con,"You've been kicked 10 times, 15 kicks and you're banned.");
+            }
+        });
+    }
 
     @Override
     public void registerClientCommands(CommandHandler handler) {
         //-----USERS-----//
-
+;
         //ping the pong
         handler.<Player>register("ping", "Pings the server", (args, player) -> {
             player.sendMessage("Got Ping!");
         });
 
         //Summons Entities
-        handler.<Player>register("summon","[unit] [Info]", "Summons a [royal]Reaper [gray]at a high cost. do /reaper info", (arg, player) -> {
+        handler.<Player>register("summon","[unit] [Info]", "Summons a [royal]Unit [lightgray]at a cost. do /reaper info", (arg, player) -> {
             String unit = "none";
             //decider section
             if (arg.length != 0) {
@@ -234,23 +260,29 @@ public class Main extends Plugin {
 
         //-----ADMINS-----//
 
-        handler.<Player>register("a","<Info> [1]", "[scarlet]<Admin> [lightgray]- Admin commands", (arg, player) -> {
+        handler.<Player>register("a","<Info> [1] [2]", "[scarlet]<Admin> [lightgray]- Admin commands", (arg, player) -> {
             if(!player.isAdmin){
                 player.sendMessage(mba);
                 return;
             }
             switch (arg[0]) {
                 //un admin player - un-admins uuid, even if player is offline.
-                case "uap":
-                    netServer.admins.unAdminPlayer(arg[1]);
-                    player.sendMessage("unAdmin: " + arg[1]);
-                    break;
+                case "uap": //Un-Admin Player
+                    if (arg.length > 1 && arg[1].length() > 0) {
+                        netServer.admins.unAdminPlayer(arg[1]);
+                        player.sendMessage("unAdmin: " + arg[1]);
+                        break;
+                    } else {
+                        player.sendMessage("[salmon]CT[white]: Un Admins Player, do `/a uap <UUID>`.");
+                    }
+
                 //gameover - triggers gameover for admins team.
-                case "gameover":
+                case "gameover": //Game is over
                     Events.fire(new EventType.GameOverEvent(player.getTeam()));
                     Call.sendMessage("[scarlet]<Admin> [lightgray]" + player.name + "[white] has ended the game.");
                     break;
-                case "inf":
+
+                case "inf": //Infinite resources, kinda.
                     Teams.TeamData teamData = state.teams.get(player.getTeam());
                     CoreBlock.CoreEntity core = teamData.cores.first();
                     core.items.add(Items.copper, 1000000);
@@ -265,51 +297,155 @@ public class Main extends Plugin {
                     core.items.add(Items.surgealloy, 1000000);
                     Call.sendMessage("[scarlet]<Admin> [lightgray]" + player.name + " [white] has given 1mil resources to core.");
                     break;
-                //team - changes team.
-                case "team":
-                    String setTeamColor = "[#ffffff]";
-                    Team setTeam;
-                    switch (arg[1]) {
-                        case "sharded":
-                            setTeam = Team.sharded;
-                            setTeamColor = "[accent]";
-                            break;
-                        case "blue":
-                            setTeam = Team.blue;
-                            setTeamColor = "[royal]";
-                            break;
-                        case "crux":
-                            setTeam = Team.crux;
-                            setTeamColor = "[scarlet]";
-                            break;
-                        case "derelict":
-                            setTeam = Team.derelict;
-                            setTeamColor = "[gray]";
-                            break;
-                        case "green":
-                            setTeam = Team.green;
-                            setTeamColor = "[lime]";
-                            break;
-                        case "purple":
-                            setTeam = Team.purple;
-                            setTeamColor = "[purple]";
-                            break;
-                        default:
-                            player.sendMessage("[salmon]CT[lightgray]: Available teams: [accent]Sharded, [royal]Blue[lightgray], [scarlet]Crux[lightgray], [lightgray]Derelict[lightgray], [lime]Green[lightgray], [purple]Purple[lightgray].");
-                            return;
+
+                case "team": //Changes Team of user
+                    if (arg.length > 1) {
+                        String setTeamColor = "[#ffffff]";
+                        Team setTeam;
+                        switch (arg[1]) {
+                            case "sharded":
+                                setTeam = Team.sharded;
+                                setTeamColor = "[accent]";
+                                break;
+                            case "blue":
+                                setTeam = Team.blue;
+                                setTeamColor = "[royal]";
+                                break;
+                            case "crux":
+                                setTeam = Team.crux;
+                                setTeamColor = "[scarlet]";
+                                break;
+                            case "derelict":
+                                setTeam = Team.derelict;
+                                setTeamColor = "[gray]";
+                                break;
+                            case "green":
+                                setTeam = Team.green;
+                                setTeamColor = "[lime]";
+                                break;
+                            case "purple":
+                                setTeam = Team.purple;
+                                setTeamColor = "[purple]";
+                                break;
+                            default:
+                                player.sendMessage("[salmon]CT[lightgray]: Available teams: [accent]Sharded, [royal]Blue[lightgray], [scarlet]Crux[lightgray], [lightgray]Derelict[lightgray], [lime]Green[lightgray], [purple]Purple[lightgray].");
+                                return;
+                        }
+                        player.setTeam(setTeam);
+                        player.sendMessage("[salmon]CT[white]: Changed team to " + setTeamColor + arg[1] + "[white].");
+                        break;
+                    } else {
+                        player.sendMessage("[salmon]CT[white]: Change Team, do `/a team info` to see all teams");
                     }
-                    player.setTeam(setTeam);
-                    player.sendMessage("[salmon]CT[white]: Changed team to " + setTeamColor + arg[1] + "[white].");
                     break;
-                //test commands.
-                case "test":
+
+                case "gpi": //Get Player Info
+                    if (arg.length > 2 && arg[1].equals("id")) {
+                        if (arg[2].length() > 0) {
+                            Player p = playerGroup.getByID(Integer.parseInt(arg[2]));
+                            if (p == null) {
+                                player.sendMessage("[salmon]GPI[white]: Could not find player ID '[lightgray]" + arg[2] + "[white]'.");
+                                return;
+                            }
+                            if (arg[2].contains("=")) {
+                                player.sendMessage("[salmon]GPI[white]: Must use player ID, not UUID.");
+                                return;
+                            }
+                            player.sendMessage("[white]Player Name: " + p.getInfo().lastName +
+                                    "\n[white]IP: " + p.getInfo().lastIP +
+                                    "\n[white]Times Joined: " + p.getInfo().timesJoined +
+                                    "\n[white]Times Kicked: " + p.getInfo().timesKicked);
+                        } else {
+                            player.sendMessage("[salmon]GPI[white]: Get Player Info, use ID, not UUID, to get a player's info");
+                        }
+                    } else if (arg.length > 2 && arg[1].equals("uuid")) {
+                        player.sendMessage("[white]Player Name: " + netServer.admins.getInfo(arg[2]).lastName +
+                                "\n[white]IP: " + netServer.admins.getInfo(arg[2]).lastIP +
+                                "\n[white]Times Joined: " + netServer.admins.getInfo(arg[2]).timesJoined +
+                                "\n[white]Times Kicked: " + netServer.admins.getInfo(arg[2]).timesKicked);
+                    } else {
+                        player.sendMessage("[salmon]GPI[white]: Get Player Info, use ID or UUID, to get a player's info" +
+                                "\n[salmon]GPI[white]: use arg id or uuid. example `/a gpi uuid abc123==`");
+                    }
                     break;
-                case "info":
+                case "pardon": //Un-Bans players
+                    if (arg.length >= 2) {
+                        if (arg[2].equals("kick")) {
+                            netServer.admins.getInfo(arg[1]).timesKicked = 0;
+                            player.sendMessage("[salmon]pardon[white]: Set `times kicked` to 0 for UUID " + arg[1] + ".");
+                        }
+                        if (netServer.admins.isIDBanned(arg[1])) {
+                            netServer.admins.unbanPlayerID(arg[1]);
+                            player.sendMessage("[salmon]pardon[white]: Unbanned player UUID " + arg[1] + ".");
+                        } else {
+                            player.sendMessage("[salmon]pardon[white]: UUID " + arg[1] + " wasn't found or isn't banned.");
+                        }
+                    } else {
+                        player.sendMessage("[salmon]pardon[white]: Pardon, uses uuid to un-ban players. use arg kick to reset kicks.");
+                    }
+                    break;
+                case "rpk":
+                    if (arg.length > 2)  {
+                        if (arg[1].equals("id")) {
+                            Player p = playerGroup.getByID(Integer.parseInt(arg[2]));
+                            if (p == null) {
+                                player.sendMessage("[salmon]GPI[white]: Could not find player ID `" + arg[2] + "`.");
+                                return;
+                            }
+                            if (arg[1].contains("=")) {
+                                player.sendMessage("[salmon]GPI[white]: Must use player ID, not UUID.");
+                                return;
+                            }
+                            p.getInfo().timesKicked = 0;
+                            player.sendMessage("[salmon]RPK[white]: Times kicked set to zero for player " + p.getInfo().lastName);
+                            return;
+                        } else if (arg[1].equals("uuid")) {
+                            netServer.admins.getInfo(arg[2]).timesKicked = 0;
+                            player.sendMessage("[salmon]RPK[white]: Times Kicked set to zero for player uuid [lightgray]" + arg[2]);
+                        } else {
+                            player.sendMessage("[salmon]RPK[white]: Use arguments id or uuid.");
+                        }
+                    } else {
+                        player.sendMessage("[salmon]RPK[white]: Reset Player Kicks, uses player ID or UUID, to reset player kicks." +
+                                "\n[salmon]RPK[white]: use arg id or uuid. example `/a rpk uuid abc123==`");
+                    }
+                    break;
+                case "bl":
+                    player.sendMessage("Banned Players:");
+                    Array<Administration.PlayerInfo> bannedPlayers = netServer.admins.getBanned();
+                    bannedPlayers.each(pi -> player.sendMessage("[lightgray]" + pi.id +"[white] / Name: [lightgray]" + pi.lastName + "[white] / IP: [lightgray]" + pi.lastIP + "[white] / # kick: [lightgray]" + pi.timesKicked) );
+                    break;
+                case "pcc": //Player close connection
+                    if (arg.length > 1 && arg[1].length() > 0) {
+                        Player p = playerGroup.getByID(Integer.parseInt(arg[1]));
+                        if (p == null) {
+                            player.sendMessage("[salmon]GPI[white]: Could not find player ID '[lightgray]" + arg[1] + "[white]'.");
+                            return;
+                        }
+                        if (arg[1].contains("=")) {
+                            player.sendMessage("[salmon]GPI[white]: Must use player ID, not UUID.");
+                            return;
+                        }
+                        p.getInfo().timesKicked =  p.getInfo().timesKicked - 1;
+                        p.con.kick("\n[white]Connection Closed.", 1);
+                    } else {
+                        player.sendMessage("[salmon]PCC[white]: Player Connection Closed, use ID, not UUID, to close a players connection.");
+                    }
+                    break;
+                case "test": //test commands;
+                    break;
+                case "info": //all commands
                     player.sendMessage("\tAvailable Commands:" +
-                            "\nuap"         +
-                            "\ngameover"    +
-                            "\ninf"         +
-                            "\nteam");
+                            "\nuap" +
+                            "\ngameover" +
+                            "\ninf" +
+                            "\nteam" +
+                            "\ngpi" +
+                            "\npardon" +
+                            "\nrpk" +
+                            "\nbl" +
+                            "\npcc" +
+                            "\ninfo");
                     break;
                 //if none of the above commands used.
                 default:
