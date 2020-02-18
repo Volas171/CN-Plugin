@@ -5,6 +5,7 @@ import arc.Events;
 import arc.struct.Array;
 import arc.util.CommandHandler;
 import arc.util.Log;
+import mindustry.Vars;
 import mindustry.entities.type.Player;
 import mindustry.game.EventType;
 import mindustry.game.Team;
@@ -33,22 +34,24 @@ public class Main extends Plugin {
         Events.on(EventType.PlayerJoin.class, event -> {
             Player player = event.player;
             if (autoBan) {
-                if (player.getInfo().timesKicked > (player.getInfo().timesJoined / 2)) {
+                if (player.getInfo().timesKicked > (player.getInfo().timesJoined / 5)) {
                     String playerID = player.getInfo().id;
                     netServer.admins.banPlayer(playerID);
-                    Log.info("Banned " + playerID + " for 2*(Kick) > (join)");
-                    player.con.kick("Banned for being kicked almost every time you join.\nIf you want to appeal, give the previous as reason.");
+                    Log.info("[B] Banned " + playerID + " for 2*(Kick) > (join)");
+                    player.con.kick("Banned for being kicked most of the time. If you want to appeal, give the previous as reason.");
                 } else if (player.getInfo().timesKicked > 15) {
                     String playerID = player.getInfo().id;
                     netServer.admins.banPlayer(playerID);
-                    Log.info("Banned " + playerID + " for Kick > 15.");
-                    player.con.kick("Banned for being kicked than 15.\nIf you want to appeal, give the previous as reason.");
+                    Log.info("[B] Banned " + playerID + " for Kick > 15.");
+                    player.con.kick("Banned for being kicked than 15. If you want to appeal, give the previous as reason.");
                 }
             }
             if(player.getInfo().timesKicked == 10) {
                 Call.onInfoMessage(player.con,"You've been kicked 10 times, 15 kicks and you're banned.");
             }
         });
+
+
     }
 
     @Override
@@ -258,6 +261,21 @@ public class Main extends Plugin {
                     "\n[white]" + core.items.get(Items.surgealloy) +    " \uF82C [#f3e979]surge alloy");
         });
 
+        //Obligatory Not y Code, from: https://github.com/fuzzbuck/mindustry.io-plugin/blob/master/src/main/java/mindustry/plugin/ioMain.java line:284
+        handler.<Player>register("players", "Display all players and their ids", (args, player) -> {
+            StringBuilder builder = new StringBuilder();
+            builder.append("[orange]List of players: \n");
+            for (Player p : Vars.playerGroup.all()) {
+                if(p.isAdmin) {
+                    builder.append(">>> \uE828 ");
+                } else{
+                    builder.append("[lightgray]");
+                }
+                builder.append(p.name).append("[accent] : ").append(p.id).append("\n");
+            }
+            player.sendMessage(builder.toString());
+        });
+
         //-----ADMINS-----//
 
         handler.<Player>register("a","<Info> [1] [2]", "[scarlet]<Admin> [lightgray]- Admin commands", (arg, player) -> {
@@ -435,6 +453,7 @@ public class Main extends Plugin {
                     }
                     break;
                 case "test": //test commands;
+                    player.getInfo().timesKicked = 25;
                     break;
                 case "info": //all commands
                     player.sendMessage("\tAvailable Commands:" +
@@ -448,6 +467,13 @@ public class Main extends Plugin {
                             "\nbl" +
                             "\npcc" +
                             "\ninfo");
+                    break;
+                case "mms":
+                    int y = -200;
+                    for (int i = 0; i <= 300; i = i + 1) {
+                        y = y + 1;
+                        Call.onInfoMessage(player.con, String.valueOf(y));
+                    }
                     break;
                 //if none of the above commands used.
                 default:
