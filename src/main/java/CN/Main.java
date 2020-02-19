@@ -274,13 +274,14 @@ public class Main extends Plugin {
             StringBuilder builder = new StringBuilder();
             builder.append("[accent]List of players: \n");
             for (Player p : Vars.playerGroup.all()) {
+                String name = p.name;
                 if(p.isAdmin) {
                     builder.append(">>> \uE828 [lightgray]");
                 } else{
-                    p.name = p.name.replaceAll("\\[", "[ ");
+                    name = name.replaceAll("\\[", "[ ");
                     builder.append("[white]");
                 }
-                builder.append(p.name).append("[accent] : [lightgray]").append(p.id).append("\n");
+                builder.append(name).append("[accent] : [lightgray]").append(p.id).append("\n");
             }
             player.sendMessage(builder.toString());
         });
@@ -400,6 +401,7 @@ public class Main extends Plugin {
                                 "\n[salmon]GPI[white]: use arg id or uuid. example `/a gpi uuid abc123==`");
                     }
                     break;
+
                 case "pardon": //Un-Bans players
                     if (arg.length > 1) {
                         if (arg.length > 2 && arg[2].equals("kick")) {
@@ -416,6 +418,7 @@ public class Main extends Plugin {
                         player.sendMessage("[salmon]pardon[white]: Pardon, uses uuid to un-ban players. use arg kick to reset kicks.");
                     }
                     break;
+
                 case "rpk":
                     if (arg.length > 2)  {
                         if (arg[1].equals("id")) {
@@ -428,10 +431,6 @@ public class Main extends Plugin {
                             Player p = playerGroup.getByID(Integer.parseInt(pid));
                             if (p == null) {
                                 player.sendMessage("[salmon]GPI[white]: Could not find player ID `" + arg[2] + "`.");
-                                return;
-                            }
-                            if (arg[1].contains("=")) {
-                                player.sendMessage("[salmon]GPI[white]: Must use player ID, not UUID.");
                                 return;
                             }
                             p.getInfo().timesKicked = 0;
@@ -448,15 +447,16 @@ public class Main extends Plugin {
                                 "\n[salmon]RPK[white]: use arg id or uuid. example `/a rpk uuid abc123==`");
                     }
                     break;
+
                 case "bl":
                     player.sendMessage("Banned Players:");
                     Array<Administration.PlayerInfo> bannedPlayers = netServer.admins.getBanned();
                     bannedPlayers.each(pi -> player.sendMessage("[lightgray]" + pi.id +"[white] / Name: [lightgray]" + pi.lastName + "[white] / IP: [lightgray]" + pi.lastIP + "[white] / # kick: [lightgray]" + pi.timesKicked) );
                     break;
+
                 case "pcc": //Player close connection
                     if (arg.length > 1 && arg[1].length() > 0) {
-                        String a2 = arg[1];
-                        String pid= a2.replaceAll("[^0-9]", "");
+                        String pid= arg[1].replaceAll("[^0-9]", "");
                         if (pid.equals("")) {
                             player.sendMessage("[salmon]GPI[white]: player ID must contain numbers!");
                             return;
@@ -466,16 +466,15 @@ public class Main extends Plugin {
                             player.sendMessage("[salmon]GPI[white]: Could not find player ID '[lightgray]" + arg[1] + "[white]'.");
                             return;
                         }
-                        if (arg[1].contains("=")) {
-                            player.sendMessage("[salmon]GPI[white]: Must use player ID, not UUID.");
-                            return;
-                        }
+                        String reason = "[white]Connection Closed.";
+                        if (arg.length > 2 && arg[2].length() > 0) reason = arg[2];
                         p.getInfo().timesKicked =  p.getInfo().timesKicked - 1;
-                        p.con.kick("\n[white]Connection Closed.", 1);
+                        p.con.kick(reason, 1);
                     } else {
                         player.sendMessage("[salmon]PCC[white]: Player Connection Closed, use ID, not UUID, to close a players connection.");
                     }
                     break;
+
                 case "unkick":
                     if (arg.length > 1) {
                         if (netServer.admins.getInfo(arg[1]).lastKicked > Time.millis()) {
@@ -488,25 +487,54 @@ public class Main extends Plugin {
                         player.sendMessage("[salmon]UK[white]: Un-Kick, uses uuid to un-kick players.");
                     }
                     break;
-                case "test": //test commands;
-                    player.getInfo().lastKicked = Time.millis() + 10 * 60 * 1000;
+
+                case "tp":
+                    if (arg.length > 1) {
+                        if (arg.length < 3) return;
+                        String x2= arg[1].replaceAll("[^0-9]", "");
+                        String y2= arg[2].replaceAll("[^0-9]", "");
+                        if (x2.equals("")) {
+                            player.sendMessage("[salmon]TP[white]: Coordinates must contain numbers!");
+                            return;
+                        } else if (y2.equals("")) {
+                            player.sendMessage("[salmon]TP[white]: Coordinates must contain numbers!");
+                            return;
+                        }
+
+                        float x2f = Float.parseFloat(x2);
+                        float y2f = Float.parseFloat(y2);
+                        player.sendMessage("[salmon]TP[white]: Moved [lightgray]" + player.name + "[white]from ([lightgray]" + player.x / 8+ " [white], [lightgray]" + player.y / 8 + "[white]) to ([lightgray]" + x2 + " [white], [lightgray]" + y2 + "[white]).");
+                        player.set(Integer.parseInt(x2),Integer.parseInt(y2));
+                        player.setNet(8 * x2f,8 * y2f);
+                        player.set(8 * x2f,8 * y2f);
+                    } else {
+                        player.sendMessage("\"[salmon]TP[white]: Teleports player to given coordinates");
+                    }
                     break;
+
+                case "test": //test commands;
+                    Call.onInfoToast(player.con,"Info Toast",10);
+                    break;
+
                 case "info": //all commands
                     player.sendMessage("\tAvailable Commands:" +
-                            "\nuap" +
-                            "\ngameover" +
-                            "\ninf" +
-                            "\nteam" +
-                            "\ngpi" +
-                            "\npardon" +
-                            "\nrpk" +
-                            "\nbl" +
-                            "\npcc" +
-                            "\ninfo");
+                            "\nuap          - Un Admins Player, [uud]" +
+                            "\ngameover     - Triggers game over." +
+                            "\ninf          - Gives 1mil of every resource to core." +
+                            "\nteam         - Changes team, team" +
+                            "\ngpi          - Gets Player Info, ID/UUID - ###" +
+                            "\npardon       - Un-Bans a player, UUID" +
+                            "\nrpk          - Resets player kick count, ID/UUID - ###" +
+                            "\nbl           - Shows Ban List." +
+                            "\npcc          - Closes a player connection." +
+                            "\nunkick       - Un-Kicks a player, UUID." +
+                            "\ntp           - Teleports player, x - y" +
+                            "\ninfo         - Shows all commands and brief description.");
                     break;
+
                 case "mms":
                     int y = -200;
-                    for (int i = 0; i <= 300; i = i + 1) {
+                    for (int i = 0; i <= 400; i = i + 1) {
                         y = y + 1;
                         Call.onInfoMessage(player.con, String.valueOf(y));
                     }
