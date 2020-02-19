@@ -52,7 +52,6 @@ public class Main extends Plugin {
             }
         });
 
-
     }
 
     @Override
@@ -160,6 +159,10 @@ public class Main extends Plugin {
             if (!unit.equals("none") && summonEnable) {
                 Teams.TeamData teamData = state.teams.get(player.getTeam());
                 CoreBlock.CoreEntity core = teamData.cores.first();
+                if (core == null) {
+                    player.sendMessage("Your team doesn't have a core.");
+                    return;
+                }
                 switch (unit) {
                     case "UnitTypes.reaper":
                         if (reaperEnable) {
@@ -267,16 +270,17 @@ public class Main extends Plugin {
         });
 
         //Obligatory Not y Code, from: https://github.com/fuzzbuck/mindustry.io-plugin/blob/master/src/main/java/mindustry/plugin/ioMain.java line:284
-        handler.<Player>register("players", "Display all players and their ids", (args, player) -> {
+        handler.<Player>register("players", "List of people and ID.", (args, player) -> {
             StringBuilder builder = new StringBuilder();
-            builder.append("[orange]List of players: \n");
+            builder.append("[accent]List of players: \n");
             for (Player p : Vars.playerGroup.all()) {
                 if(p.isAdmin) {
-                    builder.append(">>> \uE828 ");
+                    builder.append(">>> \uE828 [lightgray]");
                 } else{
-                    builder.append("[lightgray]");
+                    p.name = p.name.replaceAll("\\[", "[ ");
+                    builder.append("[white]");
                 }
-                builder.append(p.name).append("[accent] : ").append(p.id).append("\n");
+                builder.append(p.name).append("[accent] : [lightgray]").append(p.id).append("\n");
             }
             player.sendMessage(builder.toString());
         });
