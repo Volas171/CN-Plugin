@@ -5,6 +5,7 @@ import arc.Events;
 import arc.struct.Array;
 import arc.util.CommandHandler;
 import arc.util.Log;
+import arc.util.Time;
 import mindustry.Vars;
 import mindustry.entities.type.Player;
 import mindustry.game.EventType;
@@ -225,6 +226,10 @@ public class Main extends Plugin {
         handler.<Player>register("myteam","[Info]", "Gives team info", (arg, player) -> {
             Teams.TeamData teamData = state.teams.get(player.getTeam());
             CoreBlock.CoreEntity core = teamData.cores.first();
+            if (core == null) {
+                player.sendMessage("Your team doesn't have a core.");
+                return;
+            }
             String playerTeam = player.getTeam().name;
             switch (playerTeam) {
                 case "sharded":
@@ -361,16 +366,19 @@ public class Main extends Plugin {
                 case "gpi": //Get Player Info
                     if (arg.length > 2 && arg[1].equals("id")) {
                         if (arg[2].length() > 0) {
-                            Player p = playerGroup.getByID(Integer.parseInt(arg[2]));
-                            if (p == null) {
-                                player.sendMessage("[salmon]GPI[white]: Could not find player ID '[lightgray]" + arg[2] + "[white]'.");
+                            String a2 = arg[2];
+                            String pid= a2.replaceAll("[^0-9]", "");
+                            if (pid.equals("")) {
+                                player.sendMessage("[salmon]GPI[white]: player ID must contain numbers!");
                                 return;
                             }
-                            if (arg[2].contains("=")) {
-                                player.sendMessage("[salmon]GPI[white]: Must use player ID, not UUID.");
+                            Player p = playerGroup.getByID(Integer.parseInt(pid));
+                            if (p == null) {
+                                player.sendMessage("[salmon]GPI[white]: Could not find player ID '[lightgray]" + pid + "[white]'.");
                                 return;
                             }
                             player.sendMessage("[white]Player Name: " + p.getInfo().lastName +
+                                    "\n[white]Names Used: " + netServer.admins.getInfo(arg[2]).names +
                                     "\n[white]IP: " + p.getInfo().lastIP +
                                     "\n[white]Times Joined: " + p.getInfo().timesJoined +
                                     "\n[white]Times Kicked: " + p.getInfo().timesKicked);
@@ -407,7 +415,13 @@ public class Main extends Plugin {
                 case "rpk":
                     if (arg.length > 2)  {
                         if (arg[1].equals("id")) {
-                            Player p = playerGroup.getByID(Integer.parseInt(arg[2]));
+                            String a2 = arg[2];
+                            String pid= a2.replaceAll("[^0-9]", "");
+                            if (pid.equals("")) {
+                                player.sendMessage("[salmon]GPI[white]: player ID must contain numbers!");
+                                return;
+                            }
+                            Player p = playerGroup.getByID(Integer.parseInt(pid));
                             if (p == null) {
                                 player.sendMessage("[salmon]GPI[white]: Could not find player ID `" + arg[2] + "`.");
                                 return;
@@ -437,7 +451,13 @@ public class Main extends Plugin {
                     break;
                 case "pcc": //Player close connection
                     if (arg.length > 1 && arg[1].length() > 0) {
-                        Player p = playerGroup.getByID(Integer.parseInt(arg[1]));
+                        String a2 = arg[1];
+                        String pid= a2.replaceAll("[^0-9]", "");
+                        if (pid.equals("")) {
+                            player.sendMessage("[salmon]GPI[white]: player ID must contain numbers!");
+                            return;
+                        }
+                        Player p = playerGroup.getByID(Integer.parseInt(pid));
                         if (p == null) {
                             player.sendMessage("[salmon]GPI[white]: Could not find player ID '[lightgray]" + arg[1] + "[white]'.");
                             return;
@@ -452,8 +472,20 @@ public class Main extends Plugin {
                         player.sendMessage("[salmon]PCC[white]: Player Connection Closed, use ID, not UUID, to close a players connection.");
                     }
                     break;
+                case "unkick":
+                    if (arg.length > 1) {
+                        if (netServer.admins.getInfo(arg[1]).lastKicked > Time.millis()) {
+                            netServer.admins.getInfo(arg[1]).lastKicked = Time.millis();
+                            player.sendMessage("[salmon]pardon[white]: Un-Kicked player UUID " + arg[1] + ".");
+                        } else {
+                            player.sendMessage("[salmon]pardon[white]: UUID [lightgray]" + arg[1] + "[white] wasn't found or isn't kicked.");
+                        }
+                    } else {
+                        player.sendMessage("[salmon]UK[white]: Un-Kick, uses uuid to un-kick players.");
+                    }
+                    break;
                 case "test": //test commands;
-                    player.getInfo().timesKicked = 25;
+                    player.getInfo().lastKicked = Time.millis() + 10 * 60 * 1000;
                     break;
                 case "info": //all commands
                     player.sendMessage("\tAvailable Commands:" +
