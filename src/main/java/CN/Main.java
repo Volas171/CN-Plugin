@@ -278,7 +278,7 @@ public class Main extends Plugin {
                 if(p.isAdmin) {
                     builder.append(">>> \uE828 [lightgray]");
                 } else{
-                    name = name.replaceAll("\\[", "[ ");
+                    name = name.replaceAll("\\[", "[[");
                     builder.append("[white]");
                 }
                 builder.append(name).append("[accent] : [lightgray]").append(p.id).append("\n");
