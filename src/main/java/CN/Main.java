@@ -468,7 +468,11 @@ public class Main extends Plugin {
                             return;
                         }
                         String reason = "[white]Connection Closed.";
-                        if (arg.length > 2 && arg[2].length() > 0) reason = arg[2] + arg[3];
+                        if (arg.length > 3) {
+                            reason = arg[2] + arg[3];
+                        } else if (arg.length > 2) {
+                            reason = arg[2];
+                        }
                         p.getInfo().timesKicked =  p.getInfo().timesKicked - 1;
                         p.con.kick(reason, 1);
                     } else {
@@ -515,7 +519,20 @@ public class Main extends Plugin {
                     break;
 
                 case "ac":
-                    playerGroup.all().each(p -> p.isAdmin, a -> a.sendMessage(arg[1] + " " + arg[2] + " " + arg[3], player, "[salmon]AC[white]: " + NetClient.colorizeName(player.id, player.name)));
+                    if (arg.length > 1) {
+                        String string = null;
+                        if (arg.length > 2) {
+                            if (arg.length > 3) {
+                                                string = arg[1] + " " + arg[2] + " " + arg[3];
+                            }
+                            string = arg[1] + " " + arg[2];
+                        }
+                            string = arg[1];
+                        String finalString = string;
+                        playerGroup.all().each(p -> p.isAdmin, o -> o.sendMessage(finalString, player, "[salmon]AC[white]: " + NetClient.colorizeName(player.id, player.name)));
+                    } else {
+                        player.sendMessage("");
+                    }
                     break;
 
                 case "test": //test commands;
