@@ -7,6 +7,7 @@ import arc.util.CommandHandler;
 import arc.util.Log;
 import arc.util.Time;
 import mindustry.Vars;
+import mindustry.core.NetClient;
 import mindustry.entities.type.Player;
 import mindustry.game.EventType;
 import mindustry.game.Team;
@@ -288,7 +289,7 @@ public class Main extends Plugin {
 
         //-----ADMINS-----//
 
-        handler.<Player>register("a","<Info> [1] [2]", "[scarlet]<Admin> [lightgray]- Admin commands", (arg, player) -> {
+        handler.<Player>register("a","<Info> [1] [2] [3...]", "[scarlet]<Admin> [lightgray]- Admin commands", (arg, player) -> {
             if(!player.isAdmin){
                 player.sendMessage(mba);
                 return;
@@ -467,7 +468,7 @@ public class Main extends Plugin {
                             return;
                         }
                         String reason = "[white]Connection Closed.";
-                        if (arg.length > 2 && arg[2].length() > 0) reason = arg[2];
+                        if (arg.length > 2 && arg[2].length() > 0) reason = arg[2] + arg[3];
                         p.getInfo().timesKicked =  p.getInfo().timesKicked - 1;
                         p.con.kick(reason, 1);
                     } else {
@@ -490,6 +491,7 @@ public class Main extends Plugin {
 
                 case "tp":
                     if (arg.length > 1) {
+                        if (arg.length == 2) player.sendMessage("[salmon]TP[white]: You need y coordinate.");
                         if (arg.length < 3) return;
                         String x2= arg[1].replaceAll("[^0-9]", "");
                         String y2= arg[2].replaceAll("[^0-9]", "");
@@ -503,7 +505,7 @@ public class Main extends Plugin {
 
                         float x2f = Float.parseFloat(x2);
                         float y2f = Float.parseFloat(y2);
-                        player.sendMessage("[salmon]TP[white]: Moved [lightgray]" + player.name + "[white]from ([lightgray]" + player.x / 8+ " [white], [lightgray]" + player.y / 8 + "[white]) to ([lightgray]" + x2 + " [white], [lightgray]" + y2 + "[white]).");
+                        player.sendMessage("[salmon]TP[white]: Moved [lightgray]" + player.name + " [white]from ([lightgray]" + player.x / 8+ " [white], [lightgray]" + player.y / 8 + "[white]) to ([lightgray]" + x2 + " [white], [lightgray]" + y2 + "[white]).");
                         player.set(Integer.parseInt(x2),Integer.parseInt(y2));
                         player.setNet(8 * x2f,8 * y2f);
                         player.set(8 * x2f,8 * y2f);
@@ -512,24 +514,29 @@ public class Main extends Plugin {
                     }
                     break;
 
+                case "ac":
+                    playerGroup.all().each(p -> p.isAdmin, a -> a.sendMessage(arg[1] + " " + arg[2] + " " + arg[3], player, "[salmon]AC[white]: " + NetClient.colorizeName(player.id, player.name)));
+                    break;
+
                 case "test": //test commands;
                     Call.onInfoToast(player.con,"Info Toast",10);
                     break;
 
                 case "info": //all commands
                     player.sendMessage("\tAvailable Commands:" +
-                            "\nuap          - Un Admins Player, [uud]" +
-                            "\ngameover     - Triggers game over." +
-                            "\ninf          - Gives 1mil of every resource to core." +
-                            "\nteam         - Changes team, team" +
-                            "\ngpi          - Gets Player Info, ID/UUID - ###" +
-                            "\npardon       - Un-Bans a player, UUID" +
-                            "\nrpk          - Resets player kick count, ID/UUID - ###" +
-                            "\nbl           - Shows Ban List." +
-                            "\npcc          - Closes a player connection." +
-                            "\nunkick       - Un-Kicks a player, UUID." +
-                            "\ntp           - Teleports player, x - y" +
-                            "\ninfo         - Shows all commands and brief description.");
+                            "\nuap              - Un Admins Player, [uud]" +
+                            "\ngameover         - Triggers game over." +
+                            "\ninf              - Gives 1mil of every resource to core." +
+                            "\nteam             - Changes team, team" +
+                            "\ngpi              - Gets Player Info, ID/UUID - ###" +
+                            "\npardon           - Un-Bans a player, UUID" +
+                            "\nrpk              - Resets player kick count, ID/UUID - ###" +
+                            "\nbl               - Shows Ban List." +
+                            "\npcc              - Closes a player connection." +
+                            "\nunkick           - Un-Kicks a player, UUID." +
+                            "\ntp               - Teleports player, x - y" +
+                            "\nac               - Admin Chat" +
+                            "\ninfo             - Shows all commands and brief description.");
                     break;
 
                 case "mms":
