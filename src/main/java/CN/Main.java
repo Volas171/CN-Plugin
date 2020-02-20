@@ -9,6 +9,7 @@ import arc.util.Time;
 import mindustry.Vars;
 import mindustry.core.NetClient;
 import mindustry.entities.type.Player;
+import mindustry.entities.type.Unit;
 import mindustry.game.EventType;
 import mindustry.game.Team;
 import mindustry.game.Teams;
@@ -19,12 +20,15 @@ import mindustry.world.blocks.storage.CoreBlock;
 import mindustry.content.Items;
 import mindustry.content.UnitTypes;
 import mindustry.entities.type.BaseUnit;
-import mindustry.entities.*;
+
+import java.util.HashMap;
 
 import static mindustry.Vars.*;
 
 
 public class Main extends Plugin {
+    public static Array<String> GOW = new Array<>();
+    public static Array<String> IW = new Array<>();
 
     private boolean summonEnable = true;
     private boolean reaperEnable = true;
@@ -51,6 +55,11 @@ public class Main extends Plugin {
             if(player.getInfo().timesKicked == 10) {
                 Call.onInfoMessage(player.con,"You've been kicked 10 times, 15 kicks and you're banned.");
             }
+        });
+
+        Events.on(EventType.WorldLoadEvent.class, event -> {
+            IW.clear();
+            GOW.clear();
         });
 
     }
@@ -255,29 +264,67 @@ public class Main extends Plugin {
                     playerTeam = "[purple] " + playerTeam;
                     break;
             }
-            player.sendMessage(
+            //
+            int Draug = 0;
+            int Spirit = 0;
+            int Phantom = 0;
+            int Dagger = 0;
+            int Crawler = 0;
+            int Titan = 0;
+            int Fortress = 0;
+            int Wraith = 0;
+            int Ghoul = 0;;
+            int Revenant = 0;
+            int Lich = 0;
+            int Reaper = 0;
+            int All = 0;
+            //
+            for (Unit u : unitGroup.all()) {
+                if(u.getTeam() == player.getTeam()) {
+                    if (true) {
+
+                    }
+                    All = All + 1;
+                }
+            }
+
+            Call.onInfoMessage(player.con,
                     "Your team is " + playerTeam +
-                    "\n[accent]Core Resources[white]:" +
-                    "\n[white]" + core.items.get(Items.copper) +        " \uF838 [#d99d73]copper" +
-                    "\n[white]" + core.items.get(Items.lead) +          " \uF837 [#8c7fa9]lead" +
-                    "\n[white]" + core.items.get(Items.metaglass) +     " \uF836 [#ebeef5]metaglass" +
-                    "\n[white]" + core.items.get(Items.graphite) +      " \uF835 [#b2c6d2]graphite" +
-                    "\n[white]" + core.items.get(Items.titanium) +      " \uF832 [#8da1e3]titanium" +
-                    "\n[white]" + core.items.get(Items.thorium) +       " \uF831 [#f9a3c7]thorium" +
-                    "\n[white]" + core.items.get(Items.silicon) +       " \uF82F [#53565c]Silicon" +
-                    "\n[white]" + core.items.get(Items.plastanium) +    " \uF82E [#cbd97f]plastanium[white]" +
-                    "\n[white]" + core.items.get(Items.phasefabric) +   " \uF82D [#f4ba6e]phase fabric[white]" +
-                    "\n[white]" + core.items.get(Items.surgealloy) +    " \uF82C [#f3e979]surge alloy");
+                        "\n\n[accent]Core Resources[white]:" +
+                            "\n[white]" + core.items.get(Items.copper) +        " \uF838 [#d99d73]copper" +
+                            "\n[white]" + core.items.get(Items.lead) +          " \uF837 [#8c7fa9]lead" +
+                            "\n[white]" + core.items.get(Items.metaglass) +     " \uF836 [#ebeef5]metaglass" +
+                            "\n[white]" + core.items.get(Items.graphite) +      " \uF835 [#b2c6d2]graphite" +
+                            "\n[white]" + core.items.get(Items.titanium) +      " \uF832 [#8da1e3]titanium" +
+                            "\n[white]" + core.items.get(Items.thorium) +       " \uF831 [#f9a3c7]thorium" +
+                            "\n[white]" + core.items.get(Items.silicon) +       " \uF82F [#53565c]Silicon" +
+                            "\n[white]" + core.items.get(Items.plastanium) +    " \uF82E [#cbd97f]plastanium" +
+                            "\n[white]" + core.items.get(Items.phasefabric) +   " \uF82D [#f4ba6e]phase fabric" +
+                            "\n[white]" + core.items.get(Items.surgealloy) +    " \uF82C [#f3e979]surge alloy" +
+                        "\n\n[accent]Team Units: [white]" +
+                            "\nDraug Miner Drone: " + Draug +
+                            "\nSpirit Repair Drone: " + Spirit +
+                            "\nPhantom Builder Drone: " + Phantom +
+                            "\n Dagger: " + Dagger +
+                            "\nCrawlers: " + Crawler +
+                            "\nTitan: " + Titan +
+                            "\nFortress: " + Fortress +
+                            "\nWraith Fighter: " + Wraith +
+                            "\nGhoul Bomber: " + Ghoul +
+                            "\nRevenant: " + Revenant +
+                            "\nLich: " + Lich +
+                            "\nReaper: " + Reaper +
+                            "\nTotal: " + All +
+                            "\n");
         });
 
-        //Obligatory Not y Code, from: https://github.com/fuzzbuck/mindustry.io-plugin/blob/master/src/main/java/mindustry/plugin/ioMain.java line:284
         handler.<Player>register("players", "List of people and ID.", (args, player) -> {
             StringBuilder builder = new StringBuilder();
             builder.append("[accent]List of players: \n");
             for (Player p : Vars.playerGroup.all()) {
                 String name = p.name;
                 if(p.isAdmin) {
-                    builder.append(">>> \uE828 [lightgray]");
+                    builder.append("[white]>>> \uE828 [lightgray]");
                 } else{
                     name = name.replaceAll("\\[", "[[");
                     builder.append("[white]");
@@ -308,24 +355,35 @@ public class Main extends Plugin {
 
                 //gameover - triggers gameover for admins team.
                 case "gameover": //Game is over
-                    Events.fire(new EventType.GameOverEvent(player.getTeam()));
-                    Call.sendMessage("[scarlet]<Admin> [lightgray]" + player.name + "[white] has ended the game.");
+                    if (GOW.contains(player.uuid)) {
+                        Events.fire(new EventType.GameOverEvent(player.getTeam()));
+                        Call.sendMessage("[scarlet]<Admin> [lightgray]" + player.name + "[white] has ended the game.");
+                        Log.info(player.name + " has ended the game.");
+                    } else {
+                        GOW.add(player.uuid);
+                        player.sendMessage("This command will trigger a game over, use again to continue.");
+                    }
                     break;
 
                 case "inf": //Infinite resources, kinda.
-                    Teams.TeamData teamData = state.teams.get(player.getTeam());
-                    CoreBlock.CoreEntity core = teamData.cores.first();
-                    core.items.add(Items.copper, 1000000);
-                    core.items.add(Items.lead, 1000000);
-                    core.items.add(Items.metaglass, 1000000);
-                    core.items.add(Items.graphite, 1000000);
-                    core.items.add(Items.titanium, 1000000);
-                    core.items.add(Items.thorium, 1000000);
-                    core.items.add(Items.silicon, 1000000);
-                    core.items.add(Items.plastanium, 1000000);
-                    core.items.add(Items.phasefabric, 1000000);
-                    core.items.add(Items.surgealloy, 1000000);
-                    Call.sendMessage("[scarlet]<Admin> [lightgray]" + player.name + " [white] has given 1mil resources to core.");
+                    if (IW.contains(player.uuid)) {
+                        Teams.TeamData teamData = state.teams.get(player.getTeam());
+                        CoreBlock.CoreEntity core = teamData.cores.first();
+                        core.items.add(Items.copper, 1000000);
+                        core.items.add(Items.lead, 1000000);
+                        core.items.add(Items.metaglass, 1000000);
+                        core.items.add(Items.graphite, 1000000);
+                        core.items.add(Items.titanium, 1000000);
+                        core.items.add(Items.thorium, 1000000);
+                        core.items.add(Items.silicon, 1000000);
+                        core.items.add(Items.plastanium, 1000000);
+                        core.items.add(Items.phasefabric, 1000000);
+                        core.items.add(Items.surgealloy, 1000000);
+                        Call.sendMessage("[scarlet]<Admin> [lightgray]" + player.name + " [white] has given 1mil resources to core.");
+                    } else {
+                        IW.add(player.uuid);
+                        player.sendMessage("This command will add 1mil items, use again to continue.");
+                    }
                     break;
 
                 case "team": //Changes Team of user
@@ -470,7 +528,7 @@ public class Main extends Plugin {
                         }
                         Player p = playerGroup.getByID(Integer.parseInt(pid));
                         if (p == null) {
-                            player.sendMessage("[salmon]GPI[white]: Could not find player ID '[lightgray]" + arg[1] + "[white]'.");
+                            player.sendMessage("[salmon]GPI[white]: Could not find player ID '[lightgray]" + pid + "[white]'.");
                             return;
                         }
                         String reason = "[white]Connection Closed.";
@@ -535,7 +593,7 @@ public class Main extends Plugin {
                             string = arg[1] + " " + arg[2];
                         }
                         String finalString = string;
-                        playerGroup.all().each(p -> p.isAdmin, o -> o.sendMessage(finalString, player, "[salmon]AC[white]: " + NetClient.colorizeName(player.id, player.name)));
+                        playerGroup.all().each(p -> p.isAdmin, o -> o.sendMessage(finalString, player, "[salmon]<AC>[white] " + NetClient.colorizeName(player.id, player.name)));
                     } else {
                         player.sendMessage("");
                     }
