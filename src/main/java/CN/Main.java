@@ -431,15 +431,21 @@ public class Main extends Plugin {
                             }
                             Player p = playerGroup.getByID(Integer.parseInt(pid));
                             if (p == null) {
-                                player.sendMessage("[salmon]GPI[white]: Could not find player ID `" + arg[2] + "`.");
+                                player.sendMessage("[salmon]GPI[white]: Could not find player ID `" + pid + "`.");
                                 return;
                             }
                             p.getInfo().timesKicked = 0;
                             player.sendMessage("[salmon]RPK[white]: Times kicked set to zero for player " + p.getInfo().lastName);
+                            Log.info("<Admin> " + player.name + " has reset times kicked for " + p.name + " ID " + pid);
                             return;
                         } else if (arg[1].equals("uuid")) {
-                            netServer.admins.getInfo(arg[2]).timesKicked = 0;
-                            player.sendMessage("[salmon]RPK[white]: Times Kicked set to zero for player uuid [lightgray]" + arg[2]);
+                            if (netServer.admins.getInfo(arg[2]).timesKicked > 0) {
+                                netServer.admins.getInfo(arg[2]).timesKicked = 0;
+                                player.sendMessage("[salmon]RPK[white]: Times Kicked set to zero for player uuid [lightgray]" + arg[2]);
+                                Log.info("<Admin> " + player.name + " has reset times kicked for " + netServer.admins.getInfo(arg[2]).lastName + " UUID " + arg[2]);
+                            } else {
+                                player.sendMessage("Player UUID `" + arg[2] + "` not found or kicks = 0");
+                            }
                         } else {
                             player.sendMessage("[salmon]RPK[white]: Use arguments id or uuid.");
                         }
@@ -521,13 +527,13 @@ public class Main extends Plugin {
                 case "ac":
                     if (arg.length > 1) {
                         String string = null;
+                        string = arg[1];
                         if (arg.length > 2) {
                             if (arg.length > 3) {
-                                                string = arg[1] + " " + arg[2] + " " + arg[3];
+                                string = arg[1] + " " + arg[2] + " " + arg[3];
                             }
                             string = arg[1] + " " + arg[2];
                         }
-                            string = arg[1];
                         String finalString = string;
                         playerGroup.all().each(p -> p.isAdmin, o -> o.sendMessage(finalString, player, "[salmon]AC[white]: " + NetClient.colorizeName(player.id, player.name)));
                     } else {
