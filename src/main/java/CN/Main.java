@@ -46,7 +46,7 @@ public class Main extends Plugin {
                 if (player.getInfo().timesKicked > (player.getInfo().timesJoined / 5)) {
                     String playerID = player.getInfo().id;
                     netServer.admins.banPlayer(playerID);
-                    Log.info("[B] Banned " + playerID + " for 2*(Kick) > (join)");
+                    Log.info("[B] Banned " + playerID + " for (Kick) > (join)/5");
                     player.con.kick("Banned for being kicked most of the time. If you want to appeal, give the previous as reason.");
                 } else if (player.getInfo().timesKicked > 15) {
                     String playerID = player.getInfo().id;
