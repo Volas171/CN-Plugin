@@ -30,10 +30,12 @@ import static mindustry.Vars.*;
 public class Main extends Plugin {
     public static Array<String> GOW = new Array<>();
     public static Array<String> IW = new Array<>();
+    public static HashMap<String, String> buffList = new HashMap<>();
 
     private boolean summonEnable = true;
     private boolean reaperEnable = true;
     private boolean lichEnable = true;
+    private boolean buffEnable = true;
     private String mba = "[white]You must be [scarlet]<Admin> [white]to use this command.";
     private boolean autoBan = true;
 
@@ -61,6 +63,7 @@ public class Main extends Plugin {
         Events.on(EventType.WorldLoadEvent.class, event -> {
             IW.clear();
             GOW.clear();
+            buffList.clear();
         });
 
     }
@@ -344,6 +347,104 @@ public class Main extends Plugin {
             player.sendMessage(builder.toString());
         });
 
+        handler.<Player>register("buff","[I/O]", "Buffs player.", (arg, player) -> {
+            if (arg.length == 1) {
+                if (player.isAdmin) {
+                    if (arg[0].equals("on")) {
+                        buffEnable = true;
+                        player.sendMessage("Buff turned [lightgray]on[white].");
+                    } else if (arg[0].equals("off")) {
+                        buffEnable = false;
+                        player.sendMessage("Buff turned [lightgray]off[white].");
+                    } else {
+                        player.sendMessage("Arg must be on or off");
+                    }
+                } else {
+                    player.sendMessage(mba);
+                }
+                return;
+            }
+            if (!buffEnable) {
+                player.sendMessage("Buff is disabled.");
+                return;
+            }
+            boolean buff = false;
+            if (buffList.containsKey(player.uuid)) {
+                if (buffList.get(player.uuid).equals(player.mech.name)) {
+                    player.sendMessage("As you [scarlet]OverDrive[white], a anomaly causes all primary systems to fail.");
+                    player.dead = true;
+                    buff = false;
+                } else {
+                    buffList.remove(player.uuid);
+                    buffList.put(player.uuid,player.mech.name);
+                    buff = true;
+                }
+            } else {
+                buffList.put(player.uuid,player.mech.name);
+                buff = true;
+            }
+
+            if (buff) {
+
+                switch (player.mech.name) {
+                    case "alpha-mech":
+                        player.mech.health = 350f;
+                        player.mech.buildPower = 1.75f;
+                        player.mech.speed = 0.75f;
+                        player.mech.weapon.bullet.damage = 12.0f;
+                        player.sendMessage("[lightgray]///-\\\\\\SYSTEM///-\\\\\\" + "\n-- MECH:      ALPHA -----" + "\n-- HEALTH: 250 -> 350 -" + "\n-- BUILD:     1.2 -> 1.75  ---" + "\n-- SPEED:    0.5 -> 0.75  -" + "\n-- DAMAGE: 9.0 -> 12.0  -" + "\n\\\\\\-///=========\\\\\\-///");
+                        break;
+                    case "delta-mech":
+                        player.mech.health = 275f;
+                        player.mech.buildPower = 1.35f;
+                        player.mech.speed = 1.0f;
+                        player.mech.weapon.bullet.damage = 15.0f;
+                        player.sendMessage("[lightgray]///-\\\\\\SYSTEM///-\\\\\\" + "\n-- MECH:      DELTA -----" + "\n-- HEALTH: 150 -> 275   -" + "\n-- BUILD:     0.9 -> 1.35    -" + "\n-- SPEED:    0.75 -> 1.0   -" + "\n-- DAMAGE: 12.0 -> 15.0 -" + "\n\\\\\\-///=========\\\\\\-///");
+                        break;
+                    case "tau-mech":
+                        player.mech.health = 325;
+                        player.mech.buildPower = 2.25f;
+                        player.mech.speed = 0.75f;
+                        player.mech.weapon.bullet.damage = 15.0f;
+                        player.sendMessage("[lightgray]///-\\\\\\SYSTEM///-\\\\\\" + "\n-- MECH:      TAU --------" + "\n-- HEALTH: 200 -> 325 -" + "\n-- BUILD:     1.6 -> 2.25   --" + "\n-- SPEED:    0.4 -> 0.75  -" + "\n-- DAMAGE: 13.0 -> 15.0 -" + "\n\\\\\\-///=========\\\\\\-///");
+                        break;
+                    case "omega-mech":
+                        player.mech.health = 425f;
+                        player.mech.buildPower = 1.75f;
+                        player.mech.speed = 0.65f;
+                        player.mech.weapon.bullet.damage = 15.0f;
+                        player.sendMessage("[lightgray]///-\\\\\\SYSTEM///-\\\\\\" + "\n-- MECH:      OMEGA -----" + "\n-- HEALTH: 350 -> 425 -" + "\n-- BUILD:     1.5 -> 1.75  ---" + "\n-- SPEED:    0.4 -> 0.65  -" + "\n-- DAMAGE: 12.0 -> 15.0 -" + "\n\\\\\\-///=========\\\\\\-///");
+                        break;
+                    case "dart-ship":
+                        player.mech.health = 325f;
+                        player.mech.buildPower = 1.85f;
+                        player.mech.speed = 0.85f;
+                        player.mech.weapon.bullet.damage = 12.0f;
+                        player.sendMessage("[lightgray]///-\\\\\\SYSTEM///-\\\\\\" + "\n-- MECH:      DART  ------" + "\n-- HEALTH: 200 -> 325 -" + "\n-- BUILD:     1.1 -> 1.85 ----" + "\n-- SPEED:    0.5 -> 0.85 -" + "\n-- DAMAGE: 9.0 -> 12.0  -" + "\n\\\\\\-///=========\\\\\\-///");
+                        break;
+                    case "javelin-ship":
+                        player.mech.health = 250f;
+                        player.mech.buildPower = 1.5f;
+                        player.mech.speed = 0.15f;
+                        player.mech.weapon.bullet.damage = 13.0f;
+                        player.sendMessage("[lightgray]///-\\\\\\SYSTEM///-\\\\\\" + "\n-- MECH:      JAVELIN ---" + "\n-- HEALTH: 170 -> 250 -" + "\n-- BUILD:     1 -> 1.5    ----" + "\n-- SPEED:    0.11 -> 0.15  -" + "\n-- DAMAGE: 10.5 -> 13.0 -" + "\n\\\\\\-///=========\\\\\\-///");
+                        break;
+                    case "trident-ship":
+                        player.mech.health = 350f;
+                        player.mech.buildPower = 2.5f;
+                        player.mech.speed = 0.25f;
+                        player.sendMessage("[lightgray]///-\\\\\\SYSTEM///-\\\\\\" + "\n-- MECH:      TRIDENT  ---" + "\n-- HEALTH: 250 -> 350 -" + "\n-- BUILD:     1.75 -> 2.5 ---" + "\n-- SPEED:    0.15 -> 0.25 -" + "\n\\\\\\-///=========\\\\\\-///");
+                        break;
+                    case "glaive-ship":
+                        player.mech.health = 325f;
+                        player.mech.buildPower = 1.75f;
+                        player.mech.speed = 0.65f;
+                        player.mech.weapon.bullet.damage = 10f;
+                        player.sendMessage("[lightgray]///-\\\\\\SYSTEM///-\\\\\\" + "\n-- MECH:      GLAIVE -----" + "\n-- HEALTH: 250 -> 350 -" + "\n-- BUILD:     1.2 -> 1.65  ---" + "\n-- SPEED:    0.3 -> 0.65  -" + "\n-- DAMAGE: 7.5 -> 10.0   -" + "\n\\\\\\-///=========\\\\\\-///");
+                        break;
+                }
+            }
+        });
         //-----ADMINS-----//
 
         handler.<Player>register("a","<Info> [1] [2] [3...]", "[scarlet]<Admin> [lightgray]- Admin commands", (arg, player) -> {
@@ -610,7 +711,7 @@ public class Main extends Plugin {
                     break;
 
                 case "test": //test commands;
-                    Call.onInfoToast(player.con,"Info Toast",10);
+                    player.sendMessage(player.mech.name);
                     break;
 
                 case "info": //all commands
