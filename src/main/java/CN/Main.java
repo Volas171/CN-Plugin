@@ -16,6 +16,7 @@ import mindustry.game.Teams;
 import mindustry.gen.Call;
 import mindustry.net.Administration;
 import mindustry.plugin.Plugin;
+import mindustry.type.UnitType;
 import mindustry.world.blocks.storage.CoreBlock;
 import mindustry.content.Items;
 import mindustry.content.UnitTypes;
@@ -246,44 +247,53 @@ public class Main extends Plugin {
             String playerTeam = player.getTeam().name;
             switch (playerTeam) {
                 case "sharded":
-                    playerTeam = "[accent] " + playerTeam;
+                    playerTeam = "[accent]" + playerTeam;
                     break;
                 case "crux":
-                    playerTeam = "[scarlet] " + playerTeam;
+                    playerTeam = "[scarlet]" + playerTeam;
                     break;
                 case "blue":
-                    playerTeam = "[royal] " + playerTeam;
+                    playerTeam = "[royal]" + playerTeam;
                     break;
                 case "derelict":
-                    playerTeam = "[gray] " + playerTeam;
+                    playerTeam = "[gray]" + playerTeam;
                     break;
                 case "green":
-                    playerTeam = "[lime] " + playerTeam;
+                    playerTeam = "[lime]" + playerTeam;
                     break;
                 case "purple":
-                    playerTeam = "[purple] " + playerTeam;
+                    playerTeam = "[purple]" + playerTeam;
                     break;
             }
             //
-            int Draug = 0;
-            int Spirit = 0;
-            int Phantom = 0;
-            int Dagger = 0;
-            int Crawler = 0;
-            int Titan = 0;
-            int Fortress = 0;
-            int Wraith = 0;
-            int Ghoul = 0;;
-            int Revenant = 0;
-            int Lich = 0;
-            int Reaper = 0;
+            int draug = 0;
+            int spirit = 0;
+            int phantom = 0;
+            int dagger = 0;
+            int crawler = 0;
+            int titan = 0;
+            int fortress = 0;
+            int wraith = 0;
+            int ghoul = 0;;
+            int revenant = 0;
+            int lich = 0;
+            int reaper = 0;
             int All = 0;
             //
             for (Unit u : unitGroup.all()) {
                 if(u.getTeam() == player.getTeam()) {
-                    if (true) {
-
-                    }
+                    if (u.getTypeID().name.equals("draug")) draug = draug + 1;
+                    if (u.getTypeID().name.equals("spirit")) spirit = spirit + 1;
+                    if (u.getTypeID().name.equals("phantom")) phantom = phantom + 1;
+                    if (u.getTypeID().name.equals("dagger")) dagger = dagger + 1;
+                    if (u.getTypeID().name.equals("crawler")) crawler = crawler + 1;
+                    if (u.getTypeID().name.equals("titan")) titan = titan + 1;
+                    if (u.getTypeID().name.equals("fortress")) fortress = fortress + 1;
+                    if (u.getTypeID().name.equals("wraith")) wraith = wraith + 1;
+                    if (u.getTypeID().name.equals("ghoul")) ghoul = ghoul + 1;
+                    if (u.getTypeID().name.equals("revenant")) revenant = revenant + 1;
+                    if (u.getTypeID().name.equals("lich")) lich = lich + 1;
+                    if (u.getTypeID().name.equals("reaper")) reaper = reaper + 1;
                     All = All + 1;
                 }
             }
@@ -302,18 +312,18 @@ public class Main extends Plugin {
                             "\n[white]" + core.items.get(Items.phasefabric) +   " \uF82D [#f4ba6e]phase fabric" +
                             "\n[white]" + core.items.get(Items.surgealloy) +    " \uF82C [#f3e979]surge alloy" +
                         "\n\n[accent]Team Units: [white]" +
-                            "\nDraug Miner Drone: " + Draug +
-                            "\nSpirit Repair Drone: " + Spirit +
-                            "\nPhantom Builder Drone: " + Phantom +
-                            "\n Dagger: " + Dagger +
-                            "\nCrawlers: " + Crawler +
-                            "\nTitan: " + Titan +
-                            "\nFortress: " + Fortress +
-                            "\nWraith Fighter: " + Wraith +
-                            "\nGhoul Bomber: " + Ghoul +
-                            "\nRevenant: " + Revenant +
-                            "\nLich: " + Lich +
-                            "\nReaper: " + Reaper +
+                            "\nDraug Miner Drone: " + draug +
+                            "\nSpirit Repair Drone: " + spirit +
+                            "\nPhantom Builder Drone: " + phantom +
+                            "\n Dagger: " + dagger +
+                            "\nCrawlers: " + crawler +
+                            "\nTitan: " + titan +
+                            "\nFortress: " + fortress +
+                            "\nWraith Fighter: " + wraith +
+                            "\nGhoul Bomber: " + ghoul +
+                            "\nRevenant: " + revenant +
+                            "\nLich: " + lich +
+                            "\nReaper: " + reaper +
                             "\nTotal: " + All +
                             "\n");
         });
@@ -321,7 +331,7 @@ public class Main extends Plugin {
         handler.<Player>register("players", "List of people and ID.", (args, player) -> {
             StringBuilder builder = new StringBuilder();
             builder.append("[accent]List of players: \n");
-            for (Player p : Vars.playerGroup.all()) {
+            for (Player p : playerGroup.all()) {
                 String name = p.name;
                 if(p.isAdmin) {
                     builder.append("[white]>>> \uE828 [lightgray]");
@@ -361,7 +371,7 @@ public class Main extends Plugin {
                         Log.info(player.name + " has ended the game.");
                     } else {
                         GOW.add(player.uuid);
-                        player.sendMessage("This command will trigger a game over, use again to continue.");
+                        player.sendMessage("This command will trigger a [gold]game over[white], use again to continue.");
                     }
                     break;
 
@@ -379,10 +389,10 @@ public class Main extends Plugin {
                         core.items.add(Items.plastanium, 1000000);
                         core.items.add(Items.phasefabric, 1000000);
                         core.items.add(Items.surgealloy, 1000000);
-                        Call.sendMessage("[scarlet]<Admin> [lightgray]" + player.name + " [white] has given 1mil resources to core.");
+                        Call.sendMessage("[scarlet]<Admin> [lightgray]" + player.name + " [white] has given 1 mil resources to core.");
                     } else {
                         IW.add(player.uuid);
-                        player.sendMessage("This command will add 1mil items, use again to continue.");
+                        player.sendMessage("This command will add 1 mil items, use again to continue.");
                     }
                     break;
 
