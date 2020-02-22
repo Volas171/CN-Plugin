@@ -480,17 +480,17 @@ public class Main extends Plugin {
                     if (IW.contains(player.uuid)) {
                         Teams.TeamData teamData = state.teams.get(player.getTeam());
                         CoreBlock.CoreEntity core = teamData.cores.first();
-                        core.items.add(Items.copper, 1000000);
-                        core.items.add(Items.lead, 1000000);
-                        core.items.add(Items.metaglass, 1000000);
-                        core.items.add(Items.graphite, 1000000);
-                        core.items.add(Items.titanium, 1000000);
-                        core.items.add(Items.thorium, 1000000);
-                        core.items.add(Items.silicon, 1000000);
-                        core.items.add(Items.plastanium, 1000000);
-                        core.items.add(Items.phasefabric, 1000000);
-                        core.items.add(Items.surgealloy, 1000000);
-                        Call.sendMessage("[scarlet]<Admin> [lightgray]" + player.name + " [white] has given 1 mil resources to core.");
+                        core.items.add(Items.copper, 100000000);
+                        core.items.add(Items.lead, 100000000);
+                        core.items.add(Items.metaglass, 100000000);
+                        core.items.add(Items.graphite, 100000000);
+                        core.items.add(Items.titanium, 100000000);
+                        core.items.add(Items.thorium, 100000000);
+                        core.items.add(Items.silicon, 100000000);
+                        core.items.add(Items.plastanium, 100000000);
+                        core.items.add(Items.phasefabric, 100000000);
+                        core.items.add(Items.surgealloy, 100000000);
+                        Call.sendMessage("[scarlet]<Admin> [lightgray]" + player.name + " [white] has given 100 mil resources to core.");
                     } else {
                         IW.add(player.uuid);
                         player.sendMessage("This command will add 1 mil items, use again to continue.");
@@ -718,7 +718,7 @@ public class Main extends Plugin {
                     player.sendMessage("\tAvailable Commands:" +
                             "\nuap              - Un Admins Player, [uud]" +
                             "\ngameover         - Triggers game over." +
-                            "\ninf              - Gives 1mil of every resource to core." +
+                            "\ninf              - Gives 100mil of every resource to core." +
                             "\nteam             - Changes team, team" +
                             "\ngpi              - Gets Player Info, ID/UUID - ###" +
                             "\npardon           - Un-Bans a player, UUID" +
