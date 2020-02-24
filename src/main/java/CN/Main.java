@@ -445,6 +445,19 @@ public class Main extends Plugin {
                 }
             }
         });
+
+        handler.<Player>register("myinfo","Shows player info", (args, player) -> {
+            String name = player.name;
+            String rname;
+            rname = name.replaceAll("\\[", "[[");
+            player.sendMessage("Name: " + name +
+                    "\nName Raw: " + rname +
+                    "\nTimes Joined: " + player.getInfo().timesJoined +
+                    "\nTimes Kicked: " + player.getInfo().timesKicked +
+                    "\nCurrent ID: " + player.id +
+                    "\nCurrent IP: " + player.getInfo().lastIP +
+                    "\nUUID: " + player.uuid);
+        });
         //-----ADMINS-----//
 
         handler.<Player>register("a","<Info> [1] [2] [3...]", "[scarlet]<Admin> [lightgray]- Admin commands", (arg, player) -> {
@@ -644,7 +657,7 @@ public class Main extends Plugin {
                         }
                         String reason = "[white]Connection Closed.";
                         if (arg.length > 3) {
-                            reason = arg[2] + arg[3];
+                            reason = arg[2] +" "+ arg[3];
                         } else if (arg.length > 2) {
                             reason = arg[2];
                         }
@@ -711,7 +724,6 @@ public class Main extends Plugin {
                     break;
 
                 case "test": //test commands;
-                    player.sendMessage(player.mech.name);
                     break;
 
                 case "info": //all commands
