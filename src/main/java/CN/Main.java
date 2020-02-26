@@ -1,6 +1,7 @@
 package CN;
 
 //-----imports-----//
+import arc.Core;
 import arc.Events;
 import arc.struct.Array;
 import arc.util.CommandHandler;
@@ -16,13 +17,17 @@ import mindustry.game.Teams;
 import mindustry.gen.Call;
 import mindustry.net.Administration;
 import mindustry.plugin.Plugin;
+import mindustry.plugin.*;
 import mindustry.type.UnitType;
 import mindustry.world.blocks.storage.CoreBlock;
 import mindustry.content.Items;
 import mindustry.content.UnitTypes;
 import mindustry.entities.type.BaseUnit;
 
+import java.awt.*;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import static mindustry.Vars.*;
 
@@ -46,18 +51,19 @@ public class Main extends Plugin {
                 if (player.getInfo().timesKicked > (player.getInfo().timesJoined / 5)) {
                     String playerID = player.getInfo().id;
                     netServer.admins.banPlayer(playerID);
-                    Log.info("[B] Banned " + playerID + " for (Kick) > (join)/5");
+                    Log.info("[B] Banned \"{0}\" for (Kick) > (join)/5",playerID);
                     player.con.kick("Banned for being kicked most of the time. If you want to appeal, give the previous as reason.");
                 } else if (player.getInfo().timesKicked > 15) {
                     String playerID = player.getInfo().id;
                     netServer.admins.banPlayer(playerID);
-                    Log.info("[B] Banned " + playerID + " for Kick > 15.");
+                    Log.info("[B] Banned \"{0}\" for Kick > 15.", playerID);
                     player.con.kick("Banned for being kicked than 15. If you want to appeal, give the previous as reason.");
                 }
             }
             if(player.getInfo().timesKicked == 10) {
                 Call.onInfoMessage(player.con,"You've been kicked 10 times, 15 kicks and you're banned.");
             }
+
         });
 
         Events.on(EventType.WorldLoadEvent.class, event -> {
@@ -66,19 +72,26 @@ public class Main extends Plugin {
             buffList.clear();
         });
 
+        Events.on(EventType.WaveEvent.class, event -> {
+            for (Player p : playerGroup.all()) {
+                Call.onWorldDataBegin(p.con);
+                netServer.sendWorldData(p);
+                Call.onInfoToast(p.con,"Auto Sync compleyed.",5);
+                try {
+                    TimeUnit.SECONDS.sleep(1);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 
     @Override
     public void registerClientCommands(CommandHandler handler) {
         //-----USERS-----//
 ;
-        //ping the pong
-        handler.<Player>register("ping", "Pings the server", (args, player) -> {
-            player.sendMessage("Got Ping!");
-        });
-
         //Summons Entities
-        handler.<Player>register("summon","[unit] [Info]", "Summons a [royal]Unit [lightgray]at a cost. do /reaper info", (arg, player) -> {
+        handler.<Player>register("summon","[unit] [Info]", "Summons a [royal]Unit [lightgray]at a cost. do /summon reaper info", (arg, player) -> {
             String unit = "none";
             //decider section
             if (arg.length != 0) {
@@ -239,7 +252,7 @@ public class Main extends Plugin {
                 player.sendMessage("[salmon]Summon[white]: [salmon]Summon[white] is disabled.");
             }
         });
-
+        //Shows team info
         handler.<Player>register("myteam","[Info]", "Gives team info", (arg, player) -> {
             Teams.TeamData teamData = state.teams.get(player.getTeam());
             CoreBlock.CoreEntity core = teamData.cores.first();
@@ -330,7 +343,7 @@ public class Main extends Plugin {
                             "\nTotal: " + All +
                             "\n");
         });
-
+        //Lists players and their respective id's
         handler.<Player>register("players", "List of people and ID.", (args, player) -> {
             StringBuilder builder = new StringBuilder();
             builder.append("[accent]List of players: \n");
@@ -346,7 +359,7 @@ public class Main extends Plugin {
             }
             player.sendMessage(builder.toString());
         });
-
+        //Buffs all players. TODO: Make it only affect one player.
         handler.<Player>register("buff","[I/O]", "Buffs player.", (arg, player) -> {
             if (arg.length == 1) {
                 if (player.isAdmin) {
@@ -445,7 +458,7 @@ public class Main extends Plugin {
                 }
             }
         });
-
+        //Shows player info.
         handler.<Player>register("myinfo","Shows player info", (args, player) -> {
             String name = player.name;
             String rname;
@@ -589,6 +602,7 @@ public class Main extends Plugin {
                     if (arg.length > 1) {
                         if (arg.length > 2 && arg[2].equals("kick")) {
                             netServer.admins.getInfo(arg[1]).timesKicked = 0;
+                            netServer.admins.getInfo(arg[1]).timesJoined = 0;
                             player.sendMessage("[salmon]pardon[white]: Set `times kicked` to 0 for UUID " + arg[1] + ".");
                         }
                         if (netServer.admins.isIDBanned(arg[1])) {
@@ -617,6 +631,7 @@ public class Main extends Plugin {
                                 return;
                             }
                             p.getInfo().timesKicked = 0;
+                            p.getInfo().timesJoined = 0;
                             player.sendMessage("[salmon]RPK[white]: Times kicked set to zero for player " + p.getInfo().lastName);
                             Log.info("<Admin> " + player.name + " has reset times kicked for " + p.name + " ID " + pid);
                             return;
@@ -687,10 +702,7 @@ public class Main extends Plugin {
                         if (arg.length < 3) return;
                         String x2= arg[1].replaceAll("[^0-9]", "");
                         String y2= arg[2].replaceAll("[^0-9]", "");
-                        if (x2.equals("")) {
-                            player.sendMessage("[salmon]TP[white]: Coordinates must contain numbers!");
-                            return;
-                        } else if (y2.equals("")) {
+                        if (x2.equals("") || y2.equals("")) {
                             player.sendMessage("[salmon]TP[white]: Coordinates must contain numbers!");
                             return;
                         }
@@ -722,7 +734,6 @@ public class Main extends Plugin {
                         player.sendMessage("");
                     }
                     break;
-
                 case "test": //test commands;
                     break;
 
@@ -756,5 +767,6 @@ public class Main extends Plugin {
             }
         });
     }
+
 }
 
