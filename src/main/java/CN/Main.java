@@ -51,12 +51,12 @@ public class Main extends Plugin {
                 if (player.getInfo().timesKicked > (player.getInfo().timesJoined / 5)) {
                     String playerID = player.getInfo().id;
                     netServer.admins.banPlayer(playerID);
-                    Log.info("[B] Banned \"{0}\" for (Kick) > (join)/5",playerID);
+                    Log.info("[B] Banned \"{0}\" [{1}] for (Kick) > (join)/5", player.name, playerID);
                     player.con.kick("Banned for being kicked most of the time. If you want to appeal, give the previous as reason.");
                 } else if (player.getInfo().timesKicked > 15) {
                     String playerID = player.getInfo().id;
                     netServer.admins.banPlayer(playerID);
-                    Log.info("[B] Banned \"{0}\" for Kick > 15.", playerID);
+                    Log.info("[B] Banned \"{0}\" [{1}] for Kick > 15.", player.name, playerID);
                     player.con.kick("Banned for being kicked than 15. If you want to appeal, give the previous as reason.");
                 }
             }
@@ -469,6 +469,20 @@ public class Main extends Plugin {
                     "\nCurrent IP: " + player.getInfo().lastIP +
                     "\nUUID: " + player.uuid);
         });
+        //Shows info.
+        handler.<Player>register("info","Shows the player info.", (args, player) -> {
+            player.sendMessage("INFO:" +
+                    "\n//About Us:" +
+                    "\nChaotic neutral is a Mindustry server located in East US." +
+                    "\nWe host 3 servers, 1111 survival, 2222 sandbox and a secret test server." +
+                    "\nWe have a discord server, join us through website cn-discord.ddns.net or using discord code xQ6gGfQ" +
+                    "\n\n//Game tricks:" +
+                    "\n1) Pressing 9 will show arrows to upgrade pads." +
+                    "\n2) to use colors in chat, you can type something like" +
+                    "\n[[red]this is red text" +
+                    "\n3) Different mechs build at different speeds, Trident builds the fastest.");
+        });
+
         //-----ADMINS-----//
 
         handler.<Player>register("a","<Info> [1] [2] [3...]", "[scarlet]<Admin> [lightgray]- Admin commands", (arg, player) -> {
