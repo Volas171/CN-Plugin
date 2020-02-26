@@ -74,20 +74,30 @@ public class Main extends Plugin {
             if(state.rules.infiniteResources) {
                 state.wave=2222;
             }
+
+            Thread AS = new Thread() {
+                public void run() {
+                    for (Player p : playerGroup.all()) {
+                        Call.onWorldDataBegin(p.con);
+                        netServer.sendWorldData(p);
+                        Call.onInfoToast(p.con,"Auto Sync completed.",5);
+                        try {
+                            TimeUnit.SECONDS.sleep(1);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    try {
+                        TimeUnit.SECONDS.sleep(3 * 60);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            };
+            AS.start();
         });
 
         Events.on(EventType.WaveEvent.class, event -> {
-            //auto sync
-            for (Player p : playerGroup.all()) {
-                Call.onWorldDataBegin(p.con);
-                netServer.sendWorldData(p);
-                Call.onInfoToast(p.con,"Auto Sync completed.",5);
-                try {
-                    TimeUnit.SECONDS.sleep(1);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
             //Sandbox
             if(state.rules.infiniteResources && state.wave!=2222) state.wave=2222;
         });
@@ -511,23 +521,35 @@ public class Main extends Plugin {
 
                 case "inf": //Infinite resources, kinda.
                     if (IW.contains(player.uuid)) {
-                        Teams.TeamData teamData = state.teams.get(player.getTeam());
-                        CoreBlock.CoreEntity core = teamData.cores.first();
-                        core.items.add(Items.copper, 100000000);
-                        core.items.add(Items.lead, 100000000);
-                        core.items.add(Items.metaglass, 100000000);
-                        core.items.add(Items.graphite, 100000000);
-                        core.items.add(Items.titanium, 100000000);
-                        core.items.add(Items.thorium, 100000000);
-                        core.items.add(Items.silicon, 100000000);
-                        core.items.add(Items.plastanium, 100000000);
-                        core.items.add(Items.phasefabric, 100000000);
-                        core.items.add(Items.surgealloy, 100000000);
-                        Call.sendMessage("[scarlet]<Admin> [lightgray]" + player.name + " [white] has given 100 mil resources to core.");
+                        if (arg[1].contains("on")) {
+                            state.rules.infiniteResources = true;
+                            Call.sendMessage("[scarlet]<Admin> [lightgray]" + player.name + " [white] has [lime]Enabled [white]resources to core.");
+                        } else if (arg[1].contains("off")) {
+                            state.rules.infiniteResources = false;
+                            Call.sendMessage("[scarlet]<Admin> [lightgray]" + player.name + " [white] has [lime]Disabled [white]resources to core.");
+                        } else {
+                            player.sendMessage("Turn Infinite Items [lightgray]on [white]or [lightgray]off[white].");
+                        }
                     } else {
                         IW.add(player.uuid);
                         player.sendMessage("This command will add 1 mil items, use again to continue.");
                     }
+                    break;
+
+                case "10k":
+                    Teams.TeamData teamData = state.teams.get(player.getTeam());
+                    CoreBlock.CoreEntity core = teamData.cores.first();
+                    core.items.add(Items.copper, 10000);
+                    core.items.add(Items.lead, 10000);
+                    core.items.add(Items.metaglass, 10000);
+                    core.items.add(Items.graphite, 10000);
+                    core.items.add(Items.titanium, 10000);
+                    core.items.add(Items.thorium, 10000);
+                    core.items.add(Items.silicon, 10000);
+                    core.items.add(Items.plastanium, 10000);
+                    core.items.add(Items.phasefabric, 10000);
+                    core.items.add(Items.surgealloy, 10000);
+                    Call.sendMessage("[scarlet]<Admin> [lightgray]" + player.name + " [white] has given 10k resources to core.");
                     break;
 
                 case "team": //Changes Team of user
@@ -683,7 +705,7 @@ public class Main extends Plugin {
                         } else if (arg.length > 2) {
                             reason = arg[2];
                         }
-                        p.getInfo().timesKicked =  p.getInfo().timesKicked - 1;
+                        p.getInfo().timesKicked--;
                         p.con.kick(reason, 1);
                     } else {
                         player.sendMessage("[salmon]PCC[white]: Player Connection Closed, use ID, not UUID, to close a players connection.");
@@ -741,6 +763,8 @@ public class Main extends Plugin {
                         player.sendMessage("");
                     }
                     break;
+                case "summon":
+                    break;
                 case "test": //test commands;
                     break;
 
@@ -748,7 +772,8 @@ public class Main extends Plugin {
                     player.sendMessage("\tAvailable Commands:" +
                             "\nuap              - Un Admins Player, [uud]" +
                             "\ngameover         - Triggers game over." +
-                            "\ninf              - Gives 100mil of every resource to core." +
+                            "\ninf              - Infinite Items." +
+                            "\n10k              - Adds 10k of every resource to core." +
                             "\nteam             - Changes team, team" +
                             "\ngpi              - Gets Player Info, ID/UUID - ###" +
                             "\npardon           - Un-Bans a player, UUID" +
