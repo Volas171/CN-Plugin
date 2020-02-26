@@ -43,7 +43,7 @@ public class Main extends Plugin {
     private boolean buffEnable = true;
     private String mba = "[white]You must be [scarlet]<Admin> [white]to use this command.";
     private boolean autoBan = true;
-
+    private boolean sandbox = false;
     public Main() throws InterruptedException {
         Events.on(EventType.PlayerJoin.class, event -> {
             Player player = event.player;
@@ -70,36 +70,17 @@ public class Main extends Plugin {
             IW.clear();
             GOW.clear();
             buffList.clear();
+            sandbox = false;
 
             if(state.rules.infiniteResources) {
+                sandbox = true;
                 state.wave=2222;
             }
-
-            Thread AS = new Thread() {
-                public void run() {
-                    for (Player p : playerGroup.all()) {
-                        Call.onWorldDataBegin(p.con);
-                        netServer.sendWorldData(p);
-                        Call.onInfoToast(p.con,"Auto Sync completed.",5);
-                        try {
-                            TimeUnit.SECONDS.sleep(1);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    try {
-                        TimeUnit.SECONDS.sleep(3 * 60);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            };
-            AS.start();
         });
 
         Events.on(EventType.WaveEvent.class, event -> {
             //Sandbox
-            if(state.rules.infiniteResources && state.wave!=2222) state.wave=2222;
+            if(sandbox && state.wave!=2222) state.wave=2222;
         });
     }
 
