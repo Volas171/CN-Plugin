@@ -70,19 +70,26 @@ public class Main extends Plugin {
             IW.clear();
             GOW.clear();
             buffList.clear();
+
+            if(state.rules.infiniteResources) {
+                state.wave=2222;
+            }
         });
 
         Events.on(EventType.WaveEvent.class, event -> {
+            //auto sync
             for (Player p : playerGroup.all()) {
                 Call.onWorldDataBegin(p.con);
                 netServer.sendWorldData(p);
-                Call.onInfoToast(p.con,"Auto Sync compleyed.",5);
+                Call.onInfoToast(p.con,"Auto Sync completed.",5);
                 try {
                     TimeUnit.SECONDS.sleep(1);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
             }
+            //Sandbox
+            if(state.rules.infiniteResources && state.wave!=2222) state.wave=2222;
         });
     }
 
