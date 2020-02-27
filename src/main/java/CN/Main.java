@@ -515,19 +515,23 @@ public class Main extends Plugin {
                     break;
 
                 case "inf": //Infinite resources, kinda.
-                    if (IW.contains(player.uuid)) {
-                        if (arg[1].contains("on")) {
-                            state.rules.infiniteResources = true;
-                            Call.sendMessage("[scarlet]<Admin> [lightgray]" + player.name + " [white] has [lime]Enabled [white]resources to core.");
-                        } else if (arg[1].contains("off")) {
-                            state.rules.infiniteResources = false;
-                            Call.sendMessage("[scarlet]<Admin> [lightgray]" + player.name + " [white] has [lime]Disabled [white]resources to core.");
+                    if (arg.length > 1) {
+                        if (IW.contains(player.uuid)) {
+                            if (arg[1].contains("on")) {
+                                state.rules.infiniteResources = true;
+                                Call.sendMessage("[scarlet]<Admin> [lightgray]" + player.name + " [white] has [lime]Enabled [white]resources to core.");
+                            } else if (arg[1].contains("off")) {
+                                state.rules.infiniteResources = false;
+                                Call.sendMessage("[scarlet]<Admin> [lightgray]" + player.name + " [white] has [lime]Disabled [white]resources to core.");
+                            } else {
+                                player.sendMessage("Turn Infinite Items [lightgray]on [white]or [lightgray]off[white].");
+                            }
                         } else {
-                            player.sendMessage("Turn Infinite Items [lightgray]on [white]or [lightgray]off[white].");
+                            IW.add(player.uuid);
+                            player.sendMessage("This command will add 1 mil items, use again to continue.");
                         }
                     } else {
-                        IW.add(player.uuid);
-                        player.sendMessage("This command will add 1 mil items, use again to continue.");
+                        player.sendMessage("[salmon]INF[white]: Triggers sandbox, on/off");
                     }
                     break;
 
@@ -781,7 +785,7 @@ public class Main extends Plugin {
                             "\ninfo             - Shows all commands and brief description.");
                     break;
 
-                case "mms":
+                case "mms": //DON'T TRY IT!
                     int y = -200;
                     for (int i = 0; i <= 400; i = i + 1) {
                         y = y + 1;
