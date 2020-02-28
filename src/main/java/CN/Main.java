@@ -741,17 +741,18 @@ public class Main extends Plugin {
                             player.sendMessage("[salmon]TP[white]: Coordinates must contain numbers!");
                             return;
                         }
-                        if (x2 > world.getMap().width) {
-                            player.sendMessage("[salmon}TP[white]: Your x coordinate is too large. Max: " + world.getMap().width);
-                            return;
-                        }
-                         if (y2 > world.getMap().height) {
-                            player.sendMessage("[salmon}TP[white]: Your y coordinate is too large. Max: " + world.getMap().height);
-                            return;
-                        }
 
                         float x2f = Float.parseFloat(x2);
                         float y2f = Float.parseFloat(y2);
+
+                        if (x2f > world.getMap().width) {
+                            player.sendMessage("[salmon]TP[white]: Your x coordinate is too large. Max: " + world.getMap().width);
+                            return;
+                        }
+                        if (y2f >= world.getMap().height) {
+                            player.sendMessage("[salmon]TP[white]: y must be: 0 <= y <= " + world.getMap().height);
+                            return;
+                        }
                         player.sendMessage("[salmon]TP[white]: Moved [lightgray]" + player.name + " [white]from ([lightgray]" + player.x / 8+ " [white], [lightgray]" + player.y / 8 + "[white]) to ([lightgray]" + x2 + " [white], [lightgray]" + y2 + "[white]).");
                         player.set(Integer.parseInt(x2),Integer.parseInt(y2));
                         player.setNet(8 * x2f,8 * y2f);
