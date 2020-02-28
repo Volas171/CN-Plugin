@@ -716,6 +716,14 @@ public class Main extends Plugin {
                             player.sendMessage("[salmon]TP[white]: Coordinates must contain numbers!");
                             return;
                         }
+                        if (x2 > world.getMap().width) {
+                            player.sendMessage("[salmon}TP[white]: Your x coordinate is too large. Max: " + world.getMap().width);
+                            return;
+                        }
+                         if (y2 > world.getMap().height) {
+                            player.sendMessage("[salmon}TP[white]: Your y coordinate is too large. Max: " + world.getMap().height);
+                            return;
+                        }
 
                         float x2f = Float.parseFloat(x2);
                         float y2f = Float.parseFloat(y2);
