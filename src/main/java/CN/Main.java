@@ -40,6 +40,7 @@ public class Main extends Plugin {
     private boolean summonEnable = true;
     private boolean reaperEnable = true;
     private boolean lichEnable = true;
+    private boolean eradicatorEnable = true;
     private boolean buffEnable = true;
     private String mba = "[white]You must be [scarlet]<Admin> [white]to use this command.";
     private boolean autoBan = true;
@@ -150,7 +151,16 @@ public class Main extends Plugin {
                                         break;
                                 }
                             } else if (arg[1].equals("info")){
-                                Call.onInfoMessage(player.con,"[accent]Resources needed[white]:\n3.5k \uF838 [#d99d73]copper\n[white]3.5k \uF837 [#8c7fa9]lead\n[white]2k \uF836 [#ebeef5]metaglass[white]\n[white]1.3k \uF835 [#b2c6d2]graphite[white]\n[white]1.3k \uF832 [#8da1e3]titanium[white]\n1.5k \uF831 [#f9a3c7]thorium[white]\n1.3k \uF82F [#53565c]Silicon[white]\n500 \uF82E [#cbd97f]plastanium[white]\n500 \uF82C [#f3e979]Surge Alloy");
+                                Call.onInfoMessage(player.con,"[accent]Resources needed[white]:" +
+                                        "\n[white]3.5k \uF838 [#d99d73]copper" +
+                                        "\n[white]3.5k \uF837 [#8c7fa9]lead" +
+                                        "\n[white]2k \uF836 [#ebeef5]metaglass" +
+                                        "\n[white]1.3k \uF835 [#b2c6d2]graphite" +
+                                        "\n[white]1.3k \uF832 [#8da1e3]titanium" +
+                                        "\n[white]1.5k \uF831 [#f9a3c7]thorium" +
+                                        "\n[white]1.3k \uF82F [#53565c]Silicon" +
+                                        "\n[white]500 \uF82E [#cbd97f]plastanium" +
+                                        "\n[white]500 \uF82C [#f3e979]Surge Alloy");
                                 return;
                             } else {
                                 player.sendMessage(mba);
@@ -159,6 +169,47 @@ public class Main extends Plugin {
                             unit = "UnitTypes.lich";
                         }
                         break;
+
+                    case "eradicator":
+                        if (arg.length == 2) {
+                            if (player.isAdmin) {
+                                switch (arg[1]) {
+                                    case "on":
+                                        reaperEnable = true;
+                                        player.sendMessage("[salmon]Summon[white]: [lightgray]Reaper [white]turned [lightgray]on[white].");
+                                        break;
+                                    case "off":
+                                        reaperEnable = false;
+                                        player.sendMessage("[salmon]Summon[white]: [lightgray]Reaper [white]turned [lightgray]off[white].");
+                                        break;
+                                    case "info":
+                                        Call.onInfoMessage(player.con,"[accent]Resources needed[white]:" +
+                                        "\n5k \uF838 [#d99d73]copper" +
+                                        "\n[white]5k \uF837 [#8c7fa9]lead"+
+                                        "\n[white]2k \uF836 [#ebeef5]metaglass[white]"+
+                                        "\n[white]1.3k \uF835 [#b2c6d2]graphite[white]"+
+                                        "\n[white]4k \uF832 [#8da1e3]titanium[white]"+
+                                        "\n3.5k \uF831 [#f9a3c7]thorium[white]"+
+                                        "\n2k \uF82F [#53565c]Silicon[white]"+
+                                        "\n1.5k \uF82E [#cbd97f]plastanium[white]"+
+                                        "\n500 \uF82D [#f4ba6e]Phase fabric[white]"+
+                                        "\n1.25k \uF82C [#f3e979]Surge Alloy");
+                                        break;
+                                    default:
+                                        player.sendMessage("[salmon]Summon[white]: Reaper args contains [lightgray]on[white]/[lightgray]off[white].");
+                                        break;
+                                }
+                            } else if (arg[1].equals("info")){
+                                Call.onInfoMessage(player.con,"[accent]Resources needed[white]:\n5k \uF838 [#d99d73]copper\n[white]3.5k \uF837 [#8c7fa9]lead\n[white]4k \uF832 [#8da1e3]titanium[white]\n3.5k \uF831 [#f9a3c7]thorium[white]\n2k \uF82F [#53565c]Silicon[white]\n1.5k \uF82E [#cbd97f]plastanium[white]\n500 \uF82D [#f4ba6e]Phase fabric[white]\n1.25k \uF82C [#f3e979]Surge Alloy");
+                                return;
+                            } else {
+                                player.sendMessage(mba);
+                            }
+                        } else {
+                            unit = "UnitTypes.reaper";
+                        }
+                        break;
+
                     case "on":
                         if (player.isAdmin) {
                             summonEnable = true;
@@ -181,7 +232,7 @@ public class Main extends Plugin {
                         } else {
                             player.sendMessage("Summon: arg[0] = reaper or lich.");
                         }
-                        break;
+                        return;
                 }
             } else {
                 player.sendMessage("[salmon]Summon[white]: Summons a [royal]Reaper [white]or [royal]Lich.");
@@ -249,6 +300,36 @@ public class Main extends Plugin {
                             player.sendMessage("[salmon]Summon[white]: [royal]Lich [white]is disabled.");
                         }
                         break;
+                        /*
+                    case "UnitTypes.eradicator":
+                        if (eradicatorEnable) {
+                            if (core.items.has(Items.copper, 5000) && core.items.has(Items.lead, 3500) && core.items.has(Items.metaglass, 2000) && core.items.has(Items.graphite, 1750) && core.items.has(Items.titanium, 3500) && core.items.has(Items.thorium, 4000) && core.items.has(Items.silicon, 2500) && core.items.has(Items.plastanium, 1000) && core.items.has(Items.phasefabric, 350) && core.items.has(Items.surgealloy, 750)) {
+                                //
+                                core.items.remove(Items.copper, 5000);
+                                core.items.remove(Items.lead, 3500);
+                                core.items.remove(Items.metaglass, 2000);
+                                core.items.remove(Items.graphite, 1750);
+                                core.items.remove(Items.titanium, 3500);
+                                core.items.remove(Items.thorium, 4000);
+                                core.items.remove(Items.silicon, 2500);
+                                core.items.remove(Items.plastanium, 1000);
+                                core.items.remove(Items.phasefabric, 350);
+                                core.items.remove(Items.surgealloy, 750);
+                                //
+                                BaseUnit baseUnit = UnitTypes.reaper.create(player.getTeam());
+                                baseUnit.set(player.x, player.y);
+                                baseUnit.add();
+                                ;
+                                Call.sendMessage("[white]" + player.name + "[white] has summoned a [royal]Reaper[white].");
+                            } else {
+                                Call.sendMessage("[salmon]Summon[white]: " + player.name + "[lightgray] tried[white] to summon a [royal]Reaper[white].");
+                                player.sendMessage("[salmon]Summon[white]: Not enough resources to spawn [royal]Reaper[white]. Do [lightgray]`/summon reaper info` [white]to see required resources.");
+                            }
+                        } else {
+                            player.sendMessage("[salmon]Summon[white]: [royal]Reaper [white]is disabled.");
+                        }
+                        break;
+                         */
                     default:
                         player.sendMessage("ERROR");
                         break;
