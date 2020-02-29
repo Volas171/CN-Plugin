@@ -1100,6 +1100,7 @@ public class Main extends Plugin {
                             return;
                         } else {
                             player.sendMessage("[salmon]ST[white]: Player UUID `" + arg[2] + "` not found in database.");
+                            return;
                         }
                     } else {
                         player.sendMessage("[salmon]ST[white]: Too few argument. use /a setTag UUID Discord#Tag");
