@@ -1097,6 +1097,7 @@ public class Main extends Plugin {
                                 return;
                             }
                             database.get(arg[1]).setDiscordTag(arg[2]);
+                            database.get(arg[1]).verify();
                             player.sendMessage("[salmon]ST[white]: Discord tag set to `[lightgray]" + arg[2] + "[white]` for `[lightgray]" + arg[1] +"[white]`.");
                         } else {
                             player.sendMessage("[salmon]ST[white]: Player UUID `" + arg[2] + "` not found in database.");
