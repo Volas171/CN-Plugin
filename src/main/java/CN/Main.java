@@ -150,7 +150,7 @@ public class Main extends Plugin {
 
                 }
             } else {
-                Call.sendMessage("[white]Welcome " + player.name + "[white], first time on the server!");
+                Call.sendMessage("[white]Welcome " + player.name + ", [white]first time on the server!");
                 database.put(player.uuid, new pi());
             }
 
@@ -183,6 +183,42 @@ public class Main extends Plugin {
         });
     }
 
+    @Override
+    public void registerServerCommands(CommandHandler handler){
+        handler.register("cr","<uuid> <rank>", "Changes player rank through uuid.", arg -> {
+            String pid= arg[1].replaceAll("[^0-9]", "");
+            if (pid.equals("")) {
+                Log.err("Rank must contain numbers!");
+                return;
+            }
+            if (netServer.admins.getInfo(arg[0]).timesJoined > 0) {
+                int pr = database.get(arg[0]).getRank();
+                database.get(arg[0]).changeRank(Integer.parseInt(pid));
+                Log.info("[R] Changed rank for {0} from {1} to {2}.", arg[0], pr, database.get(arg[0]).getRank());
+            } else {
+                player.sendMessage("Player not found!");
+            }
+        });
+
+        handler.register("gnpdf", "List all thorium reactors in the map.", arg -> {
+            database.clear();
+            database.put("TEST", new pi());
+            try {
+                FileOutputStream fileOut = new FileOutputStream("PDF-new.cn");
+                ObjectOutputStream out = new ObjectOutputStream(fileOut);
+                out.writeObject(database);
+                out.close();
+                fileOut.close();
+                player.sendMessage("done");
+            } catch (IOException i) {
+                i.printStackTrace();
+            }
+        });
+
+        /*
+
+         */
+    }
 
     @Override
     public void registerClientCommands(CommandHandler handler) {
@@ -821,7 +857,7 @@ public class Main extends Plugin {
                             String name = p.name;
                             String rname = name.replaceAll("\\[", "[[");
                             player.sendMessage(
-                                    "Name: " + name +
+                                    "Name: " + name + "[white]" +
                                     "\nName Raw: " + rname +
                                     "\nTimes Joined: " + p.getInfo().timesJoined +
                                     "\nTimes Kicked: " + p.getInfo().timesKicked +
@@ -841,7 +877,7 @@ public class Main extends Plugin {
                         String rname = name.replaceAll("\\[", "[[");
                         String dv = "false";
                         if (database.get(arg[2]).getVerified()) dv = "true";
-                        player.sendMessage("Name: " + name +
+                        player.sendMessage("Name: " + name + "[white]" +
                                 "\nName Raw: " + rname +
                                 "\nTimes Joined: " + p.timesJoined +
                                 "\nTimes Kicked: " + p.timesKicked +
@@ -1025,8 +1061,7 @@ public class Main extends Plugin {
                         player.sendMessage("Too few argument. use /a cr UUID rank");
                     }
                     break;
-                case "summon":
-                    break;
+
                 case "test": //test commands;
                     HashMap<String, pi> database = new HashMap<>();
                     database.clear();
