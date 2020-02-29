@@ -728,7 +728,7 @@ public class Main extends Plugin {
                     "\n3) Different mechs build at different speeds, Trident builds the fastest.");
         });
         //finds a player discord tag
-        handler.<Player>register("contact", "<player id>","Verified Only - Finds a player's discord tag.", (arg, player) ->{
+        handler.<Player>register("contact", "<id>","Verified Only - Finds a player's discord tag.", (arg, player) ->{
             if (database.get(player.uuid).getVerified()) {
                 String a2 = arg[1];
                 String pid= a2.replaceAll("[^0-9]", "");
