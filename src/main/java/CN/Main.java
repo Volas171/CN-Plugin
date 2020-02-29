@@ -1096,7 +1096,7 @@ public class Main extends Plugin {
                                 player.sendMessage("[salmon]ST[white]: Discord tag must be at least 6 digits! example: abc123#4567");
                             }
                             database.get(arg[1]).setDiscordTag(arg[2]);
-                            player.sendMessage("[salmon]ST[white]: Discord tag set to " + arg[2] + " for `[lightgray]" + arg[1] +"[white]`.");
+                            player.sendMessage("[salmon]ST[white]: Discord tag set to `[lightgray]" + arg[2] + "[white]` for `[lightgray]" + arg[1] +"[white]`.");
                             return;
                         } else {
                             player.sendMessage("[salmon]ST[white]: Player UUID `" + arg[2] + "` not found in database.");
