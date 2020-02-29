@@ -128,26 +128,29 @@ public class Main extends Plugin {
             //Remove fake <> in name
             player.name = player.name.replaceFirst("\\<(.*)\\>", "");
 
-            //Admin/Mod
-            switch (database.get(player.uuid).getRank()) {
-                case 6:
-                    player.name = player.name + " [accent]<[scarlet]\uE814[accent]>";
-                    break;
-                case 5:
-                    player.name = player.name + " [accent]<[royal]\uE828[accent]>";
-                    break;
-                case 4:
-                    player.name = player.name + " [accent]<[lightgray]\uE80F[accent]>";
-                    break;
-            }
-
-            //Verified Icon
             if (database.containsKey(player.uuid)) {
-                if (database.get(player.uuid).getVerified()) {
-                    player.name = player.name + "[accent]<[sky]\uE848[accent]>";
+                //Admin/Mod
+                switch (database.get(player.uuid).getRank()) {
+                    case 6:
+                        player.name = player.name + " [accent]<[scarlet]\uE814[accent]>";
+                        break;
+                    case 5:
+                        player.name = player.name + " [accent]<[royal]\uE828[accent]>";
+                        break;
+                    case 4:
+                        player.name = player.name + " [accent]<[lightgray]\uE80F[accent]>";
+                        break;
                 }
 
+                //Verified Icon
+                if (database.containsKey(player.uuid)) {
+                    if (database.get(player.uuid).getVerified()) {
+                        player.name = player.name + " [accent]<[sky]\uE848[accent]>";
+                    }
+
+                }
             } else {
+                Call.sendMessage("[white]Welcome " + player.name + "[white], first time on the server!");
                 database.put(player.uuid, new pi());
             }
 
@@ -813,20 +816,41 @@ public class Main extends Plugin {
                                 player.sendMessage("[salmon]GPI[white]: Could not find player ID '[lightgray]" + pid + "[white]'.");
                                 return;
                             }
-                            player.sendMessage("[white]Player Name: " + p.getInfo().lastName +
-                                    "\n[white]Names Used: " + netServer.admins.getInfo(arg[2]).names +
-                                    "\n[white]IP: " + p.getInfo().lastIP +
-                                    "\n[white]Times Joined: " + p.getInfo().timesJoined +
-                                    "\n[white]Times Kicked: " + p.getInfo().timesKicked);
+                            String dv = "false";
+                            if (database.get(p.uuid).getVerified()) dv = "true";
+                            String name = p.name;
+                            String rname = name.replaceAll("\\[", "[[");
+                            player.sendMessage(
+                                    "Name: " + name +
+                                    "\nName Raw: " + rname +
+                                    "\nTimes Joined: " + p.getInfo().timesJoined +
+                                    "\nTimes Kicked: " + p.getInfo().timesKicked +
+                                    "\nCurrent ID: " + p.id +
+                                    "\nCurrent IP: " + p.getInfo().lastIP +
+                                    "\nUUID: " + p.uuid +
+                                    "\nRank: " + database.get(p.uuid).getRank() +
+                                    "\nMinutes Played: " + database.get(p.uuid).getTP() +
+                                    "\nGames Played: " + database.get(p.uuid).getGP() +
+                                    "\nDiscord Verified?: " + dv);
                         } else {
                             player.sendMessage("[salmon]GPI[white]: Get Player Info, use ID, not UUID, to get a player's info");
                         }
-                    } else if (arg.length > 2 && arg[1].equals("uuid")) {
-                        player.sendMessage("[white]Player Name: " + netServer.admins.getInfo(arg[2]).lastName +
-                                "\n[white]Names Used: " + netServer.admins.getInfo(arg[2]).names +
-                                "\n[white]IP: " + netServer.admins.getInfo(arg[2]).lastIP +
-                                "\n[white]Times Joined: " + netServer.admins.getInfo(arg[2]).timesJoined +
-                                "\n[white]Times Kicked: " + netServer.admins.getInfo(arg[2]).timesKicked);
+                    } else if (arg.length > 2 && arg[1].equals("uuid") && netServer.admins.getInfo(arg[2]).timesJoined > 0) {
+                        Administration.PlayerInfo p = netServer.admins.getInfo(arg[2]);
+                        String name = p.lastName;
+                        String rname = name.replaceAll("\\[", "[[");
+                        String dv = "false";
+                        if (database.get(arg[2]).getVerified()) dv = "true";
+                        player.sendMessage("Name: " + name +
+                                "\nName Raw: " + rname +
+                                "\nTimes Joined: " + p.timesJoined +
+                                "\nTimes Kicked: " + p.timesKicked +
+                                "\nCurrent IP: " + p.lastIP +
+                                "\nUUID: " + arg[2] +
+                                "\nRank: " + database.get(arg[2]).getRank() +
+                                "\nMinutes Played: " + database.get(arg[2]).getTP() +
+                                "\nGames Played: " + database.get(arg[2]).getGP() +
+                                "\nDiscord Verified?: " + dv);
                     } else {
                         player.sendMessage("[salmon]GPI[white]: Get Player Info, use ID or UUID, to get a player's info" +
                                 "\n[salmon]GPI[white]: use arg id or uuid. example `/a gpi uuid abc123==`");
@@ -1038,7 +1062,8 @@ public class Main extends Plugin {
                             "\nunkick           - Un-Kicks a player, UUID." +
                             "\ntp               - Teleports player, x - y" +
                             "\nac               - Admin Chat" +
-                            "\ninfo             - Shows all commands and brief description.");
+                            "\ncr               - Changes player rank." +
+                            "\ninfo             - Shows all commands and brief description, uuid");
                     break;
 
                 case "mms": //DON'T TRY IT!
