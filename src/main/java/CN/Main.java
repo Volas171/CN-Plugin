@@ -128,6 +128,19 @@ public class Main extends Plugin {
             //Remove fake <> in name
             player.name = player.name.replaceFirst("\\<(.*)\\>", "");
 
+            //Admin/Mod
+            switch (database.get(player.uuid).getRank()) {
+                case 6:
+                    player.name = player.name + " [accent]<[scarlet]\uE814[accent]>";
+                    break;
+                case 5:
+                    player.name = player.name + " [accent]<[royal]\uE828[accent]>";
+                    break;
+                case 4:
+                    player.name = player.name + " [accent]<[lightgray]\uE80F[accent]>";
+                    break;
+            }
+
             //Verified Icon
             if (database.containsKey(player.uuid)) {
                 if (database.get(player.uuid).getVerified()) {
@@ -272,7 +285,7 @@ public class Main extends Plugin {
                                         "\n750 \uF82C [#f3e979]Surge Alloy");
                                         break;
                                     default:
-                                        player.sendMessage("[salmon]Summon[white]: Reaper args contains [lightgray]on[white]/[lightgray]off[white].");
+                                        player.sendMessage("[salmon]Summon[white]: Eradicator args contains [lightgray]on[white]/[lightgray]off[white].");
                                         break;
                                 }
                             } else if (arg[1].equals("info")){
@@ -282,7 +295,7 @@ public class Main extends Plugin {
                                 player.sendMessage(mba);
                             }
                         } else {
-                            unit = "UnitTypes.reaper";
+                            unit = "UnitTypes.eradicator";
                         }
                         break;
 
@@ -333,11 +346,11 @@ public class Main extends Plugin {
                         if (!world.tile(sx,sy).solid()) solid = false;
                     }
                 }   */
-                boolean solid = true;
+                boolean solid = false;
                 int x = (int) player.x;
                 int y = (int) player.y;
-                if (!world.tile(x,y).solid()) {
-                    solid = false;
+                if (world.tile(x/8,y/8).solid()) {
+                    solid = true;
                 }
                 switch (unit) {
                     case "UnitTypes.reaper":
@@ -409,17 +422,20 @@ public class Main extends Plugin {
                                 core.items.remove(Items.phasefabric, 350);
                                 core.items.remove(Items.surgealloy, 750);
                                 //
-                                BaseUnit baseUnit = UnitTypes.reaper.create(player.getTeam());
+                                BaseUnit baseUnit = UnitTypes.eradicator.create(player.getTeam());
                                 baseUnit.set(player.x, player.y);
                                 baseUnit.add();
 
                                 Call.sendMessage("[white]" + player.name + "[white] has summoned a [royal]Eradicator[white].");
+
+                            } else if (solid){
+                                player.sendMessage("[salmon]Summon[white]: Can't Summon land unit over [lightgray]Solid [white]surface.");
                             } else {
-                                Call.sendMessage("[salmon]Summon[white]: " + player.name + "[lightgray] tried[white] to summon a [royal]Reaper[white].");
-                                player.sendMessage("[salmon]Summon[white]: Not enough resources to spawn [royal]Reaper[white]. Do [lightgray]`/summon eradicator info` [white]to see required resources.");
+                                Call.sendMessage("[salmon]Summon[white]: " + player.name + "[lightgray] tried[white] to summon a [royal]Eradicator[white].");
+                                player.sendMessage("[salmon]Summon[white]: Not enough resources to spawn [royal]Eradicator[white]. Do [lightgray]`/summon eradicator info` [white]to see required resources.");
                             }
                         } else {
-                            player.sendMessage("[salmon]Summon[white]: [royal]Reaper [white]is disabled.");
+                            player.sendMessage("[salmon]Summon[white]: [royal]Eradicator [white]is disabled.");
                         }
                         break;
 
@@ -676,7 +692,8 @@ public class Main extends Plugin {
         //-----ADMINS-----//
 
         handler.<Player>register("a","<Info> [1] [2] [3...]", "[scarlet]<Admin> [lightgray]- Admin commands", (arg, player) -> {
-            if(!player.isAdmin){
+            if (database.get(player.uuid).getRank() >= 4) {
+            } else if(!player.isAdmin){
                 player.sendMessage(mba);
                 return;
             }
@@ -900,24 +917,6 @@ public class Main extends Plugin {
                         player.sendMessage("[salmon]PCC[white]: Player Connection Closed, use ID, not UUID, to close a players connection.");
                     }
                     break;
-                case "cr": //Changer player rank
-                    if (arg.length > 2) {
-                        if (database.containsKey(arg[1])) {
-                            String a2 = arg[2];
-                            String pid= a2.replaceAll("[^0-9]", "");
-                            if (pid.equals("")) {
-                                player.sendMessage("[salmon]CR[white]: rank must contain numbers!");
-                                return;
-                            }
-                            database.get(arg[1]).changeRank(Integer.parseInt(pid));
-                            player.sendMessage("Changed rank of `" + arg[1] + "` to " + pid + ".");
-                            return;
-                        } else {
-                            player.sendMessage("[salmon]CR[white]: Player UUID `" + arg[2] + "` not found in database.");
-                        }
-                    }
-                    break;
-
                 case "unkick":
                     if (arg.length > 1) {
                         if (netServer.admins.getInfo(arg[1]).lastKicked > Time.millis()) {
@@ -978,9 +977,48 @@ public class Main extends Plugin {
                         player.sendMessage("");
                     }
                     break;
+
+                case "cr": //Changer player rank
+                    if (arg.length > 2) {
+                        if (database.containsKey(arg[1])) {
+                            String a2 = arg[2];
+                            String pid= a2.replaceAll("[^0-9]", "");
+                            if (pid.equals("")) {
+                                player.sendMessage("[salmon]CR[white]: rank must contain numbers!");
+                                return;
+                            }
+                            if (database.get(player.uuid).getRank() < Integer.parseInt(pid)) {
+                                player.sendMessage("You dont have permission to change ranks above " + database.get(player.uuid).getRank());
+                                return;
+                            }
+                            database.get(arg[1]).changeRank(Integer.parseInt(pid));
+                            player.sendMessage("Changed rank of `" + arg[1] + "` to " + pid + ".");
+                            return;
+                        } else {
+                            player.sendMessage("[salmon]CR[white]: Player UUID `" + arg[2] + "` not found in database.");
+                        }
+                    } else {
+                        player.sendMessage("Too few argument. use /a cr UUID rank");
+                    }
+                    break;
                 case "summon":
                     break;
                 case "test": //test commands;
+                    HashMap<String, pi> database = new HashMap<>();
+                    database.clear();
+                    database.put("GycadrGQyRBAAAAAVdsxaQ==", new pi());
+                    database.get("GycadrGQyRBAAAAAVdsxaQ==").addGP();
+                    //output file
+                    try {
+                        FileOutputStream fileOut = new FileOutputStream("PDF.cn");
+                        ObjectOutputStream out = new ObjectOutputStream(fileOut);
+                        out.writeObject(database);
+                        out.close();
+                        fileOut.close();
+                        player.sendMessage("done");
+                    } catch (IOException i) {
+                        i.printStackTrace();
+                    }
                     player.sendMessage("\uE800\uE801\uE802\uE804\uE805\uE806\uE807\uE808\uE809\uE80A\uE80B \uE80C\uE80D\uE80E\uE80F\uE810\uE811\uE812\uE813\uE814\uE815\uE816\uE818\uE819\uE81A\uE81C\uE81D\uE81E\uE81F\uE820\uE821\uE822\uE824\uE828\uE829\uE82A\uE82C\uE82D\uE82E\uE82F\uE830\uE831\uE832\uE834\uE838\uE839\uE83A\uE83C\uE83D\uE83E\uE83F\uE840\uE841\uE842\uE844\uE848\uE849\uE84A\uE84C\uE84D\uE84E\uE84F\uE850\uE851\uE852\uE854\uE858\uE859\uE85A\uE85C\uE85D\uE85E\uE85F\uE860\uE861\uE862\uE864\uE868\uE869\uE86A\uE86C\uE86D\uE86E\uE86F\uE870\uE871\uE872\uE874\uE878\uE879\uE87A\uE87C\uE87D\uE87E\uE87F");
                     player.sendMessage("\uE800\uE801\uE802\uE803\uE804\uE805\uE806\uE807\uE808\uE809\uE810\uE811\uE812\uE813\uE814\uE815\uE816\uE817\uE818\uE819\uE820\uE821\uE822\uE823\uE824\uE825\uE826\uE827\uE828\uE829\uE830\uE831\uE832\uE833\uE834\uE835\uE836\uE837\uE838\uE839\uE840\uE841\uE842\uE843\uE844\uE845\uE846\uE847\uE848\uE849\uE850\uE851\uE852\uE853\uE854\uE855\uE856\uE857\uE858\uE859\uE860\uE861\uE862\uE863\uE864\uE865\uE866\uE867\uE868\uE869\uE870\uE871\uE872\uE873\uE874\uE875\uE876\uE877\uE878\uE879\uE880\uE881\uE882\uE883\uE884\uE884\uE885\uE886\uE887\uE888\uE889\uE890\uE891\uE892\uE893\uE894\uE895\uE896\uE897\uE898\uE899\uE80A\uE80B\uE80C\uE80D\uE80E\uE80F\uE81A\uE81B\uE81C\uE81D\uE81E\uE81F\uE82A\uE82B\uE82C\uE82D\uE82E\uE82F\uE83A\uE83B\uE83C\uE83D\uE83E\uE83F\uE84A\uE84B\uE84C\uE84D\uE84E\uE84F\uE85A\uE85B\uE85C\uE85D\uE85E\uE85F\uE86A\uE86B\uE86C\uE86D\uE86E\uE86F\uE87A\uE87B\uE87C\uE87D\uE87E\uE87F\uE88A\uE88B\uE88C\uE88D\uE88E\uE88F\uE89A\uE89B\uE89C\uE89d\uE89e\uE89F");
                     break;
