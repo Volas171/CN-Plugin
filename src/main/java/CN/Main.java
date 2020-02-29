@@ -727,6 +727,28 @@ public class Main extends Plugin {
                     "\n[[red]this is red text" +
                     "\n3) Different mechs build at different speeds, Trident builds the fastest.");
         });
+        //finds a player discord tag
+        handler.<Player>register("contact", "<player id>","Verified Only - Finds a player's discord tag.", (arg, player) ->{
+            if (database.get(player.uuid).getVerified()) {
+                String a2 = arg[1];
+                String pid= a2.replaceAll("[^0-9]", "");
+                if (pid.equals("")) {
+                    player.sendMessage("[salmon]GPI[white]: player ID must contain numbers!");
+                    return;
+                }
+                Player p = playerGroup.getByID(Integer.parseInt(pid));
+                if (p == null) {
+                    player.sendMessage("[salmon]GPI[white]: Could not find player ID '[lightgray]" + pid + "[white]'.");
+                    return;
+                }
+                if (database.containsKey(p.uuid)) {
+                    player.sendMessage(database.get(p.uuid).getDiscordTag());
+                    p.sendMessage(player.name + " has received your discord tag. do `/contact " + player.id + "` to get his contact.");
+                }
+            } else {
+                player.sendMessage("You must be [sky]Verified [white]to use this command.");
+            }
+        });
 
         //-----ADMINS-----//
 
@@ -868,6 +890,7 @@ public class Main extends Plugin {
                                     "\nMinutes Played: " + database.get(p.uuid).getTP() +
                                     "\nGames Played: " + database.get(p.uuid).getGP() +
                                     "\nDiscord Verified?: " + dv);
+                            if (database.get(p.uuid).getVerified()) player.sendMessage("Discord Tag: " + database.get(p.uuid).getDiscordTag());
                         } else {
                             player.sendMessage("[salmon]GPI[white]: Get Player Info, use ID, not UUID, to get a player's info");
                         }
@@ -887,6 +910,7 @@ public class Main extends Plugin {
                                 "\nMinutes Played: " + database.get(arg[2]).getTP() +
                                 "\nGames Played: " + database.get(arg[2]).getGP() +
                                 "\nDiscord Verified?: " + dv);
+                        if (database.get(arg[2]).getVerified()) player.sendMessage("Discord Tag: " + database.get(arg[2]).getDiscordTag());
                     } else {
                         player.sendMessage("[salmon]GPI[white]: Get Player Info, use ID or UUID, to get a player's info" +
                                 "\n[salmon]GPI[white]: use arg id or uuid. example `/a gpi uuid abc123==`");
@@ -1062,9 +1086,27 @@ public class Main extends Plugin {
                     }
                     break;
 
+                case "setTag":
+                    if (arg.length > 2) {
+                        if (database.containsKey(arg[1])) {
+                            if (!arg[2].contains("#")) {
+                                player.sendMessage("[salmon]ST[white]: Discord tag must contain `#`! example: abc123#4567");
+                                return;
+                            } else if (arg[2].length() <= 5) {
+                                player.sendMessage("[salmon]ST[white]: Discord tag must be at least 6 digits! example: abc123#4567");
+                            }
+                            database.get(arg[1]).setDiscordTag(arg[2]);
+                            player.sendMessage("[salmon]ST[white]: Discord tag set to " + arg[2] + " for `[lightgray]" + arg[1] +"[white]`.");
+                            return;
+                        } else {
+                            player.sendMessage("[salmon]ST[white]: Player UUID `" + arg[2] + "` not found in database.");
+                        }
+                    } else {
+                        player.sendMessage("[salmon]ST[white]: Too few argument. use /a setTag UUID Discord#Tag");
+                    }
+                    break;
                 case "test": //test commands;
                     HashMap<String, pi> database = new HashMap<>();
-                    database.clear();
                     database.put("GycadrGQyRBAAAAAVdsxaQ==", new pi());
                     database.get("GycadrGQyRBAAAAAVdsxaQ==").addGP();
                     //output file
