@@ -25,6 +25,7 @@ import mindustry.content.UnitTypes;
 import mindustry.entities.type.BaseUnit;
 
 import java.awt.*;
+import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -36,6 +37,7 @@ public class Main extends Plugin {
     public static Array<String> GOW = new Array<>();
     public static Array<String> IW = new Array<>();
     public static HashMap<String, String> buffList = new HashMap<>();
+    public static HashMap<String, pi> database = new HashMap<>();
 
     private boolean summonEnable = true;
     private boolean reaperEnable = true;
@@ -46,6 +48,58 @@ public class Main extends Plugin {
     private boolean autoBan = true;
     private boolean sandbox = false;
     public Main() throws InterruptedException {
+
+        Thread PIAS = new Thread() {
+            public void run() {
+                Log.info("PIAS started Successfully!");
+                while (true) {
+                    try {
+                        Thread.sleep(60 * 1000);
+
+                        //output save file
+                        try {
+                            FileOutputStream fileOut = new FileOutputStream("PDF.cn");
+                            ObjectOutputStream out = new ObjectOutputStream(fileOut);
+                            out.writeObject(Main.database);
+                            out.close();
+                            fileOut.close();
+                        } catch (IOException i) {
+                            i.printStackTrace();
+                        }
+
+                        //add 1 minute of play time for each player
+                        for (Player p : playerGroup.all()) {
+                            if (Main.database.containsKey(p.uuid)) {
+                                Main.database.get(p.uuid).addTP(1);
+                            }
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        };
+
+        //load all player info.
+        try {
+            FileInputStream loadFile = new FileInputStream("PDF.cn");
+            ObjectInputStream in = new ObjectInputStream(loadFile);
+            database = (HashMap<String, pi>) in.readObject();
+            in.close();
+            loadFile.close();
+            Log.info("Successfully loaded player info.");
+        } catch (IOException i) {
+            i.printStackTrace();
+            return;
+        } catch (ClassNotFoundException c) {
+            System.out.println("PlayerInfo class not found");
+            c.printStackTrace();
+            return;
+        }
+        //PIAS Start
+        Log.info("Attempting to start PIAS...");
+        PIAS.start();
+
         Events.on(EventType.PlayerJoin.class, event -> {
             Player player = event.player;
             if (autoBan) {
@@ -68,9 +122,21 @@ public class Main extends Plugin {
             //Join Message
             player.sendMessage("======================================================================" +
                     "\nWelcome to Chaotic Neutral!" +
-                    "\nConsider joining our discord through [lightgray]https://cn-discord.ddns.net [white]or using discord code [lightgray]xQ6gGfQ" +
+                    "\nConsider joining our discord \uE848 through [lightgray]https://cn-discord.ddns.net [white]or using discord code [lightgray]xQ6gGfQ" +
                     "\n\nWe have a few useful commands, do /help to see them." +
-                    "\nFor Info, do /info");
+                    "\nFor \uE801 Info, do /info");
+            //Remove fake <> in name
+            player.name = player.name.replaceFirst("\\<(.*)\\>", "");
+
+            //Verified Icon
+            if (database.containsKey(player.uuid)) {
+                if (database.get(player.uuid).getVerified()) {
+                    player.name = player.name + "[accent]<[sky]\uE848[accent]>";
+                }
+
+            } else {
+                database.put(player.uuid, new pi());
+            }
 
         });
 
@@ -90,7 +156,17 @@ public class Main extends Plugin {
             //Sandbox
             if(sandbox && state.wave!=2222) state.wave=2222;
         });
+
+        Events.on(EventType.GameOverEvent.class, event -> {
+            for (Player p : playerGroup.all()) {
+                if (database.containsKey(p.uuid)) {
+                    database.get(p.uuid).addGP();
+                    Call.onInfoToast(p.con,"Games Played: +1",10);
+                }
+            }
+        });
     }
+
 
     @Override
     public void registerClientCommands(CommandHandler handler) {
@@ -175,32 +251,32 @@ public class Main extends Plugin {
                             if (player.isAdmin) {
                                 switch (arg[1]) {
                                     case "on":
-                                        reaperEnable = true;
+                                        eradicatorEnable = true;
                                         player.sendMessage("[salmon]Summon[white]: [lightgray]Reaper [white]turned [lightgray]on[white].");
                                         break;
                                     case "off":
-                                        reaperEnable = false;
+                                        eradicatorEnable = false;
                                         player.sendMessage("[salmon]Summon[white]: [lightgray]Reaper [white]turned [lightgray]off[white].");
                                         break;
                                     case "info":
                                         Call.onInfoMessage(player.con,"[accent]Resources needed[white]:" +
                                         "\n5k \uF838 [#d99d73]copper" +
-                                        "\n[white]5k \uF837 [#8c7fa9]lead"+
+                                        "\n[white]3.5k \uF837 [#8c7fa9]lead"+
                                         "\n[white]2k \uF836 [#ebeef5]metaglass[white]"+
-                                        "\n[white]1.3k \uF835 [#b2c6d2]graphite[white]"+
-                                        "\n[white]4k \uF832 [#8da1e3]titanium[white]"+
-                                        "\n3.5k \uF831 [#f9a3c7]thorium[white]"+
-                                        "\n2k \uF82F [#53565c]Silicon[white]"+
-                                        "\n1.5k \uF82E [#cbd97f]plastanium[white]"+
-                                        "\n500 \uF82D [#f4ba6e]Phase fabric[white]"+
-                                        "\n1.25k \uF82C [#f3e979]Surge Alloy");
+                                        "\n[white]1.8k \uF835 [#b2c6d2]graphite[white]"+
+                                        "\n[white]3.5k \uF832 [#8da1e3]titanium[white]"+
+                                        "\n4k \uF831 [#f9a3c7]thorium[white]"+
+                                        "\n2.5k \uF82F [#53565c]Silicon[white]"+
+                                        "\n1k  \uF82E [#cbd97f]plastanium[white]"+
+                                        "\n350 \uF82D [#f4ba6e]Phase fabric[white]"+
+                                        "\n750 \uF82C [#f3e979]Surge Alloy");
                                         break;
                                     default:
                                         player.sendMessage("[salmon]Summon[white]: Reaper args contains [lightgray]on[white]/[lightgray]off[white].");
                                         break;
                                 }
                             } else if (arg[1].equals("info")){
-                                Call.onInfoMessage(player.con,"[accent]Resources needed[white]:\n5k \uF838 [#d99d73]copper\n[white]3.5k \uF837 [#8c7fa9]lead\n[white]4k \uF832 [#8da1e3]titanium[white]\n3.5k \uF831 [#f9a3c7]thorium[white]\n2k \uF82F [#53565c]Silicon[white]\n1.5k \uF82E [#cbd97f]plastanium[white]\n500 \uF82D [#f4ba6e]Phase fabric[white]\n1.25k \uF82C [#f3e979]Surge Alloy");
+                                Call.onInfoMessage(player.con,"[accent]Resources needed[white]:\n5k \uF838 [#d99d73]copper\n[white]3.5k \uF837 [#8c7fa9]lead\n[white]2k \uF836 [#ebeef5]metaglass[white]\n[white]1.8k \uF835 [#b2c6d2]graphite[white]\n[white]3.5k \uF832 [#8da1e3]titanium[white]\n4k \uF831 [#f9a3c7]thorium[white]\n2.5k \uF82F [#53565c]Silicon[white]\n1k \uF82E [#cbd97f]plastanium[white]\n350 \uF82D [#f4ba6e]Phase fabric[white]\n750 \uF82C [#f3e979]Surge Alloy");
                                 return;
                             } else {
                                 player.sendMessage(mba);
@@ -245,6 +321,23 @@ public class Main extends Plugin {
                 if (core == null) {
                     player.sendMessage("Your team doesn't have a core.");
                     return;
+                }
+                //over land?
+                /*
+                int sx=0;
+                int sy=0;
+                boolean solid = true;
+                for (sx=0; sx <= world.getMap().width; sx++) {
+                    for (sy=0; sy <= world.getMap().width; sy++) {
+                        Teams.TeamData teamN = state.teams.get(world.tile(sx,sy).getTeam());
+                        if (!world.tile(sx,sy).solid()) solid = false;
+                    }
+                }   */
+                boolean solid = true;
+                int x = (int) player.x;
+                int y = (int) player.y;
+                if (!world.tile(x,y).solid()) {
+                    solid = false;
                 }
                 switch (unit) {
                     case "UnitTypes.reaper":
@@ -300,10 +393,10 @@ public class Main extends Plugin {
                             player.sendMessage("[salmon]Summon[white]: [royal]Lich [white]is disabled.");
                         }
                         break;
-                        /*
+
                     case "UnitTypes.eradicator":
                         if (eradicatorEnable) {
-                            if (core.items.has(Items.copper, 5000) && core.items.has(Items.lead, 3500) && core.items.has(Items.metaglass, 2000) && core.items.has(Items.graphite, 1750) && core.items.has(Items.titanium, 3500) && core.items.has(Items.thorium, 4000) && core.items.has(Items.silicon, 2500) && core.items.has(Items.plastanium, 1000) && core.items.has(Items.phasefabric, 350) && core.items.has(Items.surgealloy, 750)) {
+                            if (!solid && core.items.has(Items.copper, 5000) && core.items.has(Items.lead, 3500) && core.items.has(Items.metaglass, 2000) && core.items.has(Items.graphite, 1750) && core.items.has(Items.titanium, 3500) && core.items.has(Items.thorium, 4000) && core.items.has(Items.silicon, 2500) && core.items.has(Items.plastanium, 1000) && core.items.has(Items.phasefabric, 350) && core.items.has(Items.surgealloy, 750)) {
                                 //
                                 core.items.remove(Items.copper, 5000);
                                 core.items.remove(Items.lead, 3500);
@@ -319,17 +412,17 @@ public class Main extends Plugin {
                                 BaseUnit baseUnit = UnitTypes.reaper.create(player.getTeam());
                                 baseUnit.set(player.x, player.y);
                                 baseUnit.add();
-                                ;
-                                Call.sendMessage("[white]" + player.name + "[white] has summoned a [royal]Reaper[white].");
+
+                                Call.sendMessage("[white]" + player.name + "[white] has summoned a [royal]Eradicator[white].");
                             } else {
                                 Call.sendMessage("[salmon]Summon[white]: " + player.name + "[lightgray] tried[white] to summon a [royal]Reaper[white].");
-                                player.sendMessage("[salmon]Summon[white]: Not enough resources to spawn [royal]Reaper[white]. Do [lightgray]`/summon reaper info` [white]to see required resources.");
+                                player.sendMessage("[salmon]Summon[white]: Not enough resources to spawn [royal]Reaper[white]. Do [lightgray]`/summon eradicator info` [white]to see required resources.");
                             }
                         } else {
                             player.sendMessage("[salmon]Summon[white]: [royal]Reaper [white]is disabled.");
                         }
                         break;
-                         */
+
                     default:
                         player.sendMessage("ERROR");
                         break;
@@ -446,6 +539,7 @@ public class Main extends Plugin {
             player.sendMessage(builder.toString());
         });
         //Buffs all players. TODO: Make it only affect one player.
+        /*
         handler.<Player>register("buff","[I/O]", "Buffs player.", (arg, player) -> {
             if (arg.length == 1) {
                 if (player.isAdmin) {
@@ -544,10 +638,14 @@ public class Main extends Plugin {
                 }
             }
         });
+
+         */
         //Shows player info.
         handler.<Player>register("myinfo","Shows player info", (args, player) -> {
             String name = player.name;
             String rname;
+            String dv = "false";
+            if (database.get(player.uuid).getVerified())  dv = "true";
             rname = name.replaceAll("\\[", "[[");
             player.sendMessage("Name: " + name +
                     "\nName Raw: " + rname +
@@ -555,7 +653,11 @@ public class Main extends Plugin {
                     "\nTimes Kicked: " + player.getInfo().timesKicked +
                     "\nCurrent ID: " + player.id +
                     "\nCurrent IP: " + player.getInfo().lastIP +
-                    "\nUUID: " + player.uuid);
+                    "\nUUID: " + player.uuid +
+                    "\nRank: " + database.get(player.uuid).getRank() +
+                    "\nMinutes Played: " + database.get(player.uuid).getTP() +
+                    "\nGames Played: " + database.get(player.uuid).getGP() +
+                    "\nDiscord Verified?: " + dv);
         });
         //Shows info.
         handler.<Player>register("info","Shows the player info.", (args, player) -> {
@@ -796,6 +898,23 @@ public class Main extends Plugin {
                         p.con.kick(reason, 1);
                     } else {
                         player.sendMessage("[salmon]PCC[white]: Player Connection Closed, use ID, not UUID, to close a players connection.");
+                    }
+                    break;
+                case "cr": //Changer player rank
+                    if (arg.length > 2) {
+                        if (database.containsKey(arg[1])) {
+                            String a2 = arg[2];
+                            String pid= a2.replaceAll("[^0-9]", "");
+                            if (pid.equals("")) {
+                                player.sendMessage("[salmon]CR[white]: rank must contain numbers!");
+                                return;
+                            }
+                            database.get(arg[1]).changeRank(Integer.parseInt(pid));
+                            player.sendMessage("Changed rank of `" + arg[1] + "` to " + pid + ".");
+                            return;
+                        } else {
+                            player.sendMessage("[salmon]CR[white]: Player UUID `" + arg[2] + "` not found in database.");
+                        }
                     }
                     break;
 
