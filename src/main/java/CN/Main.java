@@ -374,17 +374,7 @@ public class Main extends Plugin {
                     player.sendMessage("Your team doesn't have a core.");
                     return;
                 }
-                //over land?
-                /*
-                int sx=0;
-                int sy=0;
-                boolean solid = true;
-                for (sx=0; sx <= world.getMap().width; sx++) {
-                    for (sy=0; sy <= world.getMap().width; sy++) {
-                        Teams.TeamData teamN = state.teams.get(world.tile(sx,sy).getTeam());
-                        if (!world.tile(sx,sy).solid()) solid = false;
-                    }
-                }   */
+
                 boolean solid = false;
                 int x = (int) player.x;
                 int y = (int) player.y;
@@ -523,11 +513,15 @@ public class Main extends Plugin {
             int crawler = 0;
             int titan = 0;
             int fortress = 0;
+            int eruptor = 0;
+            int chaosArray = 0;
+            int eradicator = 0;
             int wraith = 0;
             int ghoul = 0;;
             int revenant = 0;
             int lich = 0;
             int reaper = 0;
+
             int All = 0;
             //
             for (Unit u : unitGroup.all()) {
@@ -539,6 +533,9 @@ public class Main extends Plugin {
                     if (u.getTypeID().name.equals("crawler")) crawler = crawler + 1;
                     if (u.getTypeID().name.equals("titan")) titan = titan + 1;
                     if (u.getTypeID().name.equals("fortress")) fortress = fortress + 1;
+                    if (u.getTypeID().name.equals("eruptor")) eruptor = eruptor + 1;
+                    if (u.getTypeID().name.equals("chaos-array")) chaosArray = chaosArray + 1;
+                    if (u.getTypeID().name.equals("eradicator")) eradicator = eradicator + 1;
                     if (u.getTypeID().name.equals("wraith")) wraith = wraith + 1;
                     if (u.getTypeID().name.equals("ghoul")) ghoul = ghoul + 1;
                     if (u.getTypeID().name.equals("revenant")) revenant = revenant + 1;
@@ -569,6 +566,9 @@ public class Main extends Plugin {
                             "\nCrawlers: " + crawler +
                             "\nTitan: " + titan +
                             "\nFortress: " + fortress +
+                            "\nEruptor: " + eruptor +
+                            "\nChaos Array: " + chaosArray +
+                            "\nEradicator: " + eradicator +
                             "\nWraith Fighter: " + wraith +
                             "\nGhoul Bomber: " + ghoul +
                             "\nRevenant: " + revenant +
@@ -702,7 +702,7 @@ public class Main extends Plugin {
             String dv = "false";
             if (database.get(player.uuid).getVerified())  dv = "true";
             rname = name.replaceAll("\\[", "[[");
-            player.sendMessage("Name: " + name +
+            player.sendMessage("Name: " + name + " [white]"+
                     "\nName Raw: " + rname +
                     "\nTimes Joined: " + player.getInfo().timesJoined +
                     "\nTimes Kicked: " + player.getInfo().timesKicked +
@@ -730,8 +730,7 @@ public class Main extends Plugin {
         //finds a player discord tag
         handler.<Player>register("contact", "<id>","Verified Only - Finds a player's discord tag.", (arg, player) ->{
             if (database.get(player.uuid).getVerified()) {
-                String a2 = arg[1];
-                String pid= a2.replaceAll("[^0-9]", "");
+                String pid= arg[0].replaceAll("[^0-9]", "");
                 if (pid.equals("")) {
                     player.sendMessage("[salmon]GPI[white]: player ID must contain numbers!");
                     return;
@@ -742,8 +741,12 @@ public class Main extends Plugin {
                     return;
                 }
                 if (database.containsKey(p.uuid)) {
-                    player.sendMessage(database.get(p.uuid).getDiscordTag());
-                    p.sendMessage(player.name + " has received your discord tag. do `/contact " + player.id + "` to get his contact.");
+                    if (database.get(p.uuid).getVerified()) {
+                        player.sendMessage(database.get(p.uuid).getDiscordTag());
+                        p.sendMessage(player.name + " [white]has received your discord tag. do `/contact " + player.id + "` to get his contact.");
+                    } else {
+                        player.sendMessage("You can only contact [sky]Verified [white]players.");
+                    }
                 }
             } else {
                 player.sendMessage("You must be [sky]Verified [white]to use this command.");
@@ -863,8 +866,7 @@ public class Main extends Plugin {
                 case "gpi": //Get Player Info
                     if (arg.length > 2 && arg[1].equals("id")) {
                         if (arg[2].length() > 0) {
-                            String a2 = arg[2];
-                            String pid= a2.replaceAll("[^0-9]", "");
+                            String pid= arg[2].replaceAll("[^0-9]", "");
                             if (pid.equals("")) {
                                 player.sendMessage("[salmon]GPI[white]: player ID must contain numbers!");
                                 return;
@@ -1001,6 +1003,7 @@ public class Main extends Plugin {
                         player.sendMessage("[salmon]PCC[white]: Player Connection Closed, use ID, not UUID, to close a players connection.");
                     }
                     break;
+
                 case "unkick":
                     if (arg.length > 1) {
                         if (netServer.admins.getInfo(arg[1]).lastKicked > Time.millis()) {
@@ -1041,7 +1044,7 @@ public class Main extends Plugin {
                         player.setNet(8 * x2f,8 * y2f);
                         player.set(8 * x2f,8 * y2f);
                     } else {
-                        player.sendMessage("\"[salmon]TP[white]: Teleports player to given coordinates");
+                        player.sendMessage("[salmon]TP[white]: Teleports player to given coordinates");
                     }
                     break;
 
@@ -1064,47 +1067,87 @@ public class Main extends Plugin {
 
                 case "cr": //Changer player rank
                     if (arg.length > 2) {
-                        if (database.containsKey(arg[1])) {
-                            String a2 = arg[2];
-                            String pid= a2.replaceAll("[^0-9]", "");
+                        String uid;
+                        int rank;
+                        if (arg[1].contains("id")) {
+                            String pid = arg[2].replaceAll("[^0-9]", "");
                             if (pid.equals("")) {
-                                player.sendMessage("[salmon]CR[white]: rank must contain numbers!");
+                                player.sendMessage("[salmon]GPI[white]: player ID must contain numbers!");
                                 return;
                             }
-                            if (database.get(player.uuid).getRank() < Integer.parseInt(pid)) {
-                                player.sendMessage("You dont have permission to change ranks above " + database.get(player.uuid).getRank());
+                            Player p = playerGroup.getByID(Integer.parseInt(pid));
+                            if (p == null) {
+                                player.sendMessage("[salmon]GPI[white]: Could not find player ID `" + pid + "`.");
                                 return;
                             }
-                            database.get(arg[1]).changeRank(Integer.parseInt(pid));
-                            player.sendMessage("Changed rank of `" + arg[1] + "` to " + pid + ".");
-                            return;
+                            uid = p.uuid;
+                        } else if (arg[1].contains("uuid")){
+                            uid = arg[2];
                         } else {
-                            player.sendMessage("[salmon]CR[white]: Player UUID `" + arg[2] + "` not found in database.");
+                            player.sendMessage("[salmon]CR[white]: Use arg id or uuid. example: /a cr uuid uuid");
+                            return;
+                        }
+
+                        String x = arg[3].replaceAll("[^0-9]", "");
+                        if (x.equals("")) {
+                            player.sendMessage("[salmon]CR[white]: rank must contain numbers!");
+                            return;
+                        }
+                        rank = Integer.parseInt(x);
+                        if (database.get(player.uuid).getRank() > rank) {
+                            database.get(uid).changeRank(rank);
+                            player.sendMessage("[salmon]CR[white]: Changed rank of `" + uid + "` to " + rank + ".");
                         }
                     } else {
-                        player.sendMessage("Too few argument. use /a cr UUID rank");
+                        player.sendMessage("[salmon]CR[white]: Changes player's rank using id/uuid.");
                     }
                     break;
 
                 case "setTag":
-                    if (arg.length > 2) {
-                        if (database.containsKey(arg[1])) {
-                            if (!arg[2].contains("#")) {
-                                player.sendMessage("[salmon]ST[white]: Discord tag must contain `#`! example: abc123#4567");
-                                return;
-                            } else if (arg[2].length() <= 5) {
-                                player.sendMessage("[salmon]ST[white]: Discord tag must be at least 6 digits! example: abc123#4567");
+                    if (arg.length > 3) {
+                        boolean proceed = false;
+                        String uid;
+                        String tag;
+                        if (arg[1].equals("id")) {
+                            String pid = arg[2].replaceAll("[^0-9]", "");
+                            if (pid.equals("")) {
+                                player.sendMessage("[salmon]ST[white]: player ID must contain numbers!");
                                 return;
                             }
-                            database.get(arg[1]).setDiscordTag(arg[2]);
-                            database.get(arg[1]).verify();
-                            player.sendMessage("[salmon]ST[white]: Discord tag set to `[lightgray]" + arg[2] + "[white]` for `[lightgray]" + arg[1] +"[white]`.");
+                            Player p = playerGroup.getByID(Integer.parseInt(pid));
+                            if (p == null) {
+                                player.sendMessage("[salmon]ST[white]: Could not find player ID `" + pid + "`.");
+                                return;
+                            }
+                            uid = p.uuid;
+                            tag = arg[3];
+                            proceed = true;
+                        } else if (arg[1].equals("uuid")) {
+                            uid = arg[2];
+                            tag = arg[3];
+                            proceed = true;
                         } else {
-                            player.sendMessage("[salmon]ST[white]: Player UUID `" + arg[2] + "` not found in database.");
+                            player.sendMessage("[salmon]ST[white]: Use arg id or uuid. example: /a setTag id 132 abc123#1234");
+                            return;
                         }
-                        return;
+                        if (proceed) {
+                            if (database.containsKey(uid)) {
+                                if (!tag.contains("#")) {
+                                    player.sendMessage("[salmon]ST[white]: Discord tag must contain `#`! example: abc123#4567");
+                                    return;
+                                } else if (tag.length() <= 5) {
+                                    player.sendMessage("[salmon]ST[white]: Discord tag must be at least 6 digits! exam ple: abc123#4567");
+                                    return;
+                                }
+                                database.get(uid).setDiscordTag(tag);
+                                database.get(uid).verify();
+                                player.sendMessage("[salmon]ST[white]: Discord tag set to `[lightgray]" + tag + "[white]` for `[lightgray]" + uid +"[white]`.");
+                            } else {
+                                player.sendMessage("[salmon]ST[white]: Player not found in database.");
+                            }
+                        }
                     } else {
-                        player.sendMessage("[salmon]ST[white]: Too few argument. use /a setTag UUID Discord#Tag");
+                        player.sendMessage("[salmon]ST[white]: Verifies player and adds discord tag using String.");
                     }
                     break;
                 case "test": //test commands;
