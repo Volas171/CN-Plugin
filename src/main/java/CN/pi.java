@@ -5,8 +5,10 @@ public class pi implements java.io.Serializable {
     private int rank;
     private int tp;
     private int gp;
+    private int bb;
     private boolean verified;
     private String discordTag;
+
 
     public pi() {
         this.rank = 0;
