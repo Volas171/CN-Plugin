@@ -125,8 +125,8 @@ public class Main extends Plugin {
                     "\nConsider joining our discord \uE848 through [lightgray]https://cn-discord.ddns.net [white]or using discord code [lightgray]xQ6gGfQ" +
                     "\n\nWe have a few useful commands, do /help to see them." +
                     "\nFor \uE801 Info, do /info");
-            //Remove fake <> in name
-            player.name = player.name.replaceFirst("\\<(.*)\\>", "");
+            //Remove all <> in name
+            player.name = player.name.replaceAll("\\<(.*)\\>", "");
 
             if (database.containsKey(player.uuid)) {
                 //Admin/Mod
@@ -138,7 +138,7 @@ public class Main extends Plugin {
                         player.name = player.name + " [accent]<[royal]\uE828[accent]>";
                         break;
                     case 4:
-                        player.name = player.name + " [accent]<[lightgray]\uE80F[accent]>";
+                         player.name = player.name + " [accent]<[lightgray]\uE80F[accent]>";
                         break;
                 }
 
@@ -788,10 +788,10 @@ public class Main extends Plugin {
                 case "inf": //Infinite resources, kinda.
                     if (arg.length > 1) {
                         if (IW.contains(player.uuid)) {
-                            if (arg[1].contains("on")) {
+                            if (arg[1].equals("on")) {
                                 state.rules.infiniteResources = true;
                                 Call.sendMessage("[scarlet]<Admin> [lightgray]" + player.name + " [white] has [lime]Enabled [white]Sandbox mode.");
-                            } else if (arg[1].contains("off")) {
+                            } else if (arg[1].equals("off")) {
                                 state.rules.infiniteResources = false;
                                 Call.sendMessage("[scarlet]<Admin> [lightgray]" + player.name + " [white] has [lime]Disabled [white]Sandbox mode.");
                             } else {
@@ -1066,40 +1066,46 @@ public class Main extends Plugin {
                     break;
 
                 case "cr": //Changer player rank
-                    if (arg.length > 2) {
-                        String uid;
-                        int rank;
-                        if (arg[1].contains("id")) {
-                            String pid = arg[2].replaceAll("[^0-9]", "");
-                            if (pid.equals("")) {
-                                player.sendMessage("[salmon]GPI[white]: player ID must contain numbers!");
+                    if (arg.length > 1) {
+                        if (arg.length > 2) {
+                            String uid;
+                            int rank;
+                            if (arg[1].equals("id")) {
+                                String pid = arg[2].replaceAll("[^0-9]", "");
+                                if (pid.equals("")) {
+                                    player.sendMessage("[salmon]GPI[white]: player ID must contain numbers!");
+                                    return;
+                                }
+                                Player p = playerGroup.getByID(Integer.parseInt(pid));
+                                if (p == null) {
+                                    player.sendMessage("[salmon]GPI[white]: Could not find player ID `" + pid + "`.");
+                                    return;
+                                }
+                                uid = p.uuid;
+                            } else if (arg[1].equals("uuid")) {
+                                uid = arg[2];
+                            } else {
+                                player.sendMessage("[salmon]CR[white]: Use arg id or uuid. example: /a cr uuid uuid");
                                 return;
                             }
-                            Player p = playerGroup.getByID(Integer.parseInt(pid));
-                            if (p == null) {
-                                player.sendMessage("[salmon]GPI[white]: Could not find player ID `" + pid + "`.");
+                            if (uid.equals(player.uuid)) {
+                                player.sendMessage("[salmon]CR[white]: You cant change your own rank!");
+                            }
+                            String x = arg[3].replaceAll("[^0-9]", "");
+                            if (x.equals("")) {
+                                player.sendMessage("[salmon]CR[white]: rank must contain numbers!");
                                 return;
                             }
-                            uid = p.uuid;
-                        } else if (arg[1].contains("uuid")){
-                            uid = arg[2];
+                            rank = Integer.parseInt(x);
+                            if (database.get(player.uuid).getRank() > rank) {
+                                database.get(uid).changeRank(rank);
+                                player.sendMessage("[salmon]CR[white]: Changed rank of `" + uid + "` to " + rank + ".");
+                            }
                         } else {
-                            player.sendMessage("[salmon]CR[white]: Use arg id or uuid. example: /a cr uuid uuid");
-                            return;
-                        }
-
-                        String x = arg[3].replaceAll("[^0-9]", "");
-                        if (x.equals("")) {
-                            player.sendMessage("[salmon]CR[white]: rank must contain numbers!");
-                            return;
-                        }
-                        rank = Integer.parseInt(x);
-                        if (database.get(player.uuid).getRank() > rank) {
-                            database.get(uid).changeRank(rank);
-                            player.sendMessage("[salmon]CR[white]: Changed rank of `" + uid + "` to " + rank + ".");
+                            player.sendMessage("[salmon]CR[white]: Too few arguments. use: /a cr id 123 1");
                         }
                     } else {
-                        player.sendMessage("[salmon]CR[white]: Changes player's rank using id/uuid.");
+                        player.sendMessage("[salmon]CR[white]: Changes player's rank using id/uuid. example: /a cr id 123 1");
                     }
                     break;
 
