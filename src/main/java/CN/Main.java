@@ -1167,10 +1167,10 @@ public class Main extends Plugin {
                     String nameR = null;
                     String uid = null;
                     String reason = null;
-                    if (arg.length > 1) {
-                        if (arg.length > 2 && arg[1].equals("id")) {
-                            if (arg.length > 3) {
-                                if (arg.length > 4) {
+                    if (arg.length > 0) {
+                        if (arg.length > 1 && arg[1].equals("id")) {
+                            if (arg.length > 2) {
+                                if (arg.length > 3) {
                                     String pid = arg[2].replaceAll("[^0-9]", "");
                                     if (pid.equals("")) {
                                         player.sendMessage("[salmon]ST[white]: player ID must contain numbers!");
