@@ -72,7 +72,26 @@ public class Main extends Plugin {
                         //add 1 minute of play time for each player
                         for (Player p : playerGroup.all()) {
                             if (Main.database.containsKey(p.uuid)) {
-                                Main.database.get(p.uuid).addTP(1);
+                                Main.database.get(p.uuid).addTp(1);
+                                //auto congratulations
+                                float ptp = (float) Main.database.get(p.uuid).getTP()/60;
+                                switch (Main.database.get(p.uuid).getTP()/60) {
+                                    case 1:
+                                    case 2:
+                                    case 3:
+                                    case 4:
+                                    case 5:
+                                    case 6:
+                                    case 7:
+                                    case 8:
+                                    case 9:
+                                    case 10:
+                                    case 11:
+                                    case 12:
+                                        player.sendMessage("Congratulations to " + p.name + " [white]for staying active for " + ptp + " Hours!");
+                                    default:
+                                        return;
+                                }
                             }
                         }
                     } catch (Exception e) {
@@ -179,8 +198,20 @@ public class Main extends Plugin {
         Events.on(EventType.GameOverEvent.class, event -> {
             for (Player p : playerGroup.all()) {
                 if (database.containsKey(p.uuid)) {
-                    database.get(p.uuid).addGP();
+                    database.get(p.uuid).addGp(1);
                     Call.onInfoToast(p.con,"Games Played: +1",10);
+                }
+            }
+        });
+
+        Events.on(EventType.BlockBuildEndEvent.class, event -> {
+            Player player = event.player;
+            if (player == null) return;
+            if (event.breaking) return;
+            if (database.containsKey(player.uuid)) {
+                database.get(player.uuid).addBb(1);
+                if (database.get(player.uuid).getBB() > 10000) {
+                    Call.sendMessage("");
                 }
             }
         });
@@ -196,7 +227,7 @@ public class Main extends Plugin {
             }
             if (netServer.admins.getInfo(arg[0]).timesJoined > 0) {
                 int pr = database.get(arg[0]).getRank();
-                database.get(arg[0]).changeRank(Integer.parseInt(pid));
+                database.get(arg[0]).setRank(Integer.parseInt(pid));
                 Log.info("[R] Changed rank for {0} from {1} to {2}.", arg[0], pr, database.get(arg[0]).getRank());
             } else {
                 player.sendMessage("Player not found!");
@@ -979,7 +1010,12 @@ public class Main extends Plugin {
                 case "bl":
                     player.sendMessage("Banned Players:");
                     Array<Administration.PlayerInfo> bannedPlayers = netServer.admins.getBanned();
-                    bannedPlayers.each(pi -> player.sendMessage("[lightgray]" + pi.id +"[white] / Name: [lightgray]" + pi.lastName + "[white] / IP: [lightgray]" + pi.lastIP + "[white] / # kick: [lightgray]" + pi.timesKicked) );
+                    bannedPlayers.each(pi -> {
+                        player.sendMessage("======================================================================\n" +
+                                "[lightgray]" + pi.id +"[white] / Name: [lightgray]" + pi.lastName + "[white]\n" +
+                                " / IP: [lightgray]" + pi.lastIP + "[white] / # kick: [lightgray]" + pi.timesKicked +
+                        "\n======================================================================");
+                    });
                     break;
 
                 case "pcc": //Player close connection
@@ -1101,7 +1137,7 @@ public class Main extends Plugin {
                             }
                             rank = Integer.parseInt(x);
                             if (database.get(player.uuid).getRank() > rank) {
-                                database.get(uid).changeRank(rank);
+                                database.get(uid).setRank(rank);
                                 player.sendMessage("[salmon]CR[white]: Changed rank of `" + uid + "` to " + rank + ".");
                             }
                         } else {
@@ -1149,7 +1185,7 @@ public class Main extends Plugin {
                                     return;
                                 }
                                 database.get(uid).setDiscordTag(tag);
-                                database.get(uid).verify();
+                                database.get(uid).setVerified(true);
                                 player.sendMessage("[salmon]ST[white]: Discord tag set to `[lightgray]" + tag + "[white]` for `[lightgray]" + uid +"[white]`.");
                             } else {
                                 player.sendMessage("[salmon]ST[white]: Player not found in database.");
@@ -1230,20 +1266,6 @@ public class Main extends Plugin {
                     break;
 
                 case "test": //test commands;
-                    HashMap<String, pi> database = new HashMap<>();
-                    database.put("GycadrGQyRBAAAAAVestaQ==", new pi());
-                    database.get("GycadrGQyRBAAAAAVestaQ==").addGP();
-                    //output file
-                    try {
-                        FileOutputStream fileOut = new FileOutputStream("PDF.cn");
-                        ObjectOutputStream out = new ObjectOutputStream(fileOut);
-                        out.writeObject(database);
-                        out.close();
-                        fileOut.close();
-                        player.sendMessage("done");
-                    } catch (IOException i) {
-                        i.printStackTrace();
-                    }
                     player.sendMessage("\uE800\uE801\uE802\uE804\uE805\uE806\uE807\uE808\uE809\uE80A\uE80B\uE80C\uE80D\uE80E\uE80F\uE810\uE811\uE812\uE813\uE814\uE815\uE816\uE818\uE819\uE81A\uE81C\uE81D\uE81E\uE81F\uE820\uE821\uE822\uE824\uE828\uE829\uE82A\uE82C\uE82D\uE82E\uE82F\uE830\uE831\uE832\uE834\uE838\uE839\uE83A\uE83C\uE83D\uE83E\uE83F\uE840\uE841\uE842\uE844\uE848\uE849\uE84A\uE84C\uE84D\uE84E\uE84F\uE850\uE851\uE852\uE854\uE858\uE859\uE85A\uE85C\uE85D\uE85E\uE85F\uE860\uE861\uE862\uE864\uE868\uE869\uE86A\uE86C\uE86D\uE86E\uE86F\uE870\uE871\uE872\uE874\uE878\uE879\uE87A\uE87C\uE87D\uE87E\uE87F");
                     player.sendMessage("\uE800\uE801\uE802\uE803\uE804\uE805\uE806\uE807\uE808\uE809\uE810\uE811\uE812\uE813\uE814\uE815\uE816\uE817\uE818\uE819\uE820\uE821\uE822\uE823\uE824\uE825\uE826\uE827\uE828\uE829\uE830\uE831\uE832\uE833\uE834\uE835\uE836\uE837\uE838\uE839\uE840\uE841\uE842\uE843\uE844\uE845\uE846\uE847\uE848\uE849\uE850\uE851\uE852\uE853\uE854\uE855\uE856\uE857\uE858\uE859\uE860\uE861\uE862\uE863\uE864\uE865\uE866\uE867\uE868\uE869\uE870\uE871\uE872\uE873\uE874\uE875\uE876\uE877\uE878\uE879\uE880\uE881\uE882\uE883\uE884\uE884\uE885\uE886\uE887\uE888\uE889\uE890\uE891\uE892\uE893\uE894\uE895\uE896\uE897\uE898\uE899\uE80A\uE80B\uE80C\uE80D\uE80E\uE80F\uE81A\uE81B\uE81C\uE81D\uE81E\uE81F\uE82A\uE82B\uE82C\uE82D\uE82E\uE82F\uE83A\uE83B\uE83C\uE83D\uE83E\uE83F\uE84A\uE84B\uE84C\uE84D\uE84E\uE84F\uE85A\uE85B\uE85C\uE85D\uE85E\uE85F\uE86A\uE86B\uE86C\uE86D\uE86E\uE86F\uE87A\uE87B\uE87C\uE87D\uE87E\uE87F\uE88A\uE88B\uE88C\uE88D\uE88E\uE88F\uE89A\uE89B\uE89C\uE89d\uE89e\uE89F");
                     break;
