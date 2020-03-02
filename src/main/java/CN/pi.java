@@ -14,6 +14,7 @@ public class pi implements java.io.Serializable {
         this.rank = 0;
         this.gp = 0;
         this.tp = 0;
+        this.bb = 0;
         this.verified = false;
         this.discordTag = "N/A";
     }

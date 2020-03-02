@@ -146,7 +146,7 @@ public class Main extends Plugin {
                     "\nConsider joining our discord \uE848 through [lightgray]https://cn-discord.ddns.net [white]or using discord code [lightgray]xQ6gGfQ" +
                     "\n\nWe have a few useful commands, do /help to see them." +
                     "\nFor \uE801 Info, do /info" +
-                    "======================================================================");
+                    "\n======================================================================");
             //Remove all <> in name
             player.name = player.name.replaceAll("\\<(.*)\\>", "");
 
@@ -243,8 +243,8 @@ public class Main extends Plugin {
                 out.writeObject(database);
                 out.close();
                 fileOut.close();
-                player.sendMessage("done");
-            } catch (IOException i) {
+                Log.info("done");
+            } catch (IOException | NullPointerException i) {
                 i.printStackTrace();
             }
         });
@@ -617,13 +617,17 @@ public class Main extends Plugin {
             builder.append("[accent]List of players: \n");
             for (Player p : playerGroup.all()) {
                 String name = p.name;
-                if(p.isAdmin) {
-                    builder.append("[white]>>> \uE828 [lightgray]");
-                } else{
-                    name = name.replaceAll("\\[", "[[");
-                    builder.append("[white]");
+                if (Main.database.containsKey(p.uuid)) {
+                    if (!p.isAdmin) {
+                        name = name.replaceAll("\\[", "[[");
+                        builder.append("[white]");
+                    }
+                    for (int i = 0; i < database.get(p.uuid).getRank(); i = i + 1) {
+                        builder.append(">");
+                    }
+                    if (p.isAdmin) builder.append(" [white]\uE828 [lightgray]");
                 }
-                builder.append(name).append("[accent] : [lightgray]").append(p.id).append("\n");
+                builder.append(name).append("[accent] : [lightgray]").append(p.id).append("\n[accent]");
             }
             player.sendMessage(builder.toString());
         });
@@ -745,6 +749,7 @@ public class Main extends Plugin {
                     "\nUUID: " + player.uuid +
                     "\nRank: " + database.get(player.uuid).getRank() +
                     "\nMinutes Played: " + database.get(player.uuid).getTP() +
+                    "\nThings Built: " + database.get(player.uuid).getBB() +
                     "\nGames Played: " + database.get(player.uuid).getGP() +
                     "\nDiscord Verified?: " + dv);
         });
