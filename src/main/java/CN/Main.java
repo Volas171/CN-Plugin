@@ -6,6 +6,7 @@ import arc.Events;
 import arc.struct.Array;
 import arc.util.CommandHandler;
 import arc.util.Log;
+import arc.util.Strings;
 import arc.util.Time;
 import mindustry.Vars;
 import mindustry.core.NetClient;
@@ -149,6 +150,8 @@ public class Main extends Plugin {
                     "\n[white]======================================================================");
             //Remove all <> in name
             player.name = player.name.replaceAll("\\<(.*)\\>", "");
+            player.name = player.name.replace("<","");
+            player.name = player.name.replace(">","");
 
             if (database.containsKey(player.uuid)) {
                 //Admin/Mod
@@ -646,7 +649,7 @@ public class Main extends Plugin {
                     if (database.get(p.uuid).getRank() == 4) builder.append(" [sky]\uE80F ");
                     if (p.isAdmin) builder.append(" [white]\uE828 ");
                 }
-                builder.append("[lightgray]").append(name).append("[accent] : [lightgray]").append(p.id).append("\n[accent]");
+                builder.append("[lightgray]").append(name).append("[accent] : #[lightgray]").append(p.id).append("\n[accent]");
             }
             player.sendMessage(builder.toString());
         });
@@ -926,60 +929,58 @@ public class Main extends Plugin {
                     break;
 
                 case "gpi": //Get Player Info
-                    if (arg.length > 2 && arg[1].equals("id")) {
-                        if (arg[2].length() > 0) {
-                            String pid= arg[2].replaceAll("[^0-9]", "");
-                            if (pid.equals("")) {
-                                player.sendMessage("[salmon]GPI[white]: player ID must contain numbers!");
-                                return;
-                            }
-                            Player p = playerGroup.getByID(Integer.parseInt(pid));
+                    if (arg.length > 1 && arg[1].length() > 1) {
+                        if (arg[1].startsWith("#") && Strings.canParseInt(arg[1].substring(1))) {
+                            int id = Strings.parseInt(arg[1].substring(1));
+                            Player p = playerGroup.getByID(id);
                             if (p == null) {
-                                player.sendMessage("[salmon]GPI[white]: Could not find player ID '[lightgray]" + pid + "[white]'.");
+                                player.sendMessage("[salmon]GPI[white]: Could not find player ID '[lightgray]" + id + "[white]'.");
                                 return;
                             }
+                            String rname = byteCode.nameR(p.name);
                             String dv = "false";
-                            if (database.get(p.uuid).getVerified()) dv = "true";
-                            String name = p.name;
-                            String rname = name.replaceAll("\\[", "[[");
-                            player.sendMessage(
-                                    "Name: " + name + "[white]" +
+                            if (database.containsKey(p.uuid) && database.get(p.uuid).getVerified()) dv = "true";
+                            player.sendMessage("Name: " + p.name + "[white]" +
                                     "\nName Raw: " + rname +
                                     "\nTimes Joined: " + p.getInfo().timesJoined +
                                     "\nTimes Kicked: " + p.getInfo().timesKicked +
-                                    "\nCurrent ID: " + p.id +
                                     "\nCurrent IP: " + p.getInfo().lastIP +
                                     "\nUUID: " + p.uuid +
-                                    "\nRank: " + database.get(p.uuid).getRank() +
-                                    "\nMinutes Played: " + database.get(p.uuid).getTP() +
+                                    "\nRank: " + database.get(arg[2]).getRank() +
+                                    "\nBuildings Built: " + database.get(p.uuid).getBB() +
+                                    "\nMinutes Played: " + database.get(arg[2]).getTP() +
                                     "\nGames Played: " + database.get(p.uuid).getGP() +
-                                    "\nDiscord Verified?: " + dv);
-                            if (database.get(p.uuid).getVerified()) player.sendMessage("Discord Tag: " + database.get(p.uuid).getDiscordTag());
-                        } else {
-                            player.sendMessage("[salmon]GPI[white]: Get Player Info, use ID, not UUID, to get a player's info");
+                                    "\nDiscord Verified?: " + dv +
+                                    "\nDiscord Tag: " + database.get(p.uuid).getDiscordTag());
+                        } else if (arg[1].startsWith("#")) {
+                            player.sendMessage("ID can only contain numbers!");
+                            return;
                         }
-                    } else if (arg.length > 2 && arg[1].equals("uuid") && netServer.admins.getInfo(arg[2]).timesJoined > 0) {
-                        Administration.PlayerInfo p = netServer.admins.getInfo(arg[2]);
-                        String name = p.lastName;
-                        String rname = name.replaceAll("\\[", "[[");
-                        String dv = "false";
-                        if (database.get(arg[2]).getVerified()) dv = "true";
-                        player.sendMessage("Name: " + name + "[white]" +
-                                "\nName Raw: " + rname +
-                                "\nTimes Joined: " + p.timesJoined +
-                                "\nTimes Kicked: " + p.timesKicked +
-                                "\nCurrent IP: " + p.lastIP +
-                                "\nUUID: " + arg[2] +
-                                "\nRank: " + database.get(arg[2]).getRank() +
-                                "\nMinutes Played: " + database.get(arg[2]).getTP() +
-                                "\nGames Played: " + database.get(arg[2]).getGP() +
-                                "\nDiscord Verified?: " + dv);
-                        if (database.get(arg[2]).getVerified()) player.sendMessage("Discord Tag: " + database.get(arg[2]).getDiscordTag());
+                        else if (netServer.admins.getInfo(arg[1]).timesJoined > 0) {
+                            Administration.PlayerInfo p = netServer.admins.getInfo(arg[1]);
+                            String rname = byteCode.nameR(p.lastName);
+                            String dv = "false";
+                            if (database.containsKey(arg[1]) && database.get(arg[1]).getVerified()) dv = "true";
+                            player.sendMessage("Name: " + p.lastName + "[white]" +
+                                    "\nName Raw: " + rname +
+                                    "\nTimes Joined: " + p.timesJoined +
+                                    "\nTimes Kicked: " + p.timesKicked +
+                                    "\nCurrent IP: " + p.lastIP +
+                                    "\nUUID: " + arg[1] +
+                                    "\nRank: " + database.get(arg[1]).getRank() +
+                                    "\nBuildings Built: " + database.get(arg[1]).getBB() +
+                                    "\nMinutes Played: " + database.get(arg[1]).getTP() +
+                                    "\nGames Played: " + database.get(arg[1]).getGP() +
+                                    "\nDiscord Verified?: " + dv +
+                                    "\nDiscord Tag: " + database.get(arg[1]).getDiscordTag());
+                        } else {
+                            player.sendMessage("UUID not found!");
+                            return;
+                        }
                     } else {
                         player.sendMessage("[salmon]GPI[white]: Get Player Info, use ID or UUID, to get a player's info" +
                                 "\n[salmon]GPI[white]: use arg id or uuid. example `/a gpi uuid abc123==`");
                     }
-                    break;
 
                 case "pardon": //Un-Bans players
                     if (arg.length > 1) {
@@ -1126,9 +1127,9 @@ public class Main extends Plugin {
                             string = arg[1] + " " + arg[2];
                         }
                         String finalString = string;
-                        playerGroup.all().each(p -> p.isAdmin, o -> o.sendMessage(finalString, player, "[salmon]<AC>[white] " + NetClient.colorizeName(player.id, player.name)));
+                        playerGroup.all().each(p -> p.isAdmin, o -> o.sendMessage(finalString, player, "[#" + player.getTeam().color.toString() + "]<AC>" + NetClient.colorizeName(player.id, player.name)));
                     } else {
-                        player.sendMessage("");
+                        player.sendMessage("Admin chat, to /a ac enter-your-text-here");
                     }
                     break;
 
