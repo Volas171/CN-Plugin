@@ -146,7 +146,7 @@ public class Main extends Plugin {
                     "\nConsider joining our discord \uE848 through [lightgray]https://cn-discord.ddns.net [white]or using discord code [lightgray]xQ6gGfQ" +
                     "\n\nWe have a few useful commands, do /help to see them." +
                     "\nFor \uE801 Info, do /info" +
-                    "\n======================================================================");
+                    "\n[white]======================================================================");
             //Remove all <> in name
             player.name = player.name.replaceAll("\\<(.*)\\>", "");
 
@@ -154,25 +154,40 @@ public class Main extends Plugin {
                 //Admin/Mod
                 switch (database.get(player.uuid).getRank()) {
                     case 6:
-                        player.name = player.name + " [accent]<[scarlet]\uE814[accent]>";
+                        player.name = player.name + " " + byteCode.rankI(6);
                         break;
                     case 5:
-                        player.name = player.name + " [accent]<[royal]\uE828[accent]>";
+                        player.name = player.name + " " + byteCode.rankI(5);
                         break;
                     case 4:
-                         player.name = player.name + " [accent]<[lightgray]\uE80F[accent]>";
+                         player.name = player.name + " " + byteCode.rankI(4);
                         break;
                 }
 
                 //Verified Icon
-                if (database.containsKey(player.uuid)) {
-                    if (database.get(player.uuid).getVerified()) {
-                        player.name = player.name + " [accent]<[sky]\uE848[accent]>";
-                    }
 
+                if (database.get(player.uuid).getVerified()) {
+                    player.name = player.name + " " + byteCode.verifiedI();
                 }
             } else {
                 Call.sendMessage("[white]Welcome " + player.name + ", [white]first time on the server!");
+                player.sendMessage("[white]======================================================================\n" +
+                        "[scarlet]READ THE RULES!!![white]\n" +
+                        "General Rules\n" +
+                        "Do Not:\n" +
+                        "1) Grief or Spam.\n" +
+                        "2) Ban/Kick evade. \n" +
+                        "3) Use exploits. \n" +
+                        "4) Nuke core, that's why we have RTV.\n" +
+                        "5) Use multiple accounts.\n\n" +
+                        "Survival:\n" +
+                        "1) Pixel art permitted but must be less that 16x16. Pixel art may be removed at any point by anyone. Spamming will result in ban.\n" +
+                        "2) Belts going to core must take the least complicated yet most direct route to core. Don't snake belts and/or place on cramped places.\n" +
+                        "3) Thorium reactors must be far away from core. \n" +
+                        "4) No more than 50 draught miners per map.\n" +
+                        "5) Absolutely no exploits allowed; whether beneficial or not.\n" +
+                        "6) High power sources must be dioded." +
+                        "[white]======================================================================\n");
                 database.put(player.uuid, new pi());
             }
 
@@ -625,9 +640,13 @@ public class Main extends Plugin {
                     for (int i = 0; i < database.get(p.uuid).getRank(); i = i + 1) {
                         builder.append(">");
                     }
-                    if (p.isAdmin) builder.append(" [white]\uE828 [lightgray]");
+                    if (database.get(p.uuid).getVerified()) builder.append(" [sky]\uE848 ");
+                    if (database.get(p.uuid).getRank() == 6) builder.append(" [scarlet]\uE814 ");
+                    if (database.get(p.uuid).getRank() == 5) builder.append(" [royal]\uE828 ");
+                    if (database.get(p.uuid).getRank() == 4) builder.append(" [sky]\uE80F ");
+                    if (p.isAdmin) builder.append(" [white]\uE828 ");
                 }
-                builder.append(name).append("[accent] : [lightgray]").append(p.id).append("\n[accent]");
+                builder.append("[lightgray]").append(name).append("[accent] : [lightgray]").append(p.id).append("\n[accent]");
             }
             player.sendMessage(builder.toString());
         });
@@ -760,6 +779,10 @@ public class Main extends Plugin {
                     "\nChaotic neutral is a Mindustry server located in East US." +
                     "\nWe host 3 servers, 1111 survival, 2222 sandbox and a secret test server." +
                     "\nWe have a discord server, join us through website cn-discord.ddns.net or using discord code xQ6gGfQ" +
+                    "\n\n//ranks:\n" +
+                    byteCode.rankI(6) + " - Owner\n" +
+                    byteCode.rankI(5) + " - Admin\n" +
+                    byteCode.rankI(4) + " - Moderator[white]" +
                     "\n\n//Game tricks:" +
                     "\n1) Pressing 9 will show arrows to upgrade pads." +
                     "\n2) to use colors in chat, you can type something like" +
@@ -1191,13 +1214,14 @@ public class Main extends Plugin {
                                 }
                                 database.get(uid).setDiscordTag(tag);
                                 database.get(uid).setVerified(true);
+                                if (database.get(uid).getRank() == 0) database.get(uid).setRank(1);
                                 player.sendMessage("[salmon]ST[white]: Discord tag set to `[lightgray]" + tag + "[white]` for `[lightgray]" + uid +"[white]`.");
                             } else {
                                 player.sendMessage("[salmon]ST[white]: Player not found in database.");
                             }
                         }
                     } else {
-                        player.sendMessage("[salmon]ST[white]: Verifies player and adds discord tag using String.");
+                        player.sendMessage("[salmon]ST[white]: Verifies player and adds discord tag using String. example /a id 123 abc1234#1234");
                     }
                     break;
 
