@@ -125,15 +125,19 @@ public class Main extends Plugin {
         Events.on(EventType.PlayerJoin.class, event -> {
             Player player = event.player;
             if (autoBan) {
+                boolean proceed = false;
+                Date thisDate = new Date();
+                SimpleDateFormat dateFormat = new SimpleDateFormat("[MM/dd/Y | HH:mm:ss] ");
+                String nameR = null;
+                String uid = null;
+                String reason = null;
                 if (player.getInfo().timesKicked > (player.getInfo().timesJoined / 5)) {
-                    String playerID = player.getInfo().id;
-                    netServer.admins.banPlayer(playerID);
-                    Log.info("[B] Banned \"{0}\" [{1}] for (Kick) > (join)/5", player.name, playerID);
+                    Log.info("[B] Banned \"{0}\" [{1}] for (Kick) > (join)/5", player.name, player.uuid);
+                    byteCode.ban(player.uuid,"Kicked > Joined/5");
                     player.con.kick("Banned for being kicked most of the time. If you want to appeal, give the previous as reason.");
                 } else if (player.getInfo().timesKicked > 15) {
-                    String playerID = player.getInfo().id;
-                    netServer.admins.banPlayer(playerID);
-                    Log.info("[B] Banned \"{0}\" [{1}] for Kick > 15.", player.name, playerID);
+                    byteCode.ban(player.uuid,"Kick > 15");
+                    Log.info("[B] Banned \"{0}\" [{1}] for Kick > 15.", player.name, player.uuid);
                     player.con.kick("Banned for being kicked than 15. If you want to appeal, give the previous as reason.");
                 }
             }
@@ -157,13 +161,13 @@ public class Main extends Plugin {
                 //Admin/Mod
                 switch (database.get(player.uuid).getRank()) {
                     case 6:
-                        player.name = player.name + " " + byteCode.rankI(6);
+                        player.name = player.name + " [accent]" + byteCode.rankI(6);
                         break;
                     case 5:
-                        player.name = player.name + " " + byteCode.rankI(5);
+                        player.name = player.name + " [accent]" + byteCode.rankI(5);
                         break;
                     case 4:
-                         player.name = player.name + " " + byteCode.rankI(4);
+                         player.name = player.name + " [accent]" + byteCode.rankI(4);
                         break;
                 }
 
@@ -206,6 +210,10 @@ public class Main extends Plugin {
                 sandbox = true;
                 state.wave=2222;
             }
+
+            Vars.netServer.admins.addActionFilter(action -> {
+                return action.type != Administration.ActionType.rotate; //thx fuzz
+            });
         });
 
         Events.on(EventType.WaveEvent.class, event -> {
@@ -776,21 +784,33 @@ public class Main extends Plugin {
                     "\nDiscord Verified?: " + dv);
         });
         //Shows info.
-        handler.<Player>register("info","Shows the player info.", (args, player) -> {
-            player.sendMessage("INFO:" +
-                    "\n//About Us:" +
-                    "\nChaotic neutral is a Mindustry server located in East US." +
-                    "\nWe host 3 servers, 1111 survival, 2222 sandbox and a secret test server." +
-                    "\nWe have a discord server, join us through website cn-discord.ddns.net or using discord code xQ6gGfQ" +
-                    "\n\n//ranks:\n" +
-                    byteCode.rankI(6) + " - Owner\n" +
-                    byteCode.rankI(5) + " - Admin\n" +
-                    byteCode.rankI(4) + " - Moderator[white]" +
-                    "\n\n//Game tricks:" +
-                    "\n1) Pressing 9 will show arrows to upgrade pads." +
-                    "\n2) to use colors in chat, you can type something like" +
-                    "\n[[red]this is red text" +
-                    "\n3) Different mechs build at different speeds, Trident builds the fastest.");
+        handler.<Player>register("info","[colors]","Shows the player info.", (arg, player) -> {
+            if (arg.length == 1) {
+                switch (arg[0]) {
+                    case "colors":
+                        player.sendMessage("[clear]clear  [black]black  [white]white  [lightgray]lightgray  [gray]gray  [darkgray]darkgray  [blue]blue  [navy]navy  [royal]royal  [slate]slate  [sky]sky  [cyan]cyan  [teal]teal  [green]green  [acid]acid  [lime]lime  [forest]forest  [olive]olive  [yellow]yellow  [gold]gold  [goldenrod]goldenrod  [orange]orange  [brown]brown  [tan]tan  [brick]brick  [red]red  [scarlet]scarlet  [coral]coral  [salmon]salmon  [pink]pink  [magenta]magenta  [purple]purple  [violet]violet  [maroon]maroon");
+                        break;
+                    default:
+                        player.sendMessage("N/A");
+                        break;
+                }
+                return;
+            } else {
+                player.sendMessage("INFO:" +
+                        "\n//About Us:" +
+                        "\nChaotic neutral is a Mindustry server located in East US." +
+                        "\nWe host 3 servers, 1111 survival, 2222 sandbox and a secret test server." +
+                        "\nWe have a discord server, join us through website cn-discord.ddns.net or using discord code xQ6gGfQ" +
+                        "\n\n//ranks:\n" +
+                        byteCode.rankI(6) + " - Owner\n" +
+                        byteCode.rankI(5) + " - Admin\n" +
+                        byteCode.rankI(4) + " - Moderator[white]" +
+                        "\n\n//Game tricks:" +
+                        "\n1) Pressing 9 will show arrows to upgrade pads." +
+                        "\n2) to use colors in chat, you can type something like" +
+                        "\n[[red]this is red text" +
+                        "\n3) Different mechs build at different speeds, Trident builds the fastest.");
+            }
         });
         //finds a player discord tag
         handler.<Player>register("contact", "<id>","Verified Only - Finds a player's discord tag.", (arg, player) ->{
@@ -929,7 +949,7 @@ public class Main extends Plugin {
                     break;
 
                 case "gpi": //Get Player Info
-                    if (arg.length > 1 && arg[1].length() > 1) {
+                    if (arg.length > 1 && arg[1].length() > 3) {
                         if (arg[1].startsWith("#") && Strings.canParseInt(arg[1].substring(1))) {
                             int id = Strings.parseInt(arg[1].substring(1));
                             Player p = playerGroup.getByID(id);
@@ -955,8 +975,7 @@ public class Main extends Plugin {
                         } else if (arg[1].startsWith("#")) {
                             player.sendMessage("ID can only contain numbers!");
                             return;
-                        }
-                        else if (netServer.admins.getInfo(arg[1]).timesJoined > 0) {
+                        } else if (netServer.admins.getInfo(arg[1]).timesJoined > 0) {
                             Administration.PlayerInfo p = netServer.admins.getInfo(arg[1]);
                             String rname = byteCode.nameR(p.lastName);
                             String dv = "false";
@@ -974,14 +993,14 @@ public class Main extends Plugin {
                                     "\nDiscord Verified?: " + dv +
                                     "\nDiscord Tag: " + database.get(arg[1]).getDiscordTag());
                         } else {
-                            player.sendMessage("UUID not found!");
+                            player.sendMessage("UUID [lightgray]" + arg[1] + " []not found!");
                             return;
                         }
                     } else {
-                        player.sendMessage("[salmon]GPI[white]: Get Player Info, use ID or UUID, to get a player's info" +
-                                "\n[salmon]GPI[white]: use arg id or uuid. example `/a gpi uuid abc123==`");
+                        player.sendMessage("[salmon]GPI[white]: Get Player Info, to get a player's info" +
+                                "\n[salmon]GPI[white]: use #id or uuid. example `/a gpi abc123==`");
                     }
-
+                    break;
                 case "pardon": //Un-Bans players
                     if (arg.length > 1) {
                         if (arg.length > 2 && arg[2].equals("kick")) {
@@ -1001,49 +1020,41 @@ public class Main extends Plugin {
                     break;
 
                 case "rpk":
-                    if (arg.length > 2)  {
-                        if (arg[1].equals("id")) {
-                            String a2 = arg[2];
-                            String pid= a2.replaceAll("[^0-9]", "");
-                            if (pid.equals("")) {
-                                player.sendMessage("[salmon]GPI[white]: player ID must contain numbers!");
-                                return;
-                            }
-                            Player p = playerGroup.getByID(Integer.parseInt(pid));
+                    if (arg.length > 1 && arg[1].length() > 3) {
+                        if (arg[1].startsWith("#") && Strings.canParseInt(arg[1].substring(1))) {
+                            int id = Strings.parseInt(arg[1].substring(1));
+                            Player p = playerGroup.getByID(id);
                             if (p == null) {
-                                player.sendMessage("[salmon]GPI[white]: Could not find player ID `" + pid + "`.");
+                                player.sendMessage("[salmon]RPK[white]: Could not find player ID '[lightgray]" + id + "[white]'.");
                                 return;
                             }
                             p.getInfo().timesKicked = 0;
                             p.getInfo().timesJoined = 0;
                             player.sendMessage("[salmon]RPK[white]: Times kicked set to zero for player " + p.getInfo().lastName);
-                            Log.info("<Admin> " + player.name + " has reset times kicked for " + p.name + " ID " + pid);
-                            return;
-                        } else if (arg[1].equals("uuid")) {
-                            if (netServer.admins.getInfo(arg[2]).timesKicked > 0) {
-                                netServer.admins.getInfo(arg[2]).timesKicked = 0;
-                                player.sendMessage("[salmon]RPK[white]: Times Kicked set to zero for player uuid [lightgray]" + arg[2]);
-                                Log.info("<Admin> " + player.name + " has reset times kicked for " + netServer.admins.getInfo(arg[2]).lastName + " UUID " + arg[2]);
-                            } else {
-                                player.sendMessage("Player UUID `" + arg[2] + "` not found or kicks = 0");
-                            }
+                            Log.info("<Admin> " + player.name + " has reset times kicked for " + p.name + " ID " + id);
+                        } else if (arg[1].startsWith("#")) {
+                            player.sendMessage("ID can only contain numbers!");
+                        } else if (netServer.admins.getInfo(arg[1]).timesJoined > 0) {
+                            Administration.PlayerInfo p = netServer.admins.getInfo(arg[1]);
+                            p.timesKicked = 0;
+                            p.timesJoined = 0;
+                            player.sendMessage("[salmon]RPK[white]: Times Kicked set to zero for player uuid [lightgray]" + arg[1]);
+                            Log.info("<Admin> " + player.name + " has reset times kicked for " + p.lastName + " UUID " + arg[1]);
                         } else {
-                            player.sendMessage("[salmon]RPK[white]: Use arguments id or uuid.");
+                            player.sendMessage("UUID [lightgray]" + arg[1] + " []not found!");
                         }
                     } else {
-                        player.sendMessage("[salmon]RPK[white]: Reset Player Kicks, uses player ID or UUID, to reset player kicks." +
-                                "\n[salmon]RPK[white]: use arg id or uuid. example `/a rpk uuid abc123==`");
+                        player.sendMessage("[salmon]RPK[white]: Get Player Info, use ID or UUID, to get a player's info" +
+                                "\n[salmon]RPK[white]: use arg id or uuid. example `/a RPK abc123==`");
                     }
                     break;
-
                 case "bl":
                     player.sendMessage("Banned Players:");
                     Array<Administration.PlayerInfo> bannedPlayers = netServer.admins.getBanned();
                     bannedPlayers.each(pi -> {
-                        player.sendMessage("======================================================================\n" +
+                        player.sendMessage("[white]======================================================================\n" +
                                 "[lightgray]" + pi.id +"[white] / Name: [lightgray]" + pi.lastName + "[white]\n" +
-                                " / IP: [lightgray]" + pi.lastIP + "[white] / # kick: [lightgray]" + pi.timesKicked +
-                        "\n======================================================================");
+                                " / IP: [lightgray]" + pi.lastIP + "[white] / # kick: [lightgray]" + pi.timesKicked);
                     });
                     break;
 
@@ -1227,75 +1238,15 @@ public class Main extends Plugin {
                     break;
 
                 case "ban": //bans player
-                    boolean proceed = false;
-                    Date thisDate = new Date();
-                    SimpleDateFormat dateFormat = new SimpleDateFormat("[MM/dd/Y | H:m:s] ");
-                    String nameR = null;
-                    String uid = null;
-                    String reason = null;
-                    if (arg.length > 0) {
-                        if (arg.length > 1 && arg[1].equals("id")) {
-                            if (arg.length > 2) {
-                                if (arg.length > 3) {
-                                    String pid = arg[2].replaceAll("[^0-9]", "");
-                                    if (pid.equals("")) {
-                                        player.sendMessage("[salmon]ST[white]: player ID must contain numbers!");
-                                        return;
-                                    }
-                                    Player p = playerGroup.getByID(Integer.parseInt(pid));
-                                    if (p == null) {
-                                        player.sendMessage("[salmon]ST[white]: Could not find player ID `" + pid + "`.");
-                                        return;
-                                    }
-                                    nameR = byteCode.nameR(p.name);
-                                    uid = p.uuid;
-                                    reason = arg[3];
-                                    p.con.kick(reason, 1);
-                                    proceed = true;
-                                } else {
-                                    player.sendMessage("[salmon]BAN[white]: A reason must be provided.");
-                                }
-                            } else {
-                                player.sendMessage("[salmon]BAN[white]: ID must be provided. example /a ban id 123 reason");
-                                return;
-                            }
-                        } else if (arg.length > 2 && arg[1].equals("uuid")) {
-                            if (arg.length > 3) {
-                                if (arg.length > 4) {
-                                    nameR = byteCode.nameR(netServer.admins.getInfo(arg[2]).lastName);
-                                    uid = arg[2];
-                                    reason = arg[3];
-                                    proceed = true;
-                                } else {
-                                    player.sendMessage("[salmon]BAN[white]: A reason must be provided.");
-                                }
-                            } else {
-                                player.sendMessage("[salmon]BAN[white]: UUID must be provided. example /a ban id 123 reason");
-                                return;
-                            }
-                        } else {
-                            player.sendMessage("[salmon]BAN[white]: too few arguments, id/uuid. example /a ban id 123 reason");
-                            return;
-                        }
-                    } else {
-                        player.sendMessage("[salmon]BAN[white]: Bans player using id/uuid");
-                        return;
-                    }
-                    if (proceed && reason != null && uid != null && nameR != null) {
-                        netServer.admins.banPlayer(uid);
-                        try {
-                            File file = new File("bl.cn");
-                            FileWriter out = new FileWriter(file, true);
-                            PrintWriter pw = new PrintWriter(out);
-                            pw.println(dateFormat.format(thisDate) + nameR + " | " + uid + " | " + reason);
-                            out.close();
-                        } catch (IOException i) {
-                            i.printStackTrace();
-                        }
+                    if (arg.length > 2) {
+                        player.sendMessage(byteCode.ban(arg[1], arg[2]));
+                    } else if (arg.length > 1) {
+                        player.sendMessage("You must give reason!");
                     }
                     break;
 
                 case "test": //test commands;
+                    player.id = 100;
                     player.sendMessage("\uE800\uE801\uE802\uE804\uE805\uE806\uE807\uE808\uE809\uE80A\uE80B\uE80C\uE80D\uE80E\uE80F\uE810\uE811\uE812\uE813\uE814\uE815\uE816\uE818\uE819\uE81A\uE81C\uE81D\uE81E\uE81F\uE820\uE821\uE822\uE824\uE828\uE829\uE82A\uE82C\uE82D\uE82E\uE82F\uE830\uE831\uE832\uE834\uE838\uE839\uE83A\uE83C\uE83D\uE83E\uE83F\uE840\uE841\uE842\uE844\uE848\uE849\uE84A\uE84C\uE84D\uE84E\uE84F\uE850\uE851\uE852\uE854\uE858\uE859\uE85A\uE85C\uE85D\uE85E\uE85F\uE860\uE861\uE862\uE864\uE868\uE869\uE86A\uE86C\uE86D\uE86E\uE86F\uE870\uE871\uE872\uE874\uE878\uE879\uE87A\uE87C\uE87D\uE87E\uE87F");
                     player.sendMessage("\uE800\uE801\uE802\uE803\uE804\uE805\uE806\uE807\uE808\uE809\uE810\uE811\uE812\uE813\uE814\uE815\uE816\uE817\uE818\uE819\uE820\uE821\uE822\uE823\uE824\uE825\uE826\uE827\uE828\uE829\uE830\uE831\uE832\uE833\uE834\uE835\uE836\uE837\uE838\uE839\uE840\uE841\uE842\uE843\uE844\uE845\uE846\uE847\uE848\uE849\uE850\uE851\uE852\uE853\uE854\uE855\uE856\uE857\uE858\uE859\uE860\uE861\uE862\uE863\uE864\uE865\uE866\uE867\uE868\uE869\uE870\uE871\uE872\uE873\uE874\uE875\uE876\uE877\uE878\uE879\uE880\uE881\uE882\uE883\uE884\uE884\uE885\uE886\uE887\uE888\uE889\uE890\uE891\uE892\uE893\uE894\uE895\uE896\uE897\uE898\uE899\uE80A\uE80B\uE80C\uE80D\uE80E\uE80F\uE81A\uE81B\uE81C\uE81D\uE81E\uE81F\uE82A\uE82B\uE82C\uE82D\uE82E\uE82F\uE83A\uE83B\uE83C\uE83D\uE83E\uE83F\uE84A\uE84B\uE84C\uE84D\uE84E\uE84F\uE85A\uE85B\uE85C\uE85D\uE85E\uE85F\uE86A\uE86B\uE86C\uE86D\uE86E\uE86F\uE87A\uE87B\uE87C\uE87D\uE87E\uE87F\uE88A\uE88B\uE88C\uE88D\uE88E\uE88F\uE89A\uE89B\uE89C\uE89d\uE89e\uE89F");
                     break;
