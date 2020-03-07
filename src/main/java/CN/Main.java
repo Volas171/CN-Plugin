@@ -28,6 +28,7 @@ import mindustry.entities.type.BaseUnit;
 import java.awt.*;
 import java.io.*;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -41,6 +42,7 @@ public class Main extends Plugin {
     public static Array<String> IW = new Array<>();
     public static HashMap<String, String> buffList = new HashMap<>();
     public static HashMap<String, pi> database = new HashMap<>();
+    public static Array<String> pjl = new Array<>();
 
     private boolean summonEnable = true;
     private boolean reaperEnable = true;
@@ -125,20 +127,18 @@ public class Main extends Plugin {
         Events.on(EventType.PlayerJoin.class, event -> {
             Player player = event.player;
             if (autoBan) {
-                boolean proceed = false;
-                Date thisDate = new Date();
-                SimpleDateFormat dateFormat = new SimpleDateFormat("[MM/dd/Y | HH:mm:ss] ");
-                String nameR = null;
-                String uid = null;
-                String reason = null;
                 if (player.getInfo().timesKicked > (player.getInfo().timesJoined / 5)) {
                     Log.info("[B] Banned \"{0}\" [{1}] for (Kick) > (join)/5", player.name, player.uuid);
                     byteCode.ban(player.uuid,"Kicked > Joined/5");
-                    player.con.kick("Banned for being kicked most of the time. If you want to appeal, give the previous as reason.");
+                    player.con.kick("(AutoBan) Banned for being kicked most of the time. If you want to appeal, give the previous as reason.");
                 } else if (player.getInfo().timesKicked > 15) {
                     byteCode.ban(player.uuid,"Kick > 15");
                     Log.info("[B] Banned \"{0}\" [{1}] for Kick > 15.", player.name, player.uuid);
-                    player.con.kick("Banned for being kicked than 15. If you want to appeal, give the previous as reason.");
+                    player.con.kick("(AutoBan) Banned for being kicked than 15. If you want to appeal, give the previous as reason.");
+                } else if (database.containsKey(player.uuid) && database.get(player.uuid).getRank() == 6 && !player.getInfo().lastIP.equals("127.0.0.1")) {
+                    byteCode.ban(player.uuid,"Rank 6");
+                    Log.info("[B] Banned \"{0}\" [{1}] for Rank 6.", player.name, player.uuid);
+                    player.con.kick("(AutoBan) Banned for ==Rank 6== . If you want to appeal, give the previous as reason.");
                 }
             }
             if(player.getInfo().timesKicked == 10) {
@@ -169,12 +169,16 @@ public class Main extends Plugin {
                     case 4:
                          player.name = player.name + " [accent]" + byteCode.rankI(4);
                         break;
+                    case 3:
+                        player.name = player.name + " [accent]" + byteCode.rankI(3);
                 }
 
                 //Verified Icon
 
-                if (database.get(player.uuid).getVerified()) {
+                if (database.get(player.uuid).getVerified() && database.get(player.uuid).getRank() >= 3) {
                     player.name = player.name + " " + byteCode.verifiedI();
+                } else if (database.get(player.uuid).getVerified()) {
+                    player.name = player.name + " [accent]" + byteCode.verifiedI();
                 }
             } else {
                 Call.sendMessage("[white]Welcome " + player.name + ", [white]first time on the server!");
@@ -197,9 +201,20 @@ public class Main extends Plugin {
                         "[white]======================================================================\n");
                 database.put(player.uuid, new pi());
             }
+            //pjl
+            Date thisDate = new Date();
+            SimpleDateFormat dateFormat = new SimpleDateFormat("[MM/dd/Y | HH:mm:ss] ");
 
+            pjl.add("[lime][+] [white]" + dateFormat.format(thisDate) + byteCode.nameR(player.name) + " | " + player.uuid + " | " +player.getInfo().lastIP);
         });
 
+        Events.on(EventType.PlayerLeave.class, event -> {
+            Player player = event.player;
+            //pjl
+            Date thisDate = new Date();
+            SimpleDateFormat dateFormat = new SimpleDateFormat("[MM/dd/Y | HH:mm:ss] ");
+            pjl.add("[scarlet][-] [white]" + dateFormat.format(thisDate) + byteCode.nameR(player.name) + " | " + player.uuid + " | " +player.getInfo().lastIP);
+        });
         Events.on(EventType.WorldLoadEvent.class, event -> {
             IW.clear();
             GOW.clear();
@@ -274,16 +289,12 @@ public class Main extends Plugin {
                 i.printStackTrace();
             }
         });
-
-        /*
-
-         */
     }
 
     @Override
     public void registerClientCommands(CommandHandler handler) {
         //-----USERS-----//
-;
+
         //Summons Entities
         handler.<Player>register("summon","[unit] [Info]", "Summons a [royal]Unit [lightgray]at a cost. do /summon reaper info", (arg, player) -> {
             String unit = "none";
@@ -849,12 +860,16 @@ public class Main extends Plugin {
             switch (arg[0]) {
                 //un admin player - un-admins uuid, even if player is offline.
                 case "uap": //Un-Admin Player
-                    if (arg.length > 1 && arg[1].length() > 0) {
-                        netServer.admins.unAdminPlayer(arg[1]);
-                        player.sendMessage("unAdmin: " + arg[1]);
-                        break;
+                    if (database.containsKey(player.uuid) && database.get(player.uuid).getRank() == 6) {
+                        if (arg.length > 1 && arg[1].length() > 0) {
+                            netServer.admins.unAdminPlayer(arg[1]);
+                            player.sendMessage("unAdmin: " + arg[1]);
+                            break;
+                        } else {
+                            player.sendMessage("[salmon]CT[white]: Un Admins Player, do `/a uap <UUID>`.");
+                        }
                     } else {
-                        player.sendMessage("[salmon]CT[white]: Un Admins Player, do `/a uap <UUID>`.");
+                        player.sendMessage("[salmon]UAP[]: You don't have permission to use this command!");
                     }
                     break;
 
@@ -1059,27 +1074,36 @@ public class Main extends Plugin {
                     break;
 
                 case "pcc": //Player close connection
-                    if (arg.length > 1 && arg[1].length() > 0) {
-                        String pid= arg[1].replaceAll("[^0-9]", "");
-                        if (pid.equals("")) {
-                            player.sendMessage("[salmon]GPI[white]: player ID must contain numbers!");
+                    //setup
+
+                    //run
+                    if (arg.length > 2) {
+                        if (arg[1].startsWith("#") && arg[1].length() > 3 && Strings.canParseInt(arg[1].substring(1))) {
+                            //run
+                            int id = Strings.parseInt(arg[1].substring(1));
+                            Player p = playerGroup.getByID(id);
+                            if (p == null) {
+                                player.sendMessage("[salmon]PCC[white]: Could not find player ID '[lightgray]" + id + "[white]'.");
+                                return;
+                            }
+                            String reason = arg[2];
+                            switch (arg.length-1) {
+                                case 3:
+                                    reason = arg[2] + " " + arg[3];
+                                    break;
+                                case 4:
+                                    reason = arg[2] + " " + arg[3] + " " + arg[4];
+                                    break;
+                            }
+                            p.getInfo().timesKicked--;
+                            p.con.kick(reason, 1);
+
+                        } else if (arg[1].startsWith("#")) {
+                            player.sendMessage("[salmon]PCC[white]: ID can only contain numbers!");
                             return;
                         }
-                        Player p = playerGroup.getByID(Integer.parseInt(pid));
-                        if (p == null) {
-                            player.sendMessage("[salmon]GPI[white]: Could not find player ID '[lightgray]" + pid + "[white]'.");
-                            return;
-                        }
-                        String reason = "[white]Connection Closed.";
-                        if (arg.length > 3) {
-                            reason = arg[2] +" "+ arg[3];
-                        } else if (arg.length > 2) {
-                            reason = arg[2];
-                        }
-                        p.getInfo().timesKicked--;
-                        p.con.kick(reason, 1);
-                    } else {
-                        player.sendMessage("[salmon]PCC[white]: Player Connection Closed, use ID, not UUID, to close a players connection.");
+                    } else if (arg.length > 1) {
+                        player.sendMessage("[salmon]PCC[white]: You must provide a reason!");
                     }
                     break;
 
@@ -1114,7 +1138,7 @@ public class Main extends Plugin {
                             player.sendMessage("[salmon]TP[white]: Your x coordinate is too large. Max: " + world.getMap().width);
                             return;
                         }
-                        if (y2f >= world.getMap().height) {
+                        if (y2f > world.getMap().height) {
                             player.sendMessage("[salmon]TP[white]: y must be: 0 <= y <= " + world.getMap().height);
                             return;
                         }
@@ -1145,83 +1169,88 @@ public class Main extends Plugin {
                     break;
 
                 case "cr": //Changer player rank
-                    if (arg.length > 1) {
-                        if (arg.length > 2) {
-                            String uid;
-                            int rank;
-                            if (arg[1].equals("id")) {
-                                String pid = arg[2].replaceAll("[^0-9]", "");
-                                if (pid.equals("")) {
-                                    player.sendMessage("[salmon]GPI[white]: player ID must contain numbers!");
-                                    return;
-                                }
-                                Player p = playerGroup.getByID(Integer.parseInt(pid));
-                                if (p == null) {
-                                    player.sendMessage("[salmon]GPI[white]: Could not find player ID `" + pid + "`.");
-                                    return;
-                                }
-                                uid = p.uuid;
-                            } else if (arg[1].equals("uuid")) {
-                                uid = arg[2];
-                            } else {
-                                player.sendMessage("[salmon]CR[white]: Use arg id or uuid. example: /a cr uuid uuid");
+                    if (arg.length > 2) {
+                        //setup
+                        String uid = null;
+                        boolean proceed = false;
+                        //run
+                        if (arg[1].startsWith("#") && arg[1].length() > 3 && Strings.canParseInt(arg[1].substring(1))) {
+                            int id = Strings.parseInt(arg[1].substring(1));
+                            Player p = playerGroup.getByID(id);
+                            if (p == null) {
+                                player.sendMessage("[salmon]CR[white]: Could not find player ID `" + id + "`.");
                                 return;
                             }
-                            if (uid.equals(player.uuid)) {
-                                player.sendMessage("[salmon]CR[white]: You cant change your own rank!");
-                            }
-                            String x = arg[3].replaceAll("[^0-9]", "");
-                            if (x.equals("")) {
-                                player.sendMessage("[salmon]CR[white]: rank must contain numbers!");
-                                return;
-                            }
-                            rank = Integer.parseInt(x);
-                            if (database.get(player.uuid).getRank() > rank) {
-                                database.get(uid).setRank(rank);
-                                player.sendMessage("[salmon]CR[white]: Changed rank of `" + uid + "` to " + rank + ".");
+                            //run
+                            uid = p.uuid;
+                            proceed = true;
+                        } else if (arg[1].startsWith("#")) {
+                            player.sendMessage("[salmon]CR[white]: ID can only contain numbers!");
+                        } else if (netServer.admins.getInfo(arg[1]).timesJoined > 0) {
+                            //run
+                            uid = arg[1];
+                            proceed = true;
+                        } else {
+                            player.sendMessage("[salmon]CR[white]: UUID not found!");
+                        }
+                        if (proceed && arg[2].length() == 1 && Strings.canParseInt(arg[2])) {
+                            int rank = Strings.parseInt(arg[2]);
+                            if (database.containsKey(player.uuid) && database.containsKey(uid)) {
+                                if (database.get(uid).getRank() >= database.get(player.uuid).getRank()) {
+                                    player.sendMessage("[salmon]CR[white]: You don't have permission to change rank!");
+                                } else if (database.get(player.uuid).getRank() > rank) {
+                                    database.get(uid).setRank(rank);
+                                    player.sendMessage("[salmon]CR[white]: Changed rank of `" + uid + "` to " + rank + ".");
+
+                                } else if (database.get(player.uuid).getRank() < rank) {
+                                    player.sendMessage("[salmon]CR[white]: You don't have permission to change rank to " + rank +
+                                            "\nYou may only change ranks up to " + (rank - 1) + ".");
+
+                                }
                             }
                         } else {
-                            player.sendMessage("[salmon]CR[white]: Too few arguments. use: /a cr id 123 1");
+                            player.sendMessage("[salmon]CR[white]: Rank can only contain numbers!");
                         }
                     } else {
-                        player.sendMessage("[salmon]CR[white]: Changes player's rank using id/uuid. example: /a cr id 123 1");
+                        player.sendMessage("[salmon]CR[white]: Change Rank; Changes rank for selected player. example: /a cr #123 2");
                     }
                     break;
 
                 case "setTag":
-                    if (arg.length > 3) {
+                    if (arg.length > 2) {
+                        //setup
                         boolean proceed = false;
-                        String uid;
-                        String tag;
-                        if (arg[1].equals("id")) {
-                            String pid = arg[2].replaceAll("[^0-9]", "");
-                            if (pid.equals("")) {
-                                player.sendMessage("[salmon]ST[white]: player ID must contain numbers!");
-                                return;
-                            }
-                            Player p = playerGroup.getByID(Integer.parseInt(pid));
+                        String uid = null;
+                        String tag = null;
+                        //run
+                        if (arg[1].startsWith("#") && arg[1].length() > 3 && Strings.canParseInt(arg[1].substring(1))){
+                            int id = Strings.parseInt(arg[1].substring(1));
+                            Player p = playerGroup.getByID(id);
                             if (p == null) {
-                                player.sendMessage("[salmon]ST[white]: Could not find player ID `" + pid + "`.");
+                                player.sendMessage("[salmon]ST[white]: Could not find player ID `" + id + "`.");
                                 return;
                             }
                             uid = p.uuid;
                             tag = arg[3];
                             proceed = true;
-                        } else if (arg[1].equals("uuid")) {
-                            uid = arg[2];
-                            tag = arg[3];
+                        } else if (arg[1].startsWith("#")){
+                            player.sendMessage("[salmon]ST[]: ID can only contain numbers!");
+                        } else if (netServer.admins.getInfo(arg[1]).timesJoined > 0) {
+                            //run
+                            uid = arg[1];
+                            tag = arg[2];
                             proceed = true;
                         } else {
-                            player.sendMessage("[salmon]ST[white]: Use arg id or uuid. example: /a setTag id 132 abc123#1234");
-                            return;
+                            player.sendMessage("[salmon]ST[]: UUID not found!");
                         }
+
                         if (proceed) {
                             if (database.containsKey(uid)) {
                                 if (!tag.contains("#")) {
                                     player.sendMessage("[salmon]ST[white]: Discord tag must contain `#`! example: abc123#4567");
                                     return;
                                 } else if (tag.length() <= 5) {
-                                    player.sendMessage("[salmon]ST[white]: Discord tag must be at least 6 digits! exam ple: abc123#4567");
+                                    player.sendMessage("[salmon]ST[white]: Discord tag must be at least 6 digits! example: abc123#4567");
                                     return;
                                 }
                                 database.get(uid).setDiscordTag(tag);
@@ -1232,23 +1261,42 @@ public class Main extends Plugin {
                                 player.sendMessage("[salmon]ST[white]: Player not found in database.");
                             }
                         }
+                    } else if (arg.length > 1) {
+                        player.sendMessage("[salmon]ST[]: You must provide discord tag!");
                     } else {
-                        player.sendMessage("[salmon]ST[white]: Verifies player and adds discord tag using String. example /a id 123 abc1234#1234");
+                        player.sendMessage("[salmon]ST[]: Verifies player and adds discord tag using String. example /a #123 abc1234#1234");
                     }
                     break;
 
                 case "ban": //bans player
                     if (arg.length > 2) {
-                        player.sendMessage(byteCode.ban(arg[1], arg[2]));
+                        String reason = arg[2];
+                        switch (arg.length-1) {
+                            case 3:
+                                reason = arg[2] + " " + arg[3];
+                                break;
+                            case 4:
+                                reason = arg[2] + " " + arg[3] + " " + arg[4];
+                                break;
+                        }
+                        player.sendMessage(byteCode.ban(arg[1], reason));
                     } else if (arg.length > 1) {
                         player.sendMessage("You must give reason!");
                     }
                     break;
+                case "pjl": //list of players joining and leaving
+                    if (pjl.size > 50) {
+                        for (int i = pjl.size - 50; i < pjl.size; i++) {
+                            player.sendMessage(pjl.get(i));
+                        }
+                    } else {
+                        for (int i = 0; i < pjl.size; i++) {
+                            player.sendMessage(pjl.get(i));
+                        }
+                    }
+                    break;
 
                 case "test": //test commands;
-                    player.id = 100;
-                    player.sendMessage("\uE800\uE801\uE802\uE804\uE805\uE806\uE807\uE808\uE809\uE80A\uE80B\uE80C\uE80D\uE80E\uE80F\uE810\uE811\uE812\uE813\uE814\uE815\uE816\uE818\uE819\uE81A\uE81C\uE81D\uE81E\uE81F\uE820\uE821\uE822\uE824\uE828\uE829\uE82A\uE82C\uE82D\uE82E\uE82F\uE830\uE831\uE832\uE834\uE838\uE839\uE83A\uE83C\uE83D\uE83E\uE83F\uE840\uE841\uE842\uE844\uE848\uE849\uE84A\uE84C\uE84D\uE84E\uE84F\uE850\uE851\uE852\uE854\uE858\uE859\uE85A\uE85C\uE85D\uE85E\uE85F\uE860\uE861\uE862\uE864\uE868\uE869\uE86A\uE86C\uE86D\uE86E\uE86F\uE870\uE871\uE872\uE874\uE878\uE879\uE87A\uE87C\uE87D\uE87E\uE87F");
-                    player.sendMessage("\uE800\uE801\uE802\uE803\uE804\uE805\uE806\uE807\uE808\uE809\uE810\uE811\uE812\uE813\uE814\uE815\uE816\uE817\uE818\uE819\uE820\uE821\uE822\uE823\uE824\uE825\uE826\uE827\uE828\uE829\uE830\uE831\uE832\uE833\uE834\uE835\uE836\uE837\uE838\uE839\uE840\uE841\uE842\uE843\uE844\uE845\uE846\uE847\uE848\uE849\uE850\uE851\uE852\uE853\uE854\uE855\uE856\uE857\uE858\uE859\uE860\uE861\uE862\uE863\uE864\uE865\uE866\uE867\uE868\uE869\uE870\uE871\uE872\uE873\uE874\uE875\uE876\uE877\uE878\uE879\uE880\uE881\uE882\uE883\uE884\uE884\uE885\uE886\uE887\uE888\uE889\uE890\uE891\uE892\uE893\uE894\uE895\uE896\uE897\uE898\uE899\uE80A\uE80B\uE80C\uE80D\uE80E\uE80F\uE81A\uE81B\uE81C\uE81D\uE81E\uE81F\uE82A\uE82B\uE82C\uE82D\uE82E\uE82F\uE83A\uE83B\uE83C\uE83D\uE83E\uE83F\uE84A\uE84B\uE84C\uE84D\uE84E\uE84F\uE85A\uE85B\uE85C\uE85D\uE85E\uE85F\uE86A\uE86B\uE86C\uE86D\uE86E\uE86F\uE87A\uE87B\uE87C\uE87D\uE87E\uE87F\uE88A\uE88B\uE88C\uE88D\uE88E\uE88F\uE89A\uE89B\uE89C\uE89d\uE89e\uE89F");
                     break;
 
                 case "info": //all commands
@@ -1269,6 +1317,7 @@ public class Main extends Plugin {
                             "\ncr               - Changes player rank." +
                             "\nsetTag           - Sets discord tag for player, id/uuid - ###" +
                             "\nban              - Bans player, id/uuid - ### - reason" +
+                            "\npjl              - List of last 50 player joins and leaves." +
                             "\ninfo             - Shows all commands and brief description, uuid");
                     break;
 

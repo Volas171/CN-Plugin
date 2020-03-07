@@ -36,7 +36,7 @@ public class byteCode {
         }
     }
     public static String verifiedI() {
-        return "[accent]<[sky]\uE848[accent]>";
+        return "<[sky]\uE848[accent]>";
     }
     public static String ban(String IDuuid, String reason) {
         //setup
@@ -92,3 +92,15 @@ public class byteCode {
         return "error";
     }
 }
+/*
+if (arg[1].startsWith("#") && arg[1].length() > 3 && Strings.canParseInt(arg[1].substring(1))){
+    //run
+    int id = Strings.parseInt(arg[1].substring(1));
+} else if (arg[1].startsWith("#")){
+    player.sendMessage("ID can only contain numbers!");
+} else if (netServer.admins.getInfo(arg[1]).timesJoined > 0) {
+    //run
+} else {
+    player.sendMessage("UUID not found!");
+}
+*/
