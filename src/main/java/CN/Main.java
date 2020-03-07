@@ -154,30 +154,37 @@ public class Main extends Plugin {
                     "\n[white]======================================================================");
             //Remove all <> in name
             player.name = player.name.replaceAll("\\<(.*)\\>", "").replace("<","").replace(">","").replace("\n","");
+            StringBuilder builder = new StringBuilder();
+            builder.append(player.name);
+            for (int i = player.name.length(); i == 40; i++) {
+                builder.append(" ");
+            }
+
             //add tags
             if (database.containsKey(player.uuid)) {
                 //Admin/Mod
                 switch (database.get(player.uuid).getRank()) {
                     case 6:
-                        player.name = player.name + "\n [accent]" + byteCode.rankI(6);
+                        builder.append("\n [accent]").append(byteCode.rankI(6));
                         break;
                     case 5:
-                        player.name = player.name + "\n [accent]" + byteCode.rankI(5);
+                        builder.append("\n [accent]").append(byteCode.rankI(5));
                         break;
                     case 4:
-                         player.name = player.name + "\n [accent]" + byteCode.rankI(4);
+                        builder.append("\n [accent]").append(byteCode.rankI(4));
                         break;
                     case 3:
-                        player.name = player.name + "\n [accent]" + byteCode.rankI(3);
+                        builder.append("\n [accent]").append(byteCode.rankI(3));
                 }
 
                 //Verified Icon
 
                 if (database.get(player.uuid).getVerified() && database.get(player.uuid).getRank() >= 3) {
-                    player.name = player.name + " " + byteCode.verifiedI();
+                    builder.append(" ").append(byteCode.verifiedI());
                 } else if (database.get(player.uuid).getVerified()) {
-                    player.name = player.name + " [accent]" + byteCode.verifiedI();
+                    builder.append(" [accent]").append(byteCode.verifiedI());
                 }
+                player.name = builder.toString();
             } else {
                 Call.sendMessage("[white]Welcome " + player.name + ", [white]first time on the server!");
                 player.sendMessage("[white]======================================================================\n" +
