@@ -24,6 +24,7 @@ import mindustry.world.blocks.storage.CoreBlock;
 import mindustry.content.Items;
 import mindustry.content.UnitTypes;
 import mindustry.entities.type.BaseUnit;
+import sun.management.counter.perf.PerfLongArrayCounter;
 
 import java.awt.*;
 import java.io.*;
@@ -60,46 +61,45 @@ public class Main extends Plugin {
                 while (true) {
                     try {
                         Thread.sleep(60 * 1000);
-
-                        //output PI save file
-                        try {
-                            FileOutputStream fileOut = new FileOutputStream("PDF.cn");
-                            ObjectOutputStream out = new ObjectOutputStream(fileOut);
-                            out.writeObject(Main.database);
-                            out.close();
-                            fileOut.close();
-                        } catch (IOException i) {
-                            i.printStackTrace();
-                        }
-
-                        //add 1 minute of play time for each player
-                        for (Player p : playerGroup.all()) {
-                            if (Main.database.containsKey(p.uuid)) {
-                                Main.database.get(p.uuid).addTp(1);
-                                //auto congratulations
-                                float ptp = (float) Main.database.get(p.uuid).getTP()/60;
-                                switch (Main.database.get(p.uuid).getTP()/60) {
-                                    case 1:
-                                    case 2:
-                                    case 3:
-                                    case 4:
-                                    case 5:
-                                    case 6:
-                                    case 7:
-                                    case 8:
-                                    case 9:
-                                    case 10:
-                                    case 11:
-                                    case 12:
-                                        player.sendMessage("Congratulations to " + p.name + " [white]for staying active for " + ptp + " Hours!");
-                                    default:
-                                        return;
-                                }
-                            }
-                        }
-                    } catch (Exception e) {
+                    } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
+                    //output PI save file
+                    try {
+                        FileOutputStream fileOut = new FileOutputStream("PDF.cn");
+                        ObjectOutputStream out = new ObjectOutputStream(fileOut);
+                        out.writeObject(Main.database);
+                        out.close();
+                        fileOut.close();
+                    } catch (IOException i) {
+                        i.printStackTrace();
+                    }
+
+                    //add 1 minute of play time for each player
+                    for (Player p : playerGroup.all()) {
+                        if (Main.database.containsKey(p.uuid)) {
+                            Main.database.get(p.uuid).addTp(1);
+                            Call.onInfoToast(p.con,"+1 minutes played.", 3);
+                            //auto congratulations
+                            switch (Main.database.get(p.uuid).getTP()) {
+                                case 1 * 60:
+                                case 2* 60:
+                                case 3* 60:
+                                case 4* 60:
+                                case 5* 60:
+                                case 6* 60:
+                                case 7* 60:
+                                case 8* 60:
+                                case 9* 60:
+                                case 10* 60:
+                                case 11* 60:
+                                case 12* 60:
+                                    Call.sendMessage("Congratulations to " + p.name + " [white]for staying active for " + (Main.database.get(p.uuid).getTP()/60) + " Hours!");
+                                default:
+                                    break;
+                            }
+                            }
+                        }
                 }
             }
         };
@@ -153,24 +153,22 @@ public class Main extends Plugin {
                     "\nFor \uE801 Info, do /info" +
                     "\n[white]======================================================================");
             //Remove all <> in name
-            player.name = player.name.replaceAll("\\<(.*)\\>", "");
-            player.name = player.name.replace("<","");
-            player.name = player.name.replace(">","");
-
+            player.name = player.name.replaceAll("\\<(.*)\\>", "").replace("<","").replace(">","").replace("\n","");
+            //add tags
             if (database.containsKey(player.uuid)) {
                 //Admin/Mod
                 switch (database.get(player.uuid).getRank()) {
                     case 6:
-                        player.name = player.name + " [accent]" + byteCode.rankI(6);
+                        player.name = player.name + "\n [accent]" + byteCode.rankI(6);
                         break;
                     case 5:
-                        player.name = player.name + " [accent]" + byteCode.rankI(5);
+                        player.name = player.name + "\n [accent]" + byteCode.rankI(5);
                         break;
                     case 4:
-                         player.name = player.name + " [accent]" + byteCode.rankI(4);
+                         player.name = player.name + "\n [accent]" + byteCode.rankI(4);
                         break;
                     case 3:
-                        player.name = player.name + " [accent]" + byteCode.rankI(3);
+                        player.name = player.name + "\n [accent]" + byteCode.rankI(3);
                 }
 
                 //Verified Icon
@@ -663,9 +661,10 @@ public class Main extends Plugin {
                         builder.append(">");
                     }
                     if (database.get(p.uuid).getVerified()) builder.append(" [sky]\uE848 ");
-                    if (database.get(p.uuid).getRank() == 6) builder.append(" [scarlet]\uE814 ");
-                    if (database.get(p.uuid).getRank() == 5) builder.append(" [royal]\uE828 ");
-                    if (database.get(p.uuid).getRank() == 4) builder.append(" [sky]\uE80F ");
+                    if (database.get(p.uuid).getRank() == 6) builder.append(" ").append(byteCode.rankI(6));
+                    if (database.get(p.uuid).getRank() == 5) builder.append(" ").append(byteCode.rankI(5));
+                    if (database.get(p.uuid).getRank() == 4) builder.append(" ").append(byteCode.rankI(4));
+                    if (database.get(p.uuid).getRank() == 3) builder.append(" ").append(byteCode.rankI(3));
                     if (p.isAdmin) builder.append(" [white]\uE828 ");
                 }
                 builder.append("[lightgray]").append(name).append("[accent] : #[lightgray]").append(p.id).append("\n[accent]");
@@ -812,10 +811,11 @@ public class Main extends Plugin {
                         "\nChaotic neutral is a Mindustry server located in East US." +
                         "\nWe host 3 servers, 1111 survival, 2222 sandbox and a secret test server." +
                         "\nWe have a discord server, join us through website cn-discord.ddns.net or using discord code xQ6gGfQ" +
-                        "\n\n//ranks:\n" +
+                        "\n\n//ranks:\n[accent]" +
                         byteCode.rankI(6) + " - Owner\n" +
                         byteCode.rankI(5) + " - Admin\n" +
-                        byteCode.rankI(4) + " - Moderator[white]" +
+                        byteCode.rankI(4) + " - Moderator\n" +
+                        byteCode.rankI(3) + " - Semi Moderator[white]" +
                         "\n\n//Game tricks:" +
                         "\n1) Pressing 9 will show arrows to upgrade pads." +
                         "\n2) to use colors in chat, you can type something like" +
@@ -981,9 +981,9 @@ public class Main extends Plugin {
                                     "\nTimes Kicked: " + p.getInfo().timesKicked +
                                     "\nCurrent IP: " + p.getInfo().lastIP +
                                     "\nUUID: " + p.uuid +
-                                    "\nRank: " + database.get(arg[2]).getRank() +
+                                    "\nRank: " + database.get(p.uuid).getRank() +
                                     "\nBuildings Built: " + database.get(p.uuid).getBB() +
-                                    "\nMinutes Played: " + database.get(arg[2]).getTP() +
+                                    "\nMinutes Played: " + database.get(p.uuid).getTP() +
                                     "\nGames Played: " + database.get(p.uuid).getGP() +
                                     "\nDiscord Verified?: " + dv +
                                     "\nDiscord Tag: " + database.get(p.uuid).getDiscordTag());
@@ -1154,13 +1154,13 @@ public class Main extends Plugin {
                 case "ac":
                     if (arg.length > 1) {
                         String string = null;
-                        string = arg[1];
-                        if (arg.length > 2) {
-                            if (arg.length > 3) {
-                                string = arg[1] + " " + arg[2] + " " + arg[3];
-                            }
-                            string = arg[1] + " " + arg[2];
+                        switch (arg.length - 1) {
+                            case 1:
+                            case 2:
+                            case 3:
+                            case 4:
                         }
+
                         String finalString = string;
                         playerGroup.all().each(p -> p.isAdmin, o -> o.sendMessage(finalString, player, "[#" + player.getTeam().color.toString() + "]<AC>" + NetClient.colorizeName(player.id, player.name)));
                     } else {
@@ -1231,7 +1231,7 @@ public class Main extends Plugin {
                                 return;
                             }
                             uid = p.uuid;
-                            tag = arg[3];
+                            tag = arg[2];
                             proceed = true;
                         } else if (arg[1].startsWith("#")){
                             player.sendMessage("[salmon]ST[]: ID can only contain numbers!");
