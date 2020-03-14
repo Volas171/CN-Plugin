@@ -1184,6 +1184,7 @@ public class Main extends Plugin {
                                 break;
                             case 3:
                                 string = arg[1]+" "+arg[2]+" "+arg[3];
+                                break;
                             case 4:
                                 string = arg[1]+" "+arg[2]+" "+arg[3]+" "+arg[4];
                         }
