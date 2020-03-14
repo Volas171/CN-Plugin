@@ -20,17 +20,18 @@ public class byteCode {
     public static String rankI(int i) {
         switch (i) {
             case 6:
-                return "<[scarlet]\uE814[accent]>";
+                return "[accent]<[scarlet]\uE814[accent]>";
             case 5:
-                return "<[royal]\uE828[accent]>";
+                return "[accent]<[royal]\uE828[accent]>";
             case 4:
-                return "<[lightgray]\uE80F[accent]>";
+                return "[accent]<[lightgray]\uE80F[accent]>";
             case 3:
-                return "<[lime]\uE85B[accent]>";
+                return "[accent]<[lime]\uE85B[accent]>";
             case 2:
-                return "\uE809";
+                return "[accent]<\uE809>";
             case 1:
-                return "";
+            case 0:
+                return "<>";
             default:
                 return "ERR";
         }

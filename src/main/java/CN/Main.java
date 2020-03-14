@@ -55,54 +55,7 @@ public class Main extends Plugin {
     private boolean sandbox = false;
     public Main() throws InterruptedException {
 
-        Thread PIAS = new Thread() {
-            public void run() {
-                Log.info("PIAS started Successfully!");
-                while (true) {
-                    try {
-                        Thread.sleep(60 * 1000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    //output PI save file
-                    try {
-                        FileOutputStream fileOut = new FileOutputStream("PDF.cn");
-                        ObjectOutputStream out = new ObjectOutputStream(fileOut);
-                        out.writeObject(Main.database);
-                        out.close();
-                        fileOut.close();
-                    } catch (IOException i) {
-                        i.printStackTrace();
-                    }
 
-                    //add 1 minute of play time for each player
-                    for (Player p : playerGroup.all()) {
-                        if (Main.database.containsKey(p.uuid)) {
-                            Main.database.get(p.uuid).addTp(1);
-                            Call.onInfoToast(p.con,"+1 minutes played.", 3);
-                            //auto congratulations
-                            switch (Main.database.get(p.uuid).getTP()) {
-                                case 1 * 60:
-                                case 2* 60:
-                                case 3* 60:
-                                case 4* 60:
-                                case 5* 60:
-                                case 6* 60:
-                                case 7* 60:
-                                case 8* 60:
-                                case 9* 60:
-                                case 10* 60:
-                                case 11* 60:
-                                case 12* 60:
-                                    Call.sendMessage("Congratulations to " + p.name + " [white]for staying active for " + (Main.database.get(p.uuid).getTP()/60) + " Hours!");
-                                default:
-                                    break;
-                            }
-                            }
-                        }
-                }
-            }
-        };
 
         //load all player info.
         try {
@@ -122,8 +75,63 @@ public class Main extends Plugin {
         }
         //PIAS Start
         Log.info("Attempting to start PIAS...");
-        PIAS.start();
 
+        Events.on(EventType.ServerLoadEvent.class, event -> {
+
+            netServer.admins.addChatFilter((player, text) -> null);
+
+
+            Thread PIAS = new Thread() {
+                public void run() {
+                    Log.info("PIAS started Successfully!");
+                    while (true) {
+                        try {
+                            Thread.sleep(60 * 1000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        //output PI save file
+                        try {
+                            FileOutputStream fileOut = new FileOutputStream("PDF.cn");
+                            ObjectOutputStream out = new ObjectOutputStream(fileOut);
+                            out.writeObject(Main.database);
+                            out.close();
+                            fileOut.close();
+                        } catch (IOException i) {
+                            i.printStackTrace();
+                        }
+
+                        //add 1 minute of play time for each player
+                        for (Player p : playerGroup.all()) {
+                            if (Main.database.containsKey(p.uuid)) {
+                                Main.database.get(p.uuid).addTp(1);
+                                Call.onInfoToast(p.con,"+1 minutes played.", 3);
+                                //auto congratulations
+                                switch (Main.database.get(p.uuid).getTP()) {
+                                    case 1 * 60:
+                                    case 2* 60:
+                                    case 3* 60:
+                                    case 4* 60:
+                                    case 5* 60:
+                                    case 6* 60:
+                                    case 7* 60:
+                                    case 8* 60:
+                                    case 9* 60:
+                                    case 10* 60:
+                                    case 11* 60:
+                                    case 12* 60:
+                                        Call.sendMessage("Congratulations to " + p.name + " [white]for staying active for " + (Main.database.get(p.uuid).getTP()/60) + " Hours!");
+                                    default:
+                                        break;
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+            Log.info("Attempting to start PIAS...");
+            PIAS.start();
+        });
         Events.on(EventType.PlayerJoin.class, event -> {
             Player player = event.player;
             if (autoBan) {
@@ -154,37 +162,28 @@ public class Main extends Plugin {
                     "\n[white]======================================================================");
             //Remove all <> in name
             player.name = player.name.replaceAll("\\<(.*)\\>", "").replace("<","").replace(">","").replace("\n","");
-            StringBuilder builder = new StringBuilder();
-            builder.append(player.name);
-            for (int i = player.name.length(); i == 40; i++) {
-                builder.append(" ");
-            }
-
             //add tags
             if (database.containsKey(player.uuid)) {
                 //Admin/Mod
                 switch (database.get(player.uuid).getRank()) {
                     case 6:
-                        builder.append("\n [accent]").append(byteCode.rankI(6));
-                        break;
+                       Call.sendMessage("??? " + player.name + " []has joined the server");
+                       break;
                     case 5:
-                        builder.append("\n [accent]").append(byteCode.rankI(5));
+                        Call.sendMessage("Admin " + player.name + " []has joined the server");
                         break;
                     case 4:
-                        builder.append("\n [accent]").append(byteCode.rankI(4));
+                        Call.sendMessage("Mod " + player.name + " []has joined the server");
                         break;
                     case 3:
-                        builder.append("\n [accent]").append(byteCode.rankI(3));
-                }
+                        Call.sendMessage("Semi-Mod " + player.name + " []has joined the server");
+                        break;
+                    case 2:
+                        Call.sendMessage("Active player " + player.name + " []has joined the server");
+                        break;
+                    default:
 
-                //Verified Icon
-
-                if (database.get(player.uuid).getVerified() && database.get(player.uuid).getRank() >= 3) {
-                    builder.append(" ").append(byteCode.verifiedI());
-                } else if (database.get(player.uuid).getVerified()) {
-                    builder.append(" [accent]").append(byteCode.verifiedI());
                 }
-                player.name = builder.toString();
             } else {
                 Call.sendMessage("[white]Welcome " + player.name + ", [white]first time on the server!");
                 player.sendMessage("[white]======================================================================\n" +
@@ -256,9 +255,23 @@ public class Main extends Plugin {
             if (event.breaking) return;
             if (database.containsKey(player.uuid)) {
                 database.get(player.uuid).addBb(1);
-                if (database.get(player.uuid).getBB() > 10000) {
-                    Call.sendMessage("");
+                if (database.get(player.uuid).getBB() == 10000) {
+                    Call.sendMessage("Congratulations to " + player.name + " []for building his/her 10,000th block!");
                 }
+            }
+        });
+
+        Events.on(EventType.PlayerChatEvent.class, e-> {
+            if (database.containsKey(e.player.uuid) && !e.message.startsWith("/")) {
+                String rankI = byteCode.rankI(database.get(e.player.uuid).getRank());
+                String dI = "";
+                if (database.get(e.player.uuid).getVerified()) {
+                    dI = " " + byteCode.verifiedI();
+                }
+                Call.sendMessage(rankI + dI + " [white]" + e.player.name + ": [white]" + e.message);
+            } else if (!database.containsKey(e.player.uuid)){
+                e.player.getInfo().timesKicked--;
+                e.player.con.kick("ERROR - PLAYER CHAT EVENT\npls report what you did to get this error.");
             }
         });
     }
@@ -280,7 +293,7 @@ public class Main extends Plugin {
             }
         });
 
-        handler.register("gnpdf", "List all thorium reactors in the map.", arg -> {
+        handler.register("gnpdf", "Generates new PDF.cn file.", arg -> {
             database.clear();
             database.put("TEST", new pi());
             try {
@@ -1163,9 +1176,15 @@ public class Main extends Plugin {
                         String string = null;
                         switch (arg.length - 1) {
                             case 1:
+                                string = arg[1];
+                                break;
                             case 2:
+                                string = arg[1]+" "+arg[2];
+                                break;
                             case 3:
+                                string = arg[1]+" "+arg[2]+" "+arg[3];
                             case 4:
+                                string = arg[1]+" "+arg[2]+" "+arg[3]+" "+arg[4];
                         }
 
                         String finalString = string;
