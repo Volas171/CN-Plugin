@@ -269,6 +269,7 @@ public class Main extends Plugin {
                     dI = " " + byteCode.verifiedI();
                 }
                 Call.sendMessage(rankI + dI + " [white]" + e.player.name + ": [white]" + e.message);
+                Log.info(e.player.name + ": [white]" + e.message);
             } else if (!database.containsKey(e.player.uuid)){
                 e.player.getInfo().timesKicked--;
                 e.player.con.kick("ERROR - PLAYER CHAT EVENT\npls report what you did to get this error.");
