@@ -29,11 +29,8 @@ import sun.management.counter.perf.PerfLongArrayCounter;
 import java.awt.*;
 import java.io.*;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.Date;
 
 import static mindustry.Vars.*;
 
@@ -1295,7 +1292,7 @@ public class Main extends Plugin {
                         player.sendMessage("[salmon]ST[]: Verifies player and adds discord tag using String. example /a #123 abc1234#1234");
                     }
                     break;
-
+                /*
                 case "ban": //bans player
                     if (arg.length > 2) {
                         String reason = arg[2];
@@ -1310,6 +1307,18 @@ public class Main extends Plugin {
                         player.sendMessage(byteCode.ban(arg[1], reason));
                     } else if (arg.length > 1) {
                         player.sendMessage("You must give reason!");
+                    } else {
+                        player.sendMessage("Bans a player using uuid and reason. example; ban asd123 being a griefer");
+                    }
+                    break;
+                 */
+                case "ban":
+                    if (arg.length > 2) {
+                        player.sendMessage(byteCode.ban(arg[1],arg[2]));
+                    } else if (arg.length > 1) {
+                        player.sendMessage("[salmon]BAN[]: You must provide a reason.");
+                    } else {
+                        player.sendMessage("[salmon]BAN[]: Bans a player, ID/UUID - reason");
                     }
                     break;
                 case "pjl": //list of players joining and leaving
@@ -1323,29 +1332,43 @@ public class Main extends Plugin {
                         }
                     }
                     break;
-
+                case "kill"://kills player
+                    if (arg.length > 1) {
+                        if (arg[1].startsWith("#") && arg[1].length() > 3 && Strings.canParseInt(arg[1].substring(1))) {
+                            int id = Strings.parseInt(arg[1].substring(1));
+                            Player p = playerGroup.getByID(id);
+                            p.dead = true;
+                            Call.onInfoToast(p.con,"Killed.",1);
+                        } else if (arg[1].startsWith("#")) {
+                            player.sendMessage("ID can only contain numbers!");
+                        }
+                    } else {
+                        player.sendMessage("[salmon]K[]: Kills player using id.\nexample: /a kill #1234");
+                    }
+                    break;
                 case "test": //test commands;
                     break;
 
                 case "info": //all commands
                     player.sendMessage("\tAvailable Commands:" +
-                            "\nuap              - Un Admins Player, [uud]" +
+                            "\nuap              - Un Admins Player, UUID" +
                             "\ngameover         - Triggers game over." +
-                            "\ninf              - Infinite Items." +
+                            "\ninf              - Infinite Items, on/off" +
                             "\n10k              - Adds 10k of every resource to core." +
                             "\nteam             - Changes team, team" +
-                            "\ngpi              - Gets Player Info, ID/UUID - ###" +
+                            "\ngpi              - Gets Player Info, #ID/UUID" +
                             "\npardon           - Un-Bans a player, UUID" +
-                            "\nrpk              - Resets player kick count, ID/UUID - ###" +
+                            "\nrpk              - Resets player kick count, #ID/UUID" +
                             "\nbl               - Shows Ban List." +
                             "\npcc              - Closes a player connection." +
                             "\nunkick           - Un-Kicks a player, UUID." +
                             "\ntp               - Teleports player, x - y" +
                             "\nac               - Admin Chat" +
                             "\ncr               - Changes player rank." +
-                            "\nsetTag           - Sets discord tag for player, id/uuid - ###" +
-                            "\nban              - Bans player, id/uuid - ### - reason" +
+                            "\nsetTag           - Sets discord tag for player, #id/uuid - Tag#Number" +
+                            "\nban              - Bans a player, #ID/UUID - reason" +
                             "\npjl              - List of last 50 player joins and leaves." +
+                            "\nkill             - Kills player, #ID" +
                             "\ninfo             - Shows all commands and brief description, uuid");
                     break;
 
@@ -1355,6 +1378,27 @@ public class Main extends Plugin {
                         y = y + 1;
                         Call.onInfoMessage(player.con, String.valueOf(y));
                     }
+                    break;
+                case "mus":
+                    Thread mus = new Thread() {
+                        public void run() {
+                            Random rand = new Random();
+                            for (int i = 0; i < 30; i++){
+                                for (Player p : playerGroup.all()) {
+                                    p.set(rand.nextInt(world.width())*8,rand.nextInt(world.height())*8);
+                                    p.setNet(rand.nextInt(world.width())*8,rand.nextInt(world.height())*8);
+                                    p.set(rand.nextInt(world.width())*8,rand.nextInt(world.height())*8);
+                                }
+                                try {
+                                    Thread.sleep(1000);
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }
+                    };
+                    mus.start();
+                    Call.sendMessage("Blame " + player.name);
                     break;
                 //if none of the above commands used.
                 default:
