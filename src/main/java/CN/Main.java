@@ -24,7 +24,6 @@ import mindustry.world.blocks.storage.CoreBlock;
 import mindustry.content.Items;
 import mindustry.content.UnitTypes;
 import mindustry.entities.type.BaseUnit;
-import sun.management.counter.perf.PerfLongArrayCounter;
 
 import java.awt.*;
 import java.io.*;
@@ -50,6 +49,7 @@ public class Main extends Plugin {
     private String mba = "[white]You must be [scarlet]<Admin> [white]to use this command.";
     private boolean autoBan = true;
     private boolean sandbox = false;
+
     public Main() throws InterruptedException {
 
 
@@ -104,22 +104,10 @@ public class Main extends Plugin {
                                 Main.database.get(p.uuid).addTp(1);
                                 Call.onInfoToast(p.con,"+1 minutes played.", 3);
                                 //auto congratulations
-                                switch (Main.database.get(p.uuid).getTP()) {
-                                    case 1 * 60:
-                                    case 2* 60:
-                                    case 3* 60:
-                                    case 4* 60:
-                                    case 5* 60:
-                                    case 6* 60:
-                                    case 7* 60:
-                                    case 8* 60:
-                                    case 9* 60:
-                                    case 10* 60:
-                                    case 11* 60:
-                                    case 12* 60:
-                                        Call.sendMessage("Congratulations to " + p.name + " [white]for staying active for " + (Main.database.get(p.uuid).getTP()/60) + " Hours!");
-                                    default:
-                                        break;
+                                int y = Main.database.get(p.uuid).getTP() / 60;
+                                float z = (float) Main.database.get(p.uuid).getTP()/60;
+                                if ((float) y == z) {
+                                    Call.sendMessage("Congratulations to " + p.name + " [white]for staying active for " + y + " Hours!");
                                 }
                             }
                         }
@@ -140,8 +128,8 @@ public class Main extends Plugin {
                     byteCode.ban(player.uuid,"Kick > 15");
                     Log.info("[B] Banned \"{0}\" [{1}] for Kick > 15.", player.name, player.uuid);
                     player.con.kick("(AutoBan) Banned for being kicked than 15. If you want to appeal, give the previous as reason.");
-                } else if (database.containsKey(player.uuid) && database.get(player.uuid).getRank() == 6 && !player.getInfo().lastIP.equals("127.0.0.1")) {
-                    byteCode.ban(player.uuid,"Rank 6");
+                } else if (database.containsKey(player.uuid) && database.get(player.uuid).getRank() == 7 && !player.getInfo().lastIP.equals("127.0.0.1")) {
+                    byteCode.ban(player.uuid,"Rank 7");
                     Log.info("[B] Banned \"{0}\" [{1}] for Rank 6.", player.name, player.uuid);
                     player.con.kick("(AutoBan) Banned for ==Rank 6== . If you want to appeal, give the previous as reason.");
                 }
@@ -163,20 +151,23 @@ public class Main extends Plugin {
             if (database.containsKey(player.uuid)) {
                 //Admin/Mod
                 switch (database.get(player.uuid).getRank()) {
-                    case 6:
-                       Call.sendMessage("??? " + player.name + " []has joined the server");
+                    case 7:
+                       Call.sendMessage("??? " + player.name + " [white]has joined the server");
                        break;
+                    case 6:
+                        Call.sendMessage("Admin " + player.name + " [white]has joined the server");
+                        break;
                     case 5:
-                        Call.sendMessage("Admin " + player.name + " []has joined the server");
+                        Call.sendMessage("Mod " + player.name + " [white]has joined the server");
                         break;
                     case 4:
-                        Call.sendMessage("Mod " + player.name + " []has joined the server");
+                        Call.sendMessage("Semi-Mod " + player.name + " [white]has joined the server");
                         break;
                     case 3:
-                        Call.sendMessage("Semi-Mod " + player.name + " []has joined the server");
+                        Call.sendMessage("Super Active player " + player.name + " [white]has joined the server");
                         break;
                     case 2:
-                        Call.sendMessage("Active player " + player.name + " []has joined the server");
+                        Call.sendMessage("Active player " + player.name + " [white]has joined the server");
                         break;
                     default:
 
@@ -207,6 +198,35 @@ public class Main extends Plugin {
             SimpleDateFormat dateFormat = new SimpleDateFormat("[MM/dd/Y | HH:mm:ss] ");
 
             pjl.add("[lime][+] [white]" + dateFormat.format(thisDate) + byteCode.nameR(player.name) + " | " + player.uuid + " | " +player.getInfo().lastIP);
+
+            //auto rank
+            if (database.containsKey(player.uuid)) {
+                if (!sandbox) {
+                    if (database.get(player.uuid).getRank() == 1) {
+                        pi d = database.get(player.uuid);
+                        if (d.getTP() > 8 * 60 * 60 && d.getGP() > 15) {
+                            Call.sendMessage("Rank Updated for " + player.name + " [white]to [accent]Active Player[white]!");
+                        }
+                    } else if (database.get(player.uuid).getRank() == 2) {
+                        pi d = database.get(player.uuid);
+                        if (d.getTP() > 24 * 60 * 60 && d.getGP() > 45) {
+                            Call.sendMessage("Rank Updated for " + player.name + " [white]to [gold]Super Active [white]Player!");
+                        }
+                    }
+                } else if (sandbox) {
+                    if (database.get(player.uuid).getRank() == 1) {
+                        pi d = database.get(player.uuid);
+                        if (d.getTP() > 8 * 60 * 60) {
+                            Call.sendMessage("Rank Updated for " + player.name + " [white]to [accent]Active Player[white]!");
+                        }
+                    } else if (database.get(player.uuid).getRank() == 2) {
+                        pi d = database.get(player.uuid);
+                        if (d.getTP() > 8 * 60 * 60) {
+                            Call.sendMessage("Rank Updated for " + player.name + " [white]to [gold]Super Active [white]Player!");
+                        }
+                    }
+                }
+            }
         });
 
         Events.on(EventType.PlayerLeave.class, event -> {
@@ -228,6 +248,27 @@ public class Main extends Plugin {
             }
 
             Vars.netServer.admins.addActionFilter(action -> {
+                player = action.player;
+                if (player == null) return true;
+
+                String uuid = player.uuid;
+                if (uuid == null) return true;
+
+                if (playerGroup.size() > 5 && database.containsKey(player.uuid) && database.get(player.uuid).getRank() == 0) {
+                    Teams.TeamData teamData = state.teams.get(player.getTeam());
+                    CoreBlock.CoreEntity core = teamData.cores.first();
+                    if (core == null) {
+                        Log.err("addAdminFilter - Core is null");
+                        player.getInfo().timesKicked--;
+                        player.con.kick("ERROR - addAdminActionFilter\nplease report what you did to get this issue in CN discord",1);
+                        return true;
+                    }
+                    if (action.tile.x >= ((core.x/8) - 15) && ((core.x/8) + 15) >= action.tile.x && action.tile.y >= ((core.y/8) - 15) && ((core.y/8) + 15) >= action.tile.y) {
+                        player.sendMessage("Unable to edit core - please get verified through discord.");
+                        return  false;
+                    }
+                }
+
                 return action.type != Administration.ActionType.rotate; //thx fuzz
             });
         });
@@ -830,10 +871,14 @@ public class Main extends Plugin {
                         "\nWe host 3 servers, 1111 survival, 2222 sandbox and a secret test server." +
                         "\nWe have a discord server, join us through website cn-discord.ddns.net or using discord code xQ6gGfQ" +
                         "\n\n//ranks:\n[accent]" +
-                        byteCode.rankI(6) + " - Owner\n" +
-                        byteCode.rankI(5) + " - Admin\n" +
-                        byteCode.rankI(4) + " - Moderator\n" +
-                        byteCode.rankI(3) + " - Semi Moderator[white]" +
+                        "7 - " + byteCode.rankI(7) + " - Owner\n" +
+                        "6 - " + byteCode.rankI(6) + " - Admin\n" +
+                        "5 - " + byteCode.rankI(5) + " - Moderator\n" +
+                        "4 - " + byteCode.rankI(4) + " - Semi Moderator\n" +
+                        "3 - " + byteCode.rankI(3) + " - Super Active Player\n" +
+                        "2 - " + byteCode.rankI(2) + " - Active player\n" +
+                        "1 - " + byteCode.rankI(1) + " - Verified\n" +
+                        "0 - " + byteCode.rankI(0) + " - Untrusted\n[white]" +
                         "\n\n//Game tricks:" +
                         "\n1) Pressing 9 will show arrows to upgrade pads." +
                         "\n2) to use colors in chat, you can type something like" +
@@ -870,15 +915,18 @@ public class Main extends Plugin {
         //-----ADMINS-----//
 
         handler.<Player>register("a","<Info> [1] [2] [3...]", "[scarlet]<Admin> [lightgray]- Admin commands", (arg, player) -> {
-            if (database.get(player.uuid).getRank() >= 4) {
+            if (database.get(player.uuid).getRank() >= 5) {
             } else if(!player.isAdmin){
                 player.sendMessage(mba);
                 return;
             }
+            int x;
+            int y;
+            float z;
             switch (arg[0]) {
                 //un admin player - un-admins uuid, even if player is offline.
                 case "uap": //Un-Admin Player
-                    if (database.containsKey(player.uuid) && database.get(player.uuid).getRank() == 6) {
+                    if (database.containsKey(player.uuid) && database.get(player.uuid).getRank() == 7) {
                         if (arg.length > 1 && arg[1].length() > 0) {
                             netServer.admins.unAdminPlayer(arg[1]);
                             player.sendMessage("unAdmin: " + arg[1]);
@@ -1347,6 +1395,15 @@ public class Main extends Plugin {
                     }
                     break;
                 case "test": //test commands;
+                    x = Strings.parseInt(arg[1]);
+                    y = x / 60;
+                    z = (float) x/60;
+                    Call.sendMessage(""+x);
+                    Call.sendMessage(""+(float)y);
+                    Call.sendMessage(""+z);
+                    if ((float) y == z) {
+                        Call.sendMessage("Congratulations to " + player.name + " [white]for staying active for " + (Main.database.get(player.uuid).getTP()/60) + " Hours!");
+                    }
                     break;
 
                 case "info": //all commands
@@ -1373,7 +1430,7 @@ public class Main extends Plugin {
                     break;
 
                 case "mms": //DON'T TRY IT!
-                    int y = -200;
+                    y = -200;
                     for (int i = 0; i <= 400; i = i + 1) {
                         y = y + 1;
                         Call.onInfoMessage(player.con, String.valueOf(y));

@@ -19,19 +19,22 @@ public class byteCode {
     public static String nameR(String name) {return name.replaceAll("\\[", "[[");}
     public static String rankI(int i) {
         switch (i) {
-            case 6:
+            case 7:
                 return "[accent]<[scarlet]\uE814[accent]>";
-            case 5:
+            case 6:
                 return "[accent]<[royal]\uE828[accent]>";
-            case 4:
+            case 5:
                 return "[accent]<[lightgray]\uE80F[accent]>";
-            case 3:
+            case 4:
                 return "[accent]<[lime]\uE85B[accent]>";
+            case 3:
+                return "[accent]<[gold]\uE80E[accent]>";
             case 2:
                 return "[accent]<\uE809>";
             case 1:
-            case 0:
                 return "<>";
+            case 0:
+                return "[lightgray]<>";
             default:
                 return "ERR";
         }
