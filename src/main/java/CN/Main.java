@@ -877,8 +877,8 @@ public class Main extends Plugin {
                         "4 - " + byteCode.rankI(4) + " - Semi Moderator\n" +
                         "3 - " + byteCode.rankI(3) + " - Super Active Player\n" +
                         "2 - " + byteCode.rankI(2) + " - Active player\n" +
-                        "1 - " + byteCode.rankI(1) + " - Verified\n" +
-                        "0 - " + byteCode.rankI(0) + " - Untrusted\n[white]" +
+                        "1  - " + byteCode.rankI(1) + " - Verified\n" +
+                        "0- " + byteCode.rankI(0) + " - Untrusted\n[white]" +
                         "\n\n//Game tricks:" +
                         "\n1) Pressing 9 will show arrows to upgrade pads." +
                         "\n2) to use colors in chat, you can type something like" +
