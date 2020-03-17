@@ -40,6 +40,8 @@ public class Main extends Plugin {
     public static HashMap<String, String> buffList = new HashMap<>();
     public static HashMap<String, pi> database = new HashMap<>();
     public static Array<String> pjl = new Array<>();
+    public static int halpX = 0;
+    public static int halpY = 0;
 
     private boolean summonEnable = true;
     private boolean reaperEnable = true;
@@ -175,6 +177,7 @@ public class Main extends Plugin {
             } else {
                 Call.sendMessage("[white]Welcome " + player.name + ", [white]first time on the server!");
                 player.sendMessage("[white]======================================================================\n" +
+                        "for commands, do /help\n" +
                         "[scarlet]READ THE RULES!!![white]\n" +
                         "General Rules\n" +
                         "Do Not:\n" +
@@ -910,6 +913,22 @@ public class Main extends Plugin {
             } else {
                 player.sendMessage("You must be [sky]Verified [white]to use this command.");
             }
+        });
+        handler.<Player>register("halp","asd", (arg, player) -> {
+            String rankI = byteCode.rankI(database.get(player.uuid).getRank());
+            String dI = "";
+            if (database.get(player.uuid).getVerified()) {
+                dI = " " + byteCode.verifiedI();
+            }
+            halpX = (int) (player.x/8);
+            halpY = (int) (player.y/8);
+            Call.sendMessage(rankI + dI + " [white]" + player.name + ": [white]Need help at ([lightgray]" + halpX + "[white],[lightgray]" + halpY + "[white]). do `[lightgray]/go[white]` to come to me.");
+            Log.info(player.name + ": [white]Need help at ([lightgray]" + halpX + "[white],[lightgray]" + halpY + "[white]). do `[lightgray]/go[white]` to come to me.");
+        });
+        handler.<Player>register("go","", (arg, player) -> {
+            player.set(halpX,halpY);
+            player.setNet(halpX,halpY);
+            player.set(halpX,halpY);
         });
 
         //-----ADMINS-----//
