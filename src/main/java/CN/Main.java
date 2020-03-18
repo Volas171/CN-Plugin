@@ -191,17 +191,17 @@ public class Main extends Plugin {
                         "2) Ban/Kick evade. \n" +
                         "3) Use exploits. \n" +
                         "4) Nuke core, that's why we have RTV.\n" +
-                        "5) Use multiple accounts.\n\n" +
+                        "5) Use multiple accounts.\n" +
+                        "6) Making and/or using a AFK machine will result in ban.\n\n" +
                         "Survival:\n" +
                         "1) Pixel art permitted but must be less that 16x16. Pixel art may be removed at any point by anyone. Spamming will result in ban.\n" +
                         "2) Belts going to core must take the least complicated yet most direct route to core. Don't snake belts and/or place on cramped places.\n" +
                         "3) Thorium reactors must be far away from core. \n" +
                         "4) No more than 50 draught miners per map.\n" +
                         "5) Absolutely no exploits allowed; whether beneficial or not.\n" +
-                        "6) High power sources must be dioded." +
+                        "6) High power sources must be dioded.\n" +
                         "[white]======================================================================\n");
                 database.put(player.uuid, new pi());
-                //add id to temp id list
             }
             //pjl
             Date thisDate = new Date();
@@ -231,7 +231,7 @@ public class Main extends Plugin {
                         }
                     } else if (database.get(player.uuid).getRank() == 2) {
                         pi d = database.get(player.uuid);
-                        if (d.getTP() > 8 * 60 * 60) {
+                        if (d.getTP() > 24 * 60 * 60) {
                             Call.sendMessage("Rank Updated for " + player.name + " [white]to [gold]Super Active [white]Player!");
                         }
                     }
