@@ -1434,6 +1434,10 @@ public class Main extends Plugin {
                         if (arg[1].startsWith("#") && arg[1].length() > 3 && Strings.canParseInt(arg[1].substring(1))) {
                             int id = Strings.parseInt(arg[1].substring(1));
                             Player p = playerGroup.getByID(id);
+                            if (p == null) {
+                                player.sendMessage("[salmon]KILL[white]: Could not find player ID '[lightgray]" + id + "[white]'.");
+                                return;
+                            }
                             p.dead = true;
                             Call.onInfoToast(p.con,"Killed.",1);
                         } else if (arg[1].startsWith("#")) {
