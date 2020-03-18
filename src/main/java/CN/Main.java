@@ -929,7 +929,7 @@ public class Main extends Plugin {
                 player.sendMessage("You must be [sky]Verified [white]to use this command.");
             }
         });
-        handler.<Player>register("halp","asd", (arg, player) -> {
+        handler.<Player>register("halp","Calls for help and setups /go", (arg, player) -> {
             String rankI = byteCode.rankI(database.get(player.uuid).getRank());
             String dI = "";
             if (database.get(player.uuid).getVerified()) {
@@ -940,12 +940,12 @@ public class Main extends Plugin {
             Call.sendMessage(rankI + dI + " [white]" + player.name + ": [white]Need help at ([lightgray]" + halpX + "[white],[lightgray]" + halpY + "[white]). \ndo `[lightgray]/go[white]` to come to me.");
             Log.info(player.name + ": [white]Need help at ([lightgray]" + halpX + "[white],[lightgray]" + halpY + "[white]). do `[lightgray]/go[white]` to come to me.");
         });
-        handler.<Player>register("go","", (arg, player) -> {
+        handler.<Player>register("go","goes to location from /here or /halp", (arg, player) -> {
             player.set(halpX*8,halpY*8);
             player.setNet(halpX*8,halpY*8);
             player.set(halpX*8,halpY*8);
         });
-        handler.<Player>register("here","", (arg, player) -> {
+        handler.<Player>register("here","setups /go to go to your location", (arg, player) -> {
             String rankI = byteCode.rankI(database.get(player.uuid).getRank());
             String dI = "";
             if (database.get(player.uuid).getVerified()) {
