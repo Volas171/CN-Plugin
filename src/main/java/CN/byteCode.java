@@ -95,6 +95,12 @@ public class byteCode {
         Log.err("Ban got past return!");
         return "error";
     }
+    public static Integer sti(String Input) {
+        if (Strings.canParseInt(Input)) {
+            return Strings.parseInt(Input);
+        }
+        return -643; //GAE XD
+    }
 }
 /*
 if (arg[1].startsWith("#") && arg[1].length() > 3 && Strings.canParseInt(arg[1].substring(1))){

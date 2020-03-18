@@ -39,6 +39,7 @@ public class Main extends Plugin {
     public static Array<String> IW = new Array<>();
     public static HashMap<String, String> buffList = new HashMap<>();
     public static HashMap<String, pi> database = new HashMap<>();
+    public static HashMap<Integer, Player> idTempDatabase = new HashMap<>();
     public static Array<String> pjl = new Array<>();
     public static int halpX = 0;
     public static int halpY = 0;
@@ -123,10 +124,14 @@ public class Main extends Plugin {
             Player player = event.player;
             if (autoBan) {
                 if (player.getInfo().timesKicked > (player.getInfo().timesJoined / 5)) {
+                    Call.onInfoMessage(player.con,"(AutoBan) Banned for being kicked most of the time. If you want to appeal, give the previous as reason.");
+                    Call.onInfoMessage(player.con,"(AutoBan) Banned for being kicked most of the time. If you want to appeal, give the previous as reason.");
                     Log.info("[B] Banned \"{0}\" [{1}] for (Kick) > (join)/5", player.name, player.uuid);
                     byteCode.ban(player.uuid,"Kicked > Joined/5");
                     player.con.kick("(AutoBan) Banned for being kicked most of the time. If you want to appeal, give the previous as reason.");
                 } else if (player.getInfo().timesKicked > 15) {
+                    Call.onInfoMessage(player.con,"(AutoBan) Banned for being kicked than 15. If you want to appeal, give the previous as reason.");
+                    Call.onInfoMessage(player.con,"(AutoBan) Banned for being kicked than 15. If you want to appeal, give the previous as reason.");
                     byteCode.ban(player.uuid,"Kick > 15");
                     Log.info("[B] Banned \"{0}\" [{1}] for Kick > 15.", player.name, player.uuid);
                     player.con.kick("(AutoBan) Banned for being kicked than 15. If you want to appeal, give the previous as reason.");
@@ -195,6 +200,7 @@ public class Main extends Plugin {
                         "6) High power sources must be dioded." +
                         "[white]======================================================================\n");
                 database.put(player.uuid, new pi());
+                //add id to temp id list
             }
             //pjl
             Date thisDate = new Date();
@@ -230,6 +236,8 @@ public class Main extends Plugin {
                     }
                 }
             }
+            // ad to idTempDatabase
+            idTempDatabase.put(player.id, player);
         });
 
         Events.on(EventType.PlayerLeave.class, event -> {
@@ -894,12 +902,12 @@ public class Main extends Plugin {
             if (database.get(player.uuid).getVerified()) {
                 String pid= arg[0].replaceAll("[^0-9]", "");
                 if (pid.equals("")) {
-                    player.sendMessage("[salmon]GPI[white]: player ID must contain numbers!");
+                    player.sendMessage("[salmon]CONTACT[white]: player ID must contain numbers!");
                     return;
                 }
                 Player p = playerGroup.getByID(Integer.parseInt(pid));
                 if (p == null) {
-                    player.sendMessage("[salmon]GPI[white]: Could not find player ID '[lightgray]" + pid + "[white]'.");
+                    player.sendMessage("[salmon]CONTACT[white]: Could not find player ID '[lightgray]" + pid + "[white]'.");
                     return;
                 }
                 if (database.containsKey(p.uuid)) {
@@ -1054,8 +1062,12 @@ public class Main extends Plugin {
                             int id = Strings.parseInt(arg[1].substring(1));
                             Player p = playerGroup.getByID(id);
                             if (p == null) {
-                                player.sendMessage("[salmon]GPI[white]: Could not find player ID '[lightgray]" + id + "[white]'.");
-                                return;
+                                if (idTempDatabase.containsKey(id)) {
+                                    p = idTempDatabase.get(id);
+                                } else {
+                                    player.sendMessage("[salmon]GPI[white]: Could not find player ID '[lightgray]" + id + "[white]'.");
+                                    return;
+                                }
                             }
                             String rname = byteCode.nameR(p.name);
                             String dv = "false";
@@ -1414,15 +1426,18 @@ public class Main extends Plugin {
                     }
                     break;
                 case "test": //test commands;
-                    x = Strings.parseInt(arg[1]);
-                    y = x / 60;
-                    z = (float) x/60;
-                    Call.sendMessage(""+x);
-                    Call.sendMessage(""+(float)y);
-                    Call.sendMessage(""+z);
-                    if ((float) y == z) {
-                        Call.sendMessage("Congratulations to " + player.name + " [white]for staying active for " + (Main.database.get(player.uuid).getTP()/60) + " Hours!");
+                    x = byteCode.sti(arg[1]);
+                    x = byteCode.sti(arg[1]);
+                    if (x == -647) {
+                        player.sendMessage("ID must be a number!");
+                        return;
                     }
+                    Player p = idTempDatabase.get(x);
+                    player.sendMessage("START: \n" +
+                            p.name + "\n" +
+                            p.uuid + "\n" +
+                            p.getInfo().lastIP);
+
                     break;
 
                 case "info": //all commands
