@@ -926,9 +926,9 @@ public class Main extends Plugin {
             Log.info(player.name + ": [white]Need help at ([lightgray]" + halpX + "[white],[lightgray]" + halpY + "[white]). do `[lightgray]/go[white]` to come to me.");
         });
         handler.<Player>register("go","", (arg, player) -> {
-            player.set(halpX,halpY);
-            player.setNet(halpX,halpY);
-            player.set(halpX,halpY);
+            player.set(halpX*8,halpY*8);
+            player.setNet(halpX*8,halpY*8);
+            player.set(halpX*8,halpY*8);
         });
 
         //-----ADMINS-----//
