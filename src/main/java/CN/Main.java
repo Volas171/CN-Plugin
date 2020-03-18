@@ -52,6 +52,7 @@ public class Main extends Plugin {
     private String mba = "[white]You must be [scarlet]<Admin> [white]to use this command.";
     private boolean autoBan = true;
     private boolean sandbox = false;
+    private boolean chat = true;
 
     public Main() throws InterruptedException {
 
@@ -310,18 +311,23 @@ public class Main extends Plugin {
             }
         });
 
-        Events.on(EventType.PlayerChatEvent.class, e-> {
-            if (database.containsKey(e.player.uuid) && !e.message.startsWith("/")) {
-                String rankI = byteCode.rankI(database.get(e.player.uuid).getRank());
-                String dI = "";
-                if (database.get(e.player.uuid).getVerified()) {
-                    dI = " " + byteCode.verifiedI();
+        Events.on(EventType.PlayerChatEvent.class, event -> {
+            if (chat) { //could make event.player player but im too lazy - log
+                if (database.containsKey(event.player.uuid) && !event.message.startsWith("/")) {
+                    String rankI = byteCode.rankI(database.get(event.player.uuid).getRank());
+                    String dI = "";
+                    if (database.get(event.player.uuid).getVerified()) {
+                        dI = " " + byteCode.verifiedI();
+                    }
+                    Call.sendMessage(rankI + dI + " [white]" + event.player.name + ": [white]" + event.message);
+                    Log.info(event.player.name + ": [white]" + event.message);
+                } else if (!database.containsKey(event.player.uuid)) {
+                    event.player.getInfo().timesKicked--;
+                    event.player.con.kick("ERROR - PLAYER CHAT EVENT\npls report what you did to get this error.");
+                    Log.err("PLAYER CHAT EVENT");
                 }
-                Call.sendMessage(rankI + dI + " [white]" + e.player.name + ": [white]" + e.message);
-                Log.info(e.player.name + ": [white]" + e.message);
-            } else if (!database.containsKey(e.player.uuid)){
-                e.player.getInfo().timesKicked--;
-                e.player.con.kick("ERROR - PLAYER CHAT EVENT\npls report what you did to get this error.");
+            } else {
+                event.player.sendMessage("[lightgray]Chat is disabled.");
             }
         });
     }
@@ -1425,6 +1431,23 @@ public class Main extends Plugin {
                         player.sendMessage("[salmon]K[]: Kills player using id.\nexample: /a kill #1234");
                     }
                     break;
+                case "chat"://turns chan on/off
+                    if (arg.length > 1) {
+                        switch (arg[1]) {
+                            case "on":
+                                chat = true;
+                                player.sendMessage("[salmon]CHAT[white]: Chat turned [lightgray]on[white].");
+                                break;
+                            case "off":
+                                chat = false;
+                                player.sendMessage("[salmon]CHAT[white]: Chat turned [lightgray]off[white].");
+                                break;
+                            default:
+                                player.sendMessage("[salmon]CHAT[white]: Turn chat either [lightgray]on[white]/[lightgray]off[white].");
+                        }
+                    } else {
+                        player.sendMessage("[salmon]CHAT[white]: Turns chat on/off, on/off");
+                    }
                 case "test": //test commands;
                     x = byteCode.sti(arg[1]);
                     x = byteCode.sti(arg[1]);
