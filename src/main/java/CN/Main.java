@@ -937,13 +937,24 @@ public class Main extends Plugin {
             }
             halpX = (int) (player.x/8);
             halpY = (int) (player.y/8);
-            Call.sendMessage(rankI + dI + " [white]" + player.name + ": [white]Need help at ([lightgray]" + halpX + "[white],[lightgray]" + halpY + "[white]). do `[lightgray]/go[white]` to come to me.");
+            Call.sendMessage(rankI + dI + " [white]" + player.name + ": [white]Need help at ([lightgray]" + halpX + "[white],[lightgray]" + halpY + "[white]). \ndo `[lightgray]/go[white]` to come to me.");
             Log.info(player.name + ": [white]Need help at ([lightgray]" + halpX + "[white],[lightgray]" + halpY + "[white]). do `[lightgray]/go[white]` to come to me.");
         });
         handler.<Player>register("go","", (arg, player) -> {
             player.set(halpX*8,halpY*8);
             player.setNet(halpX*8,halpY*8);
             player.set(halpX*8,halpY*8);
+        });
+        handler.<Player>register("here","", (arg, player) -> {
+            String rankI = byteCode.rankI(database.get(player.uuid).getRank());
+            String dI = "";
+            if (database.get(player.uuid).getVerified()) {
+                dI = " " + byteCode.verifiedI();
+            }
+            halpX = (int) (player.x/8);
+            halpY = (int) (player.y/8);
+            Call.sendMessage(rankI + dI + " [white]" + player.name + ": [white]Here at ([lightgray]" + halpX + "[white],[lightgray]" + halpY + "[white]). \ndo `[lightgray]/go[white]` to come to me.");
+            Log.info(player.name + ": [white]Here at ([lightgray]" + halpX + "[white],[lightgray]" + halpY + "[white]). do `[lightgray]/go[white]` to come to me.");
         });
 
         //-----ADMINS-----//
