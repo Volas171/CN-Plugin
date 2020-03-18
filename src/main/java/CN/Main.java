@@ -312,7 +312,7 @@ public class Main extends Plugin {
         });
 
         Events.on(EventType.PlayerChatEvent.class, event -> {
-            if (chat) { //could make event.player player but im too lazy - log
+            if (chat || event.player.isAdmin) { //could make event.player player but im too lazy - log
                 if (database.containsKey(event.player.uuid) && !event.message.startsWith("/")) {
                     String rankI = byteCode.rankI(database.get(event.player.uuid).getRank());
                     String dI = "";
@@ -320,6 +320,7 @@ public class Main extends Plugin {
                         dI = " " + byteCode.verifiedI();
                     }
                     Call.sendMessage(rankI + dI + " [white]" + event.player.name + ": [white]" + event.message);
+                    if (!chat) event.player.sendMessage("[lightgray]Chat is disabled. - [scarlet] ADMIN bypass");
                     Log.info(event.player.name + ": [white]" + event.message);
                 } else if (!database.containsKey(event.player.uuid)) {
                     event.player.getInfo().timesKicked--;
@@ -1448,6 +1449,7 @@ public class Main extends Plugin {
                     } else {
                         player.sendMessage("[salmon]CHAT[white]: Turns chat on/off, on/off");
                     }
+                    break;
                 case "test": //test commands;
                     x = byteCode.sti(arg[1]);
                     x = byteCode.sti(arg[1]);
