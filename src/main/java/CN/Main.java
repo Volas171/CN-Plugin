@@ -1442,6 +1442,8 @@ public class Main extends Plugin {
                             Call.onInfoToast(p.con,"Killed.",1);
                         } else if (arg[1].startsWith("#")) {
                             player.sendMessage("ID can only contain numbers!");
+                        } else {
+                            player.sendMessage("Must provide id. \nexample: #1234");
                         }
                     } else {
                         player.sendMessage("[salmon]K[]: Kills player using id.\nexample: /a kill #1234");
