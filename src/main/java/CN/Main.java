@@ -18,12 +18,17 @@ import mindustry.game.Teams;
 import mindustry.gen.Call;
 import mindustry.net.Administration;
 import mindustry.plugin.Plugin;
-import mindustry.plugin.*;
-import mindustry.type.UnitType;
 import mindustry.world.blocks.storage.CoreBlock;
 import mindustry.content.Items;
 import mindustry.content.UnitTypes;
 import mindustry.entities.type.BaseUnit;
+import org.javacord.api.DiscordApi;
+import org.javacord.api.DiscordApiBuilder;
+import org.javacord.api.entity.channel.Channel;
+import org.javacord.api.entity.channel.TextChannel;
+import org.javacord.api.entity.permission.Role;
+import org.json.JSONObject;
+import org.json.JSONTokener;
 
 import java.awt.*;
 import java.io.*;
@@ -53,9 +58,48 @@ public class Main extends Plugin {
     private String mba = "[white]You must be [scarlet]<Admin> [white]to use this command.";
     private boolean autoBan = true;
     private boolean chat = true;
+    //discord shat
+    private final Long CDT = 300L;
+    private final String FileNotFoundErrorMessage = "File not found: config\\mods\\settings.json";
+    private JSONObject alldata;
+    private JSONObject data; //token, channel_id, role_id
+    private DiscordApi api = null;
+    private HashMap<Long, String> cooldowns = new HashMap<Long, String>(); //uuid
 
     public Main() throws InterruptedException {
-
+        try {
+            String pureJson = Core.settings.getDataDirectory().child("mods/settings.json").readString();
+            alldata = new JSONObject(new JSONTokener(pureJson));
+            if (!alldata.has("in-game")){
+                System.out.println("[ERR!] discordplugin: settings.json has an invalid format!\n");
+                //this.makeSettingsFile("settings.json");
+                return;
+            } else {
+                data = alldata.getJSONObject("in-game");
+            }
+        } catch (Exception e) {
+            if (e.getMessage().contains(FileNotFoundErrorMessage)){
+                System.out.println("[ERR!] discordplugin: settings.json file is missing.\nBot can't start.");
+                //this.makeSettingsFile("settings.json");
+                return;
+            } else {
+                System.out.println("[ERR!] discordplugin: Init Error");
+                e.printStackTrace();
+                return;
+            }
+        }
+        try {
+            api = new DiscordApiBuilder().setToken(alldata.getString("token")).login().join();
+        }catch (Exception e){
+            if (e.getMessage().contains("READY packet")){
+                System.out.println("\n[ERR!] discordplugin: invalid token.\n");
+            } else {
+                e.printStackTrace();
+            }
+        }
+        BotThread bt = new BotThread(api, Thread.currentThread(), alldata);
+        bt.setDaemon(false);
+        bt.start();
 
 
         //load all player info.
@@ -302,6 +346,14 @@ public class Main extends Plugin {
                     Call.sendMessage(rankI + dI + " [white]" + event.player.name + ": [white]" + event.message);
                     if (!chat) event.player.sendMessage("[lightgray]Chat is disabled. - [scarlet] ADMIN bypass");
                     Log.info(event.player.name + ": [white]" + event.message);
+
+                    //live chat
+                    if (data.has("live_chat_channel_id")) {
+                        TextChannel tc = this.getTextChannel(data.getString("live_chat_channel_id"));
+                        if (tc != null) {
+                            tc.sendMessage(event.player.name + " *@mindustry* : " + event.message);
+                        }
+                    }
                 } else if (!database.containsKey(event.player.uuid)) {
                     event.player.getInfo().timesKicked--;
                     event.player.con.kick("ERROR - PLAYER CHAT EVENT\npls report what you did to get this error.");
@@ -1520,5 +1572,27 @@ public class Main extends Plugin {
         });
     }
 
+    public TextChannel getTextChannel(String id){
+        Optional<Channel> dc =  ((Optional<Channel>)this.api.getChannelById(id));
+        if (!dc.isPresent()) {
+            System.out.println("[ERR!] discordplugin: channel not found!");
+            return null;
+        }
+        Optional<TextChannel> dtc = dc.get().asTextChannel();
+        if (!dtc.isPresent()){
+            System.out.println("[ERR!] discordplugin: textchannel not found!");
+            return null;
+        }
+        return dtc.get();
+    }
+
+    public Role getRole(String id) {
+        Optional<Role> r1 = this.api.getRoleById(id);
+        if (!r1.isPresent()) {
+            System.out.println("[ERR!] discordplugin: adminrole not found!");
+            return null;
+        }
+        return r1.get();
+    }
 }
 
