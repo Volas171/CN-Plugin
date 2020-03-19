@@ -4,6 +4,7 @@ import arc.util.Log;
 import arc.util.Strings;
 import mindustry.core.NetServer;
 import mindustry.entities.type.Player;
+import mindustry.gen.Call;
 import mindustry.net.Administration;
 
 import java.io.File;
@@ -12,6 +13,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 
 import static mindustry.Vars.*;
 
@@ -100,6 +102,36 @@ public class byteCode {
             return Strings.parseInt(Input);
         }
         return -643; //GAE XD
+    }
+    public static void aRank(String UUID) {
+        HashMap<String, pi> database = Main.database;
+        if (database.containsKey(player.uuid)) {
+            if (Main.sandbox) {
+                if (database.get(player.uuid).getRank() == 1) {
+                    pi d = database.get(player.uuid);
+                    if (d.getTP() > 8 * 60 * 60 && d.getBB() > 25000) {
+                        Call.sendMessage("Rank Updated for " + player.name + " [white]to [accent]Active Player[white]!");
+                    }
+                } else if (database.get(player.uuid).getRank() == 2) {
+                    pi d = database.get(player.uuid);
+                    if (d.getTP() > 24 * 60 * 60 && d.getBB() > 100000) {
+                        Call.sendMessage("Rank Updated for " + player.name + " [white]to [gold]Super Active [white]Player!");
+                    }
+                }
+            } else {
+                if (database.get(player.uuid).getRank() == 1) {
+                    pi d = database.get(player.uuid);
+                    if (d.getTP() > 8 * 60 * 60 && d.getGP() > 15) {
+                        Call.sendMessage("Rank Updated for " + player.name + " [white]to [accent]Active Player[white]!");
+                    }
+                } else if (database.get(player.uuid).getRank() == 2) {
+                    pi d = database.get(player.uuid);
+                    if (d.getTP() > 24 * 60 * 60 && d.getGP() > 45) {
+                        Call.sendMessage("Rank Updated for " + player.name + " [white]to [gold]Super Active [white]Player!");
+                    }
+                }
+            }
+        }
     }
 }
 /*

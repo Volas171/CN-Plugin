@@ -43,15 +43,15 @@ public class Main extends Plugin {
     public static Array<String> pjl = new Array<>();
     public static int halpX = 0;
     public static int halpY = 0;
+    public static boolean sandbox = false;
 
     private boolean summonEnable = true;
     private boolean reaperEnable = true;
     private boolean lichEnable = true;
     private boolean eradicatorEnable = true;
-    private boolean buffEnable = true;
+    //private boolean buffEnable = true;
     private String mba = "[white]You must be [scarlet]<Admin> [white]to use this command.";
     private boolean autoBan = true;
-    private boolean sandbox = false;
     private boolean chat = true;
 
     public Main() throws InterruptedException {
@@ -96,6 +96,7 @@ public class Main extends Plugin {
                             FileOutputStream fileOut = new FileOutputStream("PDF.cn");
                             ObjectOutputStream out = new ObjectOutputStream(fileOut);
                             out.writeObject(Main.database);
+                            out.flush();
                             out.close();
                             fileOut.close();
                         } catch (IOException i) {
@@ -113,6 +114,7 @@ public class Main extends Plugin {
                                 if ((float) y == z) {
                                     Call.sendMessage("Congratulations to " + p.name + " [white]for staying active for " + y + " Hours!");
                                 }
+                                byteCode.aRank(p.uuid);
                             }
                         }
                     }
@@ -142,8 +144,8 @@ public class Main extends Plugin {
                     player.con.kick("(AutoBan) Banned for ==Rank 6== . If you want to appeal, give the previous as reason.");
                 }
             }
-            if(player.getInfo().timesKicked == 10) {
-                Call.onInfoMessage(player.con,"You've been kicked 10 times, 15 kicks and you're banned.");
+            if(player.getInfo().timesKicked > 10) {
+                Call.onInfoMessage(player.con,"You've been kicked " + player.getInfo().timesKicked + " times, 15 kicks and you're banned.");
             }
 
             //Join Message
@@ -160,25 +162,29 @@ public class Main extends Plugin {
                 //Admin/Mod
                 switch (database.get(player.uuid).getRank()) {
                     case 7:
-                       Call.sendMessage("??? " + player.name + " [white]has joined the server");
+                       Call.sendMessage("??? " + player.name + " [white]has entered the server");
                        break;
                     case 6:
-                        Call.sendMessage("Admin " + player.name + " [white]has joined the server");
+                        Call.sendMessage("Admin " + player.name + " [white]has entered the server");
                         break;
                     case 5:
-                        Call.sendMessage("Mod " + player.name + " [white]has joined the server");
+                        Call.sendMessage("Mod " + player.name + " [white]has entered the server");
                         break;
                     case 4:
-                        Call.sendMessage("Semi-Mod " + player.name + " [white]has joined the server");
+                        Call.sendMessage("Semi-Mod " + player.name + " [white]has entered the server");
                         break;
                     case 3:
-                        Call.sendMessage("Super Active player " + player.name + " [white]has joined the server");
+                        Call.sendMessage("Super Active player " + player.name + " [white]has entered the server");
                         break;
                     case 2:
-                        Call.sendMessage("Active player " + player.name + " [white]has joined the server");
+                        Call.sendMessage("Active player " + player.name + " [white]has entered the server");
                         break;
                     default:
 
+                }
+                //pester if not verified
+                if (!database.get(player.uuid).getVerified()) {
+                    player.sendMessage("[lightgray]Get [sky]verified []to remove player restrictions");
                 }
             } else {
                 Call.sendMessage("[white]Welcome " + player.name + ", [white]first time on the server!");
@@ -210,34 +216,8 @@ public class Main extends Plugin {
             pjl.add("[lime][+] [white]" + dateFormat.format(thisDate) + byteCode.nameR(player.name) + " | " + player.uuid + " | " +player.getInfo().lastIP);
 
             //auto rank
-            if (database.containsKey(player.uuid)) {
-                if (!sandbox) {
-                    if (database.get(player.uuid).getRank() == 1) {
-                        pi d = database.get(player.uuid);
-                        if (d.getTP() > 8 * 60 * 60 && d.getGP() > 15) {
-                            Call.sendMessage("Rank Updated for " + player.name + " [white]to [accent]Active Player[white]!");
-                        }
-                    } else if (database.get(player.uuid).getRank() == 2) {
-                        pi d = database.get(player.uuid);
-                        if (d.getTP() > 24 * 60 * 60 && d.getGP() > 45) {
-                            Call.sendMessage("Rank Updated for " + player.name + " [white]to [gold]Super Active [white]Player!");
-                        }
-                    }
-                } else if (sandbox) {
-                    if (database.get(player.uuid).getRank() == 1) {
-                        pi d = database.get(player.uuid);
-                        if (d.getTP() > 8 * 60 * 60) {
-                            Call.sendMessage("Rank Updated for " + player.name + " [white]to [accent]Active Player[white]!");
-                        }
-                    } else if (database.get(player.uuid).getRank() == 2) {
-                        pi d = database.get(player.uuid);
-                        if (d.getTP() > 24 * 60 * 60) {
-                            Call.sendMessage("Rank Updated for " + player.name + " [white]to [gold]Super Active [white]Player!");
-                        }
-                    }
-                }
-            }
-            // ad to idTempDatabase
+            byteCode.aRank(player.uuid);
+            // add to idTempDatabase
             idTempDatabase.put(player.id, player);
         });
 
