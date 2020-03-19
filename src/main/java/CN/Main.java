@@ -26,6 +26,8 @@ import org.javacord.api.DiscordApi;
 import org.javacord.api.DiscordApiBuilder;
 import org.javacord.api.entity.channel.Channel;
 import org.javacord.api.entity.channel.TextChannel;
+import org.javacord.api.entity.message.MessageBuilder;
+import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.entity.permission.Role;
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -351,7 +353,7 @@ public class Main extends Plugin {
                     if (data.has("live_chat_channel_id")) {
                         TextChannel tc = this.getTextChannel(data.getString("live_chat_channel_id"));
                         if (tc != null) {
-                            tc.sendMessage(event.player.name + " *@mindustry* : " + event.message);
+                            tc.sendMessage(byteCode.noColors(event.player.name) + ": " + event.message);
                         }
                     }
                 } else if (!database.containsKey(event.player.uuid)) {
@@ -989,6 +991,114 @@ public class Main extends Plugin {
             Log.info(player.name + ": [white]Here at ([lightgray]" + halpX + "[white],[lightgray]" + halpY + "[white]). do `[lightgray]/go[white]` to come to me.");
         });
 
+        //-----Discord----//
+        if (api != null) {
+            handler.<Player>register("d", "<text...>", "Sends a message to discord.", (args, player) -> {
+
+                if (!data.has("dchannel_id")) {
+                    player.sendMessage("[scarlet]This command is disabled.");
+                } else {
+                    TextChannel tc = this.getTextChannel(data.getString("dchannel_id"));
+                    if (tc == null) {
+                        player.sendMessage("[scarlet]This command is disabled.");
+                        return;
+                    }
+                    tc.sendMessage(player.name + " *@mindustry* : " + args[0]);
+                    Call.sendMessage(player.name + "[sky] to @discord[]: " + args[0]);
+                }
+
+            });
+
+            handler.<Player>register("gr", "[player] [reason...]", "Report a griefer by id (use '/gr' to get a list of ids)", (args, player) -> {
+                //https://github.com/Anuken/Mindustry/blob/master/core/src/io/anuke/mindustry/core/NetServer.java#L300-L351
+                if (!(data.has("channel_id") && data.has("role_id"))) {
+                    player.sendMessage("[scarlet]This command is disabled.");
+                    return;
+                }
+
+                //if (true) return; //some things broke in arc and or Vars.playergroup
+
+                for (Long key : cooldowns.keySet()) {
+                    if (key + CDT < System.currentTimeMillis() / 1000L) {
+                        cooldowns.remove(key);
+                        continue;
+                    } else if (player.uuid == cooldowns.get(key)) {
+                        player.sendMessage("[scarlet]This command is on a 5 minute cooldown!");
+                        return;
+                    }
+                }
+
+                if (args.length == 0) {
+                    StringBuilder builder = new StringBuilder();
+                    builder.append("[orange]List or reportable players: \n");
+                    for (Player p : Vars.playerGroup.all()) {
+                        if (p.isAdmin || p.con == null) continue;
+
+                        builder.append("[lightgray] ").append(p.name).append("[accent] (#").append(p.id).append(")\n");
+                    }
+                    player.sendMessage(builder.toString());
+                } else {
+                    Player found = null;
+                    if (args[0].length() > 1 && args[0].startsWith("#") && Strings.canParseInt(args[0].substring(1))) {
+                        int id = Strings.parseInt(args[0].substring(1));
+                        //found = Vars.playerGroup.find(p -> p.id == id);
+                        for (Player p: Vars.playerGroup.all()){
+                            if (p.id == id){
+                                found = p;
+                                break;
+                            }
+                        }
+                    } else {
+                        for (Player p: Vars.playerGroup.all()){
+                            if (p.name.equalsIgnoreCase(args[0])){
+                                found = p;
+                                break;
+                            }
+                        }
+                        //found = Vars.playerGroup.find(p -> p.name.equalsIgnoreCase(args[0]));
+                    }
+                    if (found != null) {
+                        if (found.isAdmin) {
+                            player.sendMessage("[scarlet]Did you really expect to be able to report an admin?");
+                        } else if (found.getTeam() != player.getTeam()) {
+                            player.sendMessage("[scarlet]Only players on your team can be reported.");
+                        } else {
+                            TextChannel tc = this.getTextChannel(data.getString("channel_id"));
+                            Role r = this.getRole(data.getString("role_id"));
+                            if (tc == null || r == null) {
+                                player.sendMessage("[scarlet]This command is disabled.");
+                                return;
+                            }
+                            //send message
+                            if (args.length > 1) {
+                                new MessageBuilder()
+                                        .setEmbed(new EmbedBuilder()
+                                                .setTitle("Griefer online")
+                                                .setDescription(r.getMentionTag())
+                                                .addField("name", found.name)
+                                                .addField("reason", args[1])
+                                                .setColor(Color.ORANGE)
+                                                .setFooter("Reported by " + player.name))
+                                        .send(tc);
+                            } else {
+                                new MessageBuilder()
+                                        .setEmbed(new EmbedBuilder()
+                                                .setTitle("Griefer online")
+                                                .setDescription(r.getMentionTag())
+                                                .addField("name", found.name)
+                                                .setColor(Color.ORANGE)
+                                                .setFooter("Reported by " + player.name))
+                                        .send(tc);
+                            }
+                            Call.sendMessage(found.name + "[sky] is reported to discord.");
+                            cooldowns.put(System.currentTimeMillis() / 1000L, player.uuid);
+                        }
+                    } else {
+                        player.sendMessage("[scarlet]No player[orange] '" + args[0] + "'[scarlet] found.");
+                    }
+                }
+            });
+        }
         //-----ADMINS-----//
 
         handler.<Player>register("a","<Info> [1] [2] [3...]", "[scarlet]<Admin> [lightgray]- Admin commands", (arg, player) -> {
