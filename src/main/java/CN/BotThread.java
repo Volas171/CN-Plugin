@@ -94,6 +94,24 @@ public class BotThread extends Thread{
             }
             String playerTeam = "Sharded";
             //
+             draug = 0;
+             spirit = 0;
+             phantom = 0;
+             dagger = 0;
+             crawler = 0;
+             titan = 0;
+             fortress = 0;
+             eruptor = 0;
+             chaosArray = 0;
+             eradicator = 0;
+             wraith = 0;
+             ghoul = 0;;
+             revenant = 0;
+             lich = 0;
+             reaper = 0;
+
+            int All = 0;
+            //
             for (Unit u : unitGroup.all()) {
                 if(u.getTeam() == player.getTeam()) {
                     if (u.getTypeID().name.equals("draug")) draug = draug + 1;
@@ -115,35 +133,34 @@ public class BotThread extends Thread{
                 }
             }
 
-            myteam = "Your team is " + playerTeam +
-                            "\n\n[accent]Core Resources[white]:" +
-                            "\n[white]" + core.items.get(Items.copper) +        " \uF838 [#d99d73]copper" +
-                            "\n[white]" + core.items.get(Items.lead) +          " \uF837 [#8c7fa9]lead" +
-                            "\n[white]" + core.items.get(Items.metaglass) +     " \uF836 [#ebeef5]metaglass" +
-                            "\n[white]" + core.items.get(Items.graphite) +      " \uF835 [#b2c6d2]graphite" +
-                            "\n[white]" + core.items.get(Items.titanium) +      " \uF832 [#8da1e3]titanium" +
-                            "\n[white]" + core.items.get(Items.thorium) +       " \uF831 [#f9a3c7]thorium" +
-                            "\n[white]" + core.items.get(Items.silicon) +       " \uF82F [#53565c]Silicon" +
-                            "\n[white]" + core.items.get(Items.plastanium) +    " \uF82E [#cbd97f]plastanium" +
-                            "\n[white]" + core.items.get(Items.phasefabric) +   " \uF82D [#f4ba6e]phase fabric" +
-                            "\n[white]" + core.items.get(Items.surgealloy) +    " \uF82C [#f3e979]surge alloy" +
-                            "\n\n[accent]Team Units: [white]" +
-                            "\nDraug Miner Drone: " + draug +
-                            "\nSpirit Repair Drone: " + spirit +
-                            "\nPhantom Builder Drone: " + phantom +
-                            "\nDagger: " + dagger +
-                            "\nCrawlers: " + crawler +
-                            "\nTitan: " + titan +
-                            "\nFortress: " + fortress +
-                            "\nEruptor: " + eruptor +
-                            "\nChaos Array: " + chaosArray +
-                            "\nEradicator: " + eradicator +
-                            "\nWraith Fighter: " + wraith +
-                            "\nGhoul Bomber: " + ghoul +
-                            "\nRevenant: " + revenant +
-                            "\nLich: " + lich +
-                            "\nReaper: " + reaper +
-                            "\nTotal: " + All +
+            myteam =        "\n\nCore Resources:" +
+                            "\n" + core.items.get(Items.copper) +        " copper" +
+                            "\n" + core.items.get(Items.lead) +          " lead" +
+                            "\n" + core.items.get(Items.metaglass) +     " metaglass" +
+                            "\n" + core.items.get(Items.graphite) +      " graphite" +
+                            "\n" + core.items.get(Items.titanium) +      " titanium" +
+                            "\n" + core.items.get(Items.thorium) +       " thorium" +
+                            "\n" + core.items.get(Items.silicon) +       " Silicon" +
+                            "\n" + core.items.get(Items.plastanium) +    " plastanium" +
+                            "\n" + core.items.get(Items.phasefabric) +   " phase fabric" +
+                            "\n" + core.items.get(Items.surgealloy) +    " surge alloy" +
+                            "\n\nTeam Units: " +
+                            "\n"+ draug +" Draug Miner Drone" +
+                            "\n"+ spirit +" Spirit Repair Drone" +
+                            "\n"+ phantom +" Phantom Builder Drone" +
+                            "\n"+ dagger +" Dagger" +
+                            "\n"+ crawler +" Crawlers" +
+                            "\n"+ titan +" Titan" +
+                            "\n"+ fortress +" Fortress" +
+                            "\n"+ eruptor +" Eruptor" +
+                            "\n"+ chaosArray +" Chaos Array" +
+                            "\n"+ eradicator +" Eradicator" +
+                            "\n"+ wraith +" Wraith Fighter" +
+                            "\n"+ ghoul +" Ghoul Bomber" +
+                            "\n"+ revenant +" Revenant" +
+                            "\n"+ lich +" Lich" +
+                            "\n"+ reaper +" Reaper" +
+                            "\n"+ All +" Total" +
                             "\n";
             try {
                 File file = new File("team.txt");
@@ -209,6 +226,7 @@ public class BotThread extends Thread{
         }
         api.disconnect();
     }
+
     public TextChannel getTextChannel(String id){
         Optional<Channel> dc =  ((Optional<Channel>)this.api.getChannelById(id));
         if (!dc.isPresent()) {
@@ -231,4 +249,6 @@ public class BotThread extends Thread{
         }
         return r1.get();
     }
+
+
 }
