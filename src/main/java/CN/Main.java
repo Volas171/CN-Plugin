@@ -99,7 +99,7 @@ public class Main extends Plugin {
                 e.printStackTrace();
             }
         }
-        BotThread bt = new BotThread(api, Thread.currentThread(), alldata);
+        BotThread bt = new BotThread(api, Thread.currentThread(), alldata.getJSONObject("discord"));
         bt.setDaemon(false);
         bt.start();
 
@@ -136,32 +136,6 @@ public class Main extends Plugin {
                             Thread.sleep(60 * 1000);
                         } catch (InterruptedException e) {
                             e.printStackTrace();
-                        }
-                        //output PI save file
-                        try {
-                            FileOutputStream fileOut = new FileOutputStream("PDF.cn");
-                            ObjectOutputStream out = new ObjectOutputStream(fileOut);
-                            out.writeObject(Main.database);
-                            out.flush();
-                            out.close();
-                            fileOut.close();
-                        } catch (IOException i) {
-                            i.printStackTrace();
-                        }
-
-                        //add 1 minute of play time for each player
-                        for (Player p : playerGroup.all()) {
-                            if (Main.database.containsKey(p.uuid)) {
-                                Main.database.get(p.uuid).addTp(1);
-                                Call.onInfoToast(p.con,"+1 minutes played.", 3);
-                                //auto congratulations
-                                int y = Main.database.get(p.uuid).getTP() / 60;
-                                float z = (float) Main.database.get(p.uuid).getTP()/60;
-                                if ((float) y == z) {
-                                    Call.sendMessage("Congratulations to " + p.name + " [white]for staying active for " + y + " Hours!");
-                                }
-                                byteCode.aRank(p.uuid);
-                            }
                         }
                     }
                 }
@@ -1003,8 +977,8 @@ public class Main extends Plugin {
                         player.sendMessage("[scarlet]This command is disabled.");
                         return;
                     }
-                    tc.sendMessage(player.name + " *@mindustry* : " + args[0]);
-                    Call.sendMessage(player.name + "[sky] to @discord[]: " + args[0]);
+                    tc.sendMessage(byteCode.noColors(player.name) + " *@mindustry* : " + args[0]);
+                    player.sendMessage(byteCode.noColors(player.name) + "[sky] to @discord[]: " + args[0]);
                 }
 
             });
@@ -1078,7 +1052,7 @@ public class Main extends Plugin {
                                                 .addField("name", found.name)
                                                 .addField("reason", args[1])
                                                 .setColor(Color.ORANGE)
-                                                .setFooter("Reported by " + player.name))
+                                                .setFooter("Reported by " + byteCode.noColors(player.name)))
                                         .send(tc);
                             } else {
                                 new MessageBuilder()
@@ -1087,10 +1061,11 @@ public class Main extends Plugin {
                                                 .setDescription(r.getMentionTag())
                                                 .addField("name", found.name)
                                                 .setColor(Color.ORANGE)
-                                                .setFooter("Reported by " + player.name))
+                                                .setFooter("Reported by " + byteCode.noColors(player.name)))
                                         .send(tc);
+                                tc.sendMessage(r.getMentionTag());
                             }
-                            Call.sendMessage(found.name + "[sky] is reported to discord.");
+                            player.sendMessage(found.name + "[sky] is reported to discord.");
                             cooldowns.put(System.currentTimeMillis() / 1000L, player.uuid);
                         }
                     } else {

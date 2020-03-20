@@ -33,8 +33,8 @@ public class discordServerCommands implements MessageCreateListener {
     private JSONObject data;
 
 
-    public discordServerCommands(JSONObject _data){
-        this.data = _data;
+    public discordServerCommands(JSONObject data){
+        this.data = data;
     }
 
     @Override
@@ -75,10 +75,17 @@ public class discordServerCommands implements MessageCreateListener {
             Vars.net.dispose(); //todo: check
             Core.app.exit();
 
-        /*
+
         //testing
         } else if (event.getMessageContent().startsWith("..test")){
-            Call.sendMessage("/help");*/
+            Call.sendMessage("1");
+            if (!data.has("mtci")){
+                if (event.isPrivateMessage()) return;
+                event.getChannel().sendMessage(commandDisabled);
+                return;
+            }
+
+            Call.sendMessage("/help");
         }
     }
 
