@@ -1113,15 +1113,25 @@ public class Main extends Plugin {
                     }
                     break;
 
-                case "inf": //Infinite resources, kinda.
+                case "inf": //Switches between sandbox and regular mode.
                     if (arg.length > 1) {
                         if (IW.contains(player.uuid)) {
                             if (arg[1].equals("on")) {
                                 state.rules.infiniteResources = true;
                                 Call.sendMessage("[scarlet]<Admin> [lightgray]" + player.name + " [white] has [lime]Enabled [white]Sandbox mode.");
+                                for (Player p : playerGroup.all()) {
+                                    Call.onWorldDataBegin(p.con);
+                                    netServer.sendWorldData(p);
+                                    Call.onInfoToast(p.con, "Auto Sync completed.", 5);
+                                }
                             } else if (arg[1].equals("off")) {
                                 state.rules.infiniteResources = false;
                                 Call.sendMessage("[scarlet]<Admin> [lightgray]" + player.name + " [white] has [lime]Disabled [white]Sandbox mode.");
+                                for (Player p : playerGroup.all()) {
+                                    Call.onWorldDataBegin(p.con);
+                                    netServer.sendWorldData(p);
+                                    Call.onInfoToast(p.con, "Auto Sync completed.", 5);
+                                }
                             } else {
                                 player.sendMessage("Turn Infinite Items [lightgray]on [white]or [lightgray]off[white].");
                             }
