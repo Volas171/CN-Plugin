@@ -109,8 +109,7 @@ public class BotThread extends Thread{
              revenant = 0;
              lich = 0;
              reaper = 0;
-
-            int All = 0;
+             All = 0;
             //
             for (Unit u : unitGroup.all()) {
                 if(u.getTeam() == player.getTeam()) {
