@@ -70,8 +70,12 @@ public class BotThread extends Thread{
             //update players
             StringBuilder lijst = new StringBuilder();
             //lijst.append("online admins: " + Vars.playerGroup.all().count(p->p.isAdmin)+"\n");
-            for (Player p :Vars.playerGroup.all()){
-                lijst.append(byteCode.noColors(p.name.trim()) + "\n");
+            if (playerGroup.isEmpty()) {
+                lijst.append("No Players Online\n");
+            } else {
+                for (Player p : Vars.playerGroup.all()) {
+                    lijst.append(byteCode.noColors(p.name.trim()) + "\n");
+                }
             }
             try {
                 File file = new File("players.txt");
