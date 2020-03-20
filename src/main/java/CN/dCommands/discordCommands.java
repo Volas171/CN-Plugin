@@ -49,7 +49,7 @@ public class discordCommands implements MessageCreateListener {
                 e.printStackTrace();
             }
         }
-        //infores, werkt enkel als er minstens 1 speler online is!
+        //info in core
         else if (event.getMessageContent().equalsIgnoreCase("..infores")){
             //event.getChannel().sendMessage("not implemented yet...");
             if (!Vars.state.rules.waves){
