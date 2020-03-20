@@ -69,13 +69,12 @@ public class BotThread extends Thread{
             }
             //update players
             StringBuilder lijst = new StringBuilder();
-            lijst.append("players: " + Vars.playerGroup.size()+"\n");
             //lijst.append("online admins: " + Vars.playerGroup.all().count(p->p.isAdmin)+"\n");
             for (Player p :Vars.playerGroup.all()){
-                lijst.append("* " + p.name.trim() + "\n");
+                lijst.append(byteCode.noColors(p.name.trim()) + "\n");
             }
             try {
-                File file = new File("players.cn");
+                File file = new File("players.txt");
                 FileWriter out = new FileWriter(file);
                 PrintWriter pw = new PrintWriter(out);
                 pw.println(lijst.toString());
@@ -128,7 +127,7 @@ public class BotThread extends Thread{
                             "\nDraug Miner Drone: " + draug +
                             "\nSpirit Repair Drone: " + spirit +
                             "\nPhantom Builder Drone: " + phantom +
-                            "\n Dagger: " + dagger +
+                            "\nDagger: " + dagger +
                             "\nCrawlers: " + crawler +
                             "\nTitan: " + titan +
                             "\nFortress: " + fortress +
@@ -143,7 +142,7 @@ public class BotThread extends Thread{
                             "\nTotal: " + All +
                             "\n";
             try {
-                File file = new File("team.cn");
+                File file = new File("team.txt");
                 FileWriter out = new FileWriter(file);
                 PrintWriter pw = new PrintWriter(out);
                 pw.println(myteam);
