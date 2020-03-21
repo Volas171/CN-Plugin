@@ -1,5 +1,6 @@
 package CN.dCommands;
 
+import CN.byteCode;
 import arc.ApplicationListener;
 import arc.Core;
 import arc.Events;
@@ -13,6 +14,7 @@ import mindustry.gen.Call;
 import mindustry.maps.Map;
 
 import org.javacord.api.DiscordApi;
+import org.javacord.api.entity.channel.TextChannel;
 import org.javacord.api.entity.message.MessageBuilder;
 import org.javacord.api.entity.permission.Role;
 import org.javacord.api.event.message.MessageCreateEvent;
@@ -86,7 +88,26 @@ public class discordServerCommands implements MessageCreateListener {
             }
 
             Call.sendMessage("/help");
+        } else {
+            if (event.getChannel().getIdAsString().equals("690322715621720075") && !event.getMessageAuthor().getName().contains("CN - ")) {
+                if (!event.getMessageContent().contains("@everyone") && !event.getMessageContent().contains("@here")) {
+                    Call.sendMessage("[sky]" + event.getMessageAuthor().getName() + " @discord >[] " + event.getMessageContent());
+                    event.getChannel().deleteMessages(event.getMessage());
+                    event.getChannel().sendMessage(event.getMessageAuthor().getName() + " @discord > " + event.getMessageContent());
+                }
+            }
+            /*
+            if (data.has("live_chat_channel_id")) {
+                TextChannel tc = this.getTextChannel(data.getString("live_chat_channel_id"));
+                if (tc != null && !event.message.contains("@everyone") && !event.message.contains("@here")) {
+                    String string = event.message.replace("\\@here","").replaceAll("\\@everyone","").replaceAll("\\@(.*) "," ").replaceAll("\\@(.*)#(.*) ","");
+                    tc.sendMessage(byteCode.noColors(event.player.name) + ": " + string);
+                }
+            }
+
+             */
         }
+
     }
 
     public Role getRole(DiscordApi api, String id){

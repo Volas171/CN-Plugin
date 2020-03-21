@@ -15,12 +15,16 @@ import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.channel.Channel;
 import org.javacord.api.entity.channel.TextChannel;
 import org.javacord.api.entity.message.MessageBuilder;
+import org.javacord.api.entity.message.embed.Embed;
+import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.entity.permission.Role;
 import org.json.JSONObject;
 
+import java.awt.*;
 import java.io.*;
 import java.lang.Thread;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 
 import static mindustry.Vars.*;
 
@@ -61,6 +65,8 @@ public class BotThread extends Thread{
 
         int All = 0;
         String myteam = "";
+        //empty embed
+
         //
         while (this.mt.isAlive()){
             TextChannel tc = getTextChannel(data.getString("one_info_channel"));
@@ -84,15 +90,7 @@ public class BotThread extends Thread{
                     lijst.append(byteCode.noColors(p.name.trim()) + "\n");
                 }
             }
-            try {
-                File file = new File("players.txt");
-                FileWriter out = new FileWriter(file);
-                PrintWriter pw = new PrintWriter(out);
-                pw.println(lijst.toString());
-                out.close();
-            } catch (IOException i) {
-                i.printStackTrace();
-            }
+
             //update core resources and team info
             Teams.TeamData teamData = state.teams.get(Team.sharded);
             if (!teamData.hasCore()) {
@@ -168,15 +166,21 @@ public class BotThread extends Thread{
                             "\n"+ reaper +" Reaper" +
                             "\n"+ All +" Total" +
                             "\n";
+            //update info
+            EmbedBuilder embed = new EmbedBuilder();
+            embed.setColor(Color.getHSBColor(21,84,50));
+            embed.setTitle("Server Info:");
+            embed.setUrl("http://cn-discord.ddns.net");
+            embed.addField("Players Online:",lijst.toString());
+            embed.addField("Team Info:",myteam);
+            embed.setTimestampToNow();
+
             try {
-                File file = new File("team.txt");
-                FileWriter out = new FileWriter(file);
-                PrintWriter pw = new PrintWriter(out);
-                pw.println(myteam);
-                out.close();
-            } catch (IOException i) {
-                i.printStackTrace();
+                tc.getMessageById(data.getString("info_message_id")).get().edit(embed);
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
             }
+
             //save and add a minute
             if (x == 4) {
                 x = 0;

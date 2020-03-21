@@ -239,6 +239,13 @@ public class Main extends Plugin {
             byteCode.aRank(player.uuid);
             // add to idTempDatabase
             idTempDatabase.put(player.id, player);
+            //update status
+            if (playerGroup.size() == 0) {
+                this.api.updateActivity("with 1 player.");
+            } else {
+                this.api.updateActivity("with " + playerGroup.size() + " players.");
+            }
+
         });
 
         Events.on(EventType.PlayerLeave.class, event -> {
@@ -247,6 +254,16 @@ public class Main extends Plugin {
             Date thisDate = new Date();
             SimpleDateFormat dateFormat = new SimpleDateFormat("[MM/dd/Y | HH:mm:ss] ");
             pjl.add("[scarlet][-] [white]" + dateFormat.format(thisDate) + byteCode.nameR(player.name) + " | " + player.uuid + " | " +player.getInfo().lastIP);
+            //update status
+            if (playerGroup.isEmpty()) {
+                api.updateActivity("with nobody ;-;");
+            } else {
+                if (playerGroup.size() == 1) {
+                    this.api.updateActivity("with 1 player.");
+                } else {
+                    this.api.updateActivity("with " + playerGroup.size() + " players.");
+                }
+            }
         });
         Events.on(EventType.WorldLoadEvent.class, event -> {
             IW.clear();
