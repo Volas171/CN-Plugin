@@ -168,6 +168,7 @@ public class byteCode {
         finalString = finalString.replaceAll("\\[purple\\]","");
         finalString = finalString.replaceAll("\\[violet\\]","");
         finalString = finalString.replaceAll("\\[maroon\\]","");
+        finalString = finalString.replaceAll("\\[#(.*)\\]","");
         return  finalString;}
 }
 /*
