@@ -39,7 +39,7 @@ public class discordServerCommands implements MessageCreateListener {
 
     @Override
     public void onMessageCreate(MessageCreateEvent event) {
-        if (event.getMessageContent().equalsIgnoreCase("..gameover")) {
+        if (event.getMessageContent().equalsIgnoreCase("..gameover") || event.getMessageContent().startsWith(data.getString("prefix") + "gameover")) {
             if (!data.has("gameOver_role_id")){
                 if (event.isPrivateMessage()) return;
                 event.getChannel().sendMessage(commandDisabled);
@@ -54,7 +54,7 @@ public class discordServerCommands implements MessageCreateListener {
             }
             //inExtraRound = false;
             Events.fire(new GameOverEvent(Team.crux));
-        } else if(event.getMessageContent().equalsIgnoreCase("..maps")){
+        } else if(event.getMessageContent().equalsIgnoreCase("..maps") || event.getMessageContent().startsWith(data.getString("prefix") + "maps")){
             StringBuilder mapLijst = new StringBuilder();
             mapLijst.append("List of available maps:\n");
             for (Map m:Vars.maps.customMaps()){
@@ -63,7 +63,7 @@ public class discordServerCommands implements MessageCreateListener {
             mapLijst.append("Total number of maps: " + Vars.maps.customMaps().size);
             new MessageBuilder().appendCode("", mapLijst.toString()).send(event.getChannel());
 
-        } else if (event.getMessageContent().startsWith("..exit")){
+        } else if (event.getMessageContent().startsWith("..exit") || event.getMessageContent().startsWith(data.getString("prefix") + "exit")){
             if (!data.has("closeServer_role_id")){
                 if (event.isPrivateMessage()) return;
                 event.getChannel().sendMessage(commandDisabled);
@@ -77,7 +77,7 @@ public class discordServerCommands implements MessageCreateListener {
 
 
         //testing
-        } else if (event.getMessageContent().startsWith("..test")){
+        } else if (event.getMessageContent().startsWith("..test") || event.getMessageContent().startsWith(data.getString("prefix") + "test")){
             Call.sendMessage("1");
             if (!data.has("mtci")){
                 if (event.isPrivateMessage()) return;

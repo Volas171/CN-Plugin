@@ -326,8 +326,9 @@ public class Main extends Plugin {
                     //live chat
                     if (data.has("live_chat_channel_id")) {
                         TextChannel tc = this.getTextChannel(data.getString("live_chat_channel_id"));
-                        if (tc != null) {
-                            tc.sendMessage(byteCode.noColors(event.player.name) + ": " + event.message);
+                        if (tc != null && !event.message.contains("@everyone") && !event.message.contains("@here")) {
+                            String string = event.message.replace("\\@here","").replaceAll("\\@everyone","").replaceAll("\\@(.*) "," ").replaceAll("\\@(.*)#(.*) ","");
+                            tc.sendMessage(byteCode.noColors(event.player.name) + ": " + string);
                         }
                     }
                 } else if (!database.containsKey(event.player.uuid)) {

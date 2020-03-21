@@ -35,12 +35,13 @@ public class BotThread extends Thread{
         data = _data;
 
         //communication commands
-        api.addMessageCreateListener(new discordCommands());
+        api.addMessageCreateListener(new discordCommands(data));
         api.addMessageCreateListener(new discordServerCommands(data));
     }
 
     public void run(){
         int x = 0;
+        int players = 0;
         //
         int draug = 0;
         int spirit = 0;
@@ -68,14 +69,18 @@ public class BotThread extends Thread{
             } catch (Exception e) {
             }
             //update players
+            players=0;
             StringBuilder lijst = new StringBuilder();
             //lijst.append("online admins: " + Vars.playerGroup.all().count(p->p.isAdmin)+"\n");
             if (playerGroup.isEmpty()) {
                 lijst.append("No Players Online\n");
+                setStatus(0);
             } else {
                 for (Player p : Vars.playerGroup.all()) {
                     lijst.append(byteCode.noColors(p.name.trim()) + "\n");
+                    players++;
                 }
+                setStatus(players);
             }
             try {
                 File file = new File("players.txt");
@@ -249,5 +254,14 @@ public class BotThread extends Thread{
         return r1.get();
     }
 
+    public void setStatus(int players) {
+        if (players == 0) {
+            this.api.updateActivity("with nobody ;-;");
+        } else if (players == 1) {
+            this.api.updateActivity("with 1 player.");
+        } else {
+            this.api.updateActivity("with " + players + " players.");
+        }
+    }
 
 }
