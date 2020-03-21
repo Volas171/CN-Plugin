@@ -30,7 +30,7 @@ public class discordCommands implements MessageCreateListener {
 
     @Override
     public void onMessageCreate(MessageCreateEvent event) {
-        if (data.has("prefix")){
+        if (data.has("prefix") && data.has("bot_channel_id") && event.getChannel().getIdAsString().equals(data.getString("bot_channel_id"))){
             if (event.getMessageContent().startsWith("..chat ") || event.getMessageContent().startsWith(data.getString("prefix") + "chat ")) {
                 //discord -> server
                 String[] msg = event.getMessageContent().split(" ", 2);

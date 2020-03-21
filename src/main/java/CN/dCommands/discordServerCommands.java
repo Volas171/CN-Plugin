@@ -4,8 +4,10 @@ import CN.byteCode;
 import arc.ApplicationListener;
 import arc.Core;
 import arc.Events;
-
+import arc.util.Log;
 import arc.net.Server;
+
+
 import mindustry.game.EventType.*;
 import mindustry.Vars;
 import mindustry.core.GameState;
@@ -41,71 +43,62 @@ public class discordServerCommands implements MessageCreateListener {
 
     @Override
     public void onMessageCreate(MessageCreateEvent event) {
-        if (event.getMessageContent().equalsIgnoreCase("..gameover") || event.getMessageContent().startsWith(data.getString("prefix") + "gameover")) {
-            if (!data.has("gameOver_role_id")){
-                if (event.isPrivateMessage()) return;
-                event.getChannel().sendMessage(commandDisabled);
-                return;
-            }
-            Role r = getRole(event.getApi(), data.getString("gameOver_role_id"));
-
-            if (!hasPermission(r, event)) return;
-            // ------------ has permission --------------
-            if (Vars.state.is(GameState.State.menu)) {
-                return;
-            }
-            //inExtraRound = false;
-            Events.fire(new GameOverEvent(Team.crux));
-        } else if(event.getMessageContent().equalsIgnoreCase("..maps") || event.getMessageContent().startsWith(data.getString("prefix") + "maps")){
-            StringBuilder mapLijst = new StringBuilder();
-            mapLijst.append("List of available maps:\n");
-            for (Map m:Vars.maps.customMaps()){
-                mapLijst.append("* "+m.name() + "/ " + m.width + " x " + m.height+"\n");
-            }
-            mapLijst.append("Total number of maps: " + Vars.maps.customMaps().size);
-            new MessageBuilder().appendCode("", mapLijst.toString()).send(event.getChannel());
-
-        } else if (event.getMessageContent().startsWith("..exit") || event.getMessageContent().startsWith(data.getString("prefix") + "exit")){
-            if (!data.has("closeServer_role_id")){
-                if (event.isPrivateMessage()) return;
-                event.getChannel().sendMessage(commandDisabled);
-                return;
-            }
-            Role r = getRole(event.getApi(), data.getString("closeServer_role_id"));
-            if (!hasPermission(r, event)) return;
-
-            Vars.net.dispose(); //todo: check
-            Core.app.exit();
-
-
-        //testing
-        } else if (event.getMessageContent().startsWith("..test") || event.getMessageContent().startsWith(data.getString("prefix") + "test")){
-            Call.sendMessage("1");
-            if (!data.has("mtci")){
-                if (event.isPrivateMessage()) return;
-                event.getChannel().sendMessage(commandDisabled);
-                return;
-            }
-
-            Call.sendMessage("/help");
-        } else {
-            if (event.getChannel().getIdAsString().equals("690322715621720075") && !event.getMessageAuthor().getName().contains("CN - ")) {
-                if (!event.getMessageContent().contains("@everyone") && !event.getMessageContent().contains("@here")) {
-                    Call.sendMessage("[sky]" + event.getMessageAuthor().getName() + " @discord >[] " + event.getMessageContent());
-                    event.getChannel().deleteMessages(event.getMessage());
-                    event.getChannel().sendMessage(event.getMessageAuthor().getName() + " @discord > " + event.getMessageContent());
+        if (data.has("prefix") && data.has("bot_channel_id") && event.getChannel().getIdAsString().equals(data.getString("bot_channel_id"))) {
+            if (event.getMessageContent().equalsIgnoreCase("..gameover") || event.getMessageContent().startsWith(data.getString("prefix") + "gameover")) {
+                if (!data.has("gameOver_role_id")) {
+                    if (event.isPrivateMessage()) return;
+                    event.getChannel().sendMessage(commandDisabled);
+                    return;
                 }
-            }
-            /*
-            if (data.has("live_chat_channel_id")) {
-                TextChannel tc = this.getTextChannel(data.getString("live_chat_channel_id"));
-                if (tc != null && !event.message.contains("@everyone") && !event.message.contains("@here")) {
-                    String string = event.message.replace("\\@here","").replaceAll("\\@everyone","").replaceAll("\\@(.*) "," ").replaceAll("\\@(.*)#(.*) ","");
-                    tc.sendMessage(byteCode.noColors(event.player.name) + ": " + string);
-                }
-            }
+                Role r = getRole(event.getApi(), data.getString("gameOver_role_id"));
 
-             */
+                if (!hasPermission(r, event)) return;
+                // ------------ has permission --------------
+                if (Vars.state.is(GameState.State.menu)) {
+                    return;
+                }
+                //inExtraRound = false;
+                Events.fire(new GameOverEvent(Team.crux));
+            } else if (event.getMessageContent().equalsIgnoreCase("..maps") || event.getMessageContent().startsWith(data.getString("prefix") + "maps")) {
+                StringBuilder mapLijst = new StringBuilder();
+                mapLijst.append("List of available maps:\n");
+                for (Map m : Vars.maps.customMaps()) {
+                    mapLijst.append("* " + m.name() + "/ " + m.width + " x " + m.height + "\n");
+                }
+                mapLijst.append("Total number of maps: " + Vars.maps.customMaps().size);
+                new MessageBuilder().appendCode("", mapLijst.toString()).send(event.getChannel());
+
+            } else if (event.getMessageContent().startsWith("..exit") || event.getMessageContent().startsWith(data.getString("prefix") + "exit")) {
+                if (!data.has("closeServer_role_id")) {
+                    if (event.isPrivateMessage()) return;
+                    event.getChannel().sendMessage(commandDisabled);
+                    return;
+                }
+                Role r = getRole(event.getApi(), data.getString("closeServer_role_id"));
+                if (!hasPermission(r, event)) return;
+
+                Vars.net.dispose(); //todo: check
+                Core.app.exit();
+
+
+                //testing
+            } else if (event.getMessageContent().startsWith("..test") || event.getMessageContent().startsWith(data.getString("prefix") + "test")) {
+                Call.sendMessage("1");
+                if (!data.has("mtci")) {
+                    if (event.isPrivateMessage()) return;
+                    event.getChannel().sendMessage(commandDisabled);
+                    return;
+                }
+
+                Call.sendMessage("/help");
+            }
+        } else if (event.getChannel().getIdAsString().equals(data.getString("live_chat_channel_id_again")) && !event.getMessageAuthor().getName().contains("CN - ")) {
+            if (!event.getMessageContent().contains("@everyone") && !event.getMessageContent().contains("@here")) {
+                Call.sendMessage("[sky]" + event.getMessageAuthor().getName() + " @discord >[] " + event.getMessageContent());
+                Log.info("[sky]" + event.getMessageAuthor().getName() + " @discord >[] " + event.getMessageContent());
+                event.getChannel().deleteMessages(event.getMessage());
+                event.getChannel().sendMessage(event.getMessageAuthor().getName() + " @discord > " + event.getMessageContent());
+            }
         }
 
     }

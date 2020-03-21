@@ -117,7 +117,7 @@ public class BotThread extends Thread{
              All = 0;
             //
             for (Unit u : unitGroup.all()) {
-                if(u.getTeam() == player.getTeam()) {
+                if(u.getTeam() == Team.sharded) {
                     if (u.getTypeID().name.equals("draug")) draug = draug + 1;
                     if (u.getTypeID().name.equals("spirit")) spirit = spirit + 1;
                     if (u.getTypeID().name.equals("phantom")) phantom = phantom + 1;
