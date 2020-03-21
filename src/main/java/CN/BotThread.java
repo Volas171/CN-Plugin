@@ -95,10 +95,10 @@ public class BotThread extends Thread{
             }
             //update core resources and team info
             Teams.TeamData teamData = state.teams.get(Team.sharded);
-            CoreBlock.CoreEntity core = teamData.cores.first();
-            if (core == null) {
-                return;
+            if (!teamData.hasCore()) {
+                continue;
             }
+            CoreBlock.CoreEntity core = teamData.cores.first();
             String playerTeam = "Sharded";
             //
              draug = 0;

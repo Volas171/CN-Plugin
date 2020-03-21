@@ -524,11 +524,11 @@ public class Main extends Plugin {
             //Summon section
             if (!unit.equals("none") && summonEnable) {
                 Teams.TeamData teamData = state.teams.get(player.getTeam());
-                CoreBlock.CoreEntity core = teamData.cores.first();
-                if (core == null) {
+                if (!teamData.hasCore()) {
                     player.sendMessage("Your team doesn't have a core.");
                     return;
                 }
+                CoreBlock.CoreEntity core = teamData.cores.first();
 
                 boolean solid = false;
                 int x = (int) player.x;
