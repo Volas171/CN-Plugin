@@ -68,19 +68,21 @@ public class BotThread extends Thread{
                 Thread.sleep(15 * 1000);
             } catch (Exception e) {
             }
+            //update status
+            if (playerGroup.isEmpty()) {
+                setStatus(0);
+            } else {
+                setStatus(playerGroup.size());
+            }
             //update players
-            players=0;
             StringBuilder lijst = new StringBuilder();
             //lijst.append("online admins: " + Vars.playerGroup.all().count(p->p.isAdmin)+"\n");
             if (playerGroup.isEmpty()) {
                 lijst.append("No Players Online\n");
-                setStatus(0);
             } else {
                 for (Player p : Vars.playerGroup.all()) {
                     lijst.append(byteCode.noColors(p.name.trim()) + "\n");
-                    players++;
                 }
-                setStatus(players);
             }
             try {
                 File file = new File("players.txt");
