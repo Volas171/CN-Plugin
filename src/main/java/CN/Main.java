@@ -3,6 +3,7 @@ package CN;
 //-----imports-----//
 import arc.Core;
 import arc.Events;
+import arc.net.Client;
 import arc.struct.Array;
 import arc.util.CommandHandler;
 import arc.util.Log;
@@ -10,6 +11,7 @@ import arc.util.Strings;
 import arc.util.Time;
 import mindustry.Vars;
 import mindustry.core.NetClient;
+import mindustry.core.World;
 import mindustry.entities.type.Player;
 import mindustry.entities.type.Unit;
 import mindustry.game.EventType;
@@ -995,7 +997,7 @@ public class Main extends Plugin {
                         player.sendMessage("[scarlet]This command is disabled.");
                         return;
                     }
-                    tc.sendMessage(byteCode.noColors(player.name) + " *@mindustry* : " + args[0]);
+                    tc.sendMessage(byteCode.noColors(player.name) + " *@" +data.getString("server_name")+"* : " + args[0]);
                     player.sendMessage(byteCode.noColors(player.name) + "[sky] to @discord[]: " + args[0]);
                 }
 
@@ -1066,7 +1068,7 @@ public class Main extends Plugin {
                                 new MessageBuilder()
                                         .setEmbed(new EmbedBuilder()
                                                 .setTitle("Griefer online")
-                                                .setDescription(r.getMentionTag())
+                                                .setDescription(data.getString("serverdown_name"))
                                                 .addField("name", found.name)
                                                 .addField("reason", args[1])
                                                 .setColor(Color.ORANGE)
@@ -1076,7 +1078,7 @@ public class Main extends Plugin {
                                 new MessageBuilder()
                                         .setEmbed(new EmbedBuilder()
                                                 .setTitle("Griefer online")
-                                                .setDescription(r.getMentionTag())
+                                                .setDescription(data.getString("serverdown_name"))
                                                 .addField("name", found.name)
                                                 .setColor(Color.ORANGE)
                                                 .setFooter("Reported by " + byteCode.noColors(player.name)))
@@ -1534,8 +1536,7 @@ public class Main extends Plugin {
                         player.sendMessage("[salmon]ST[]: Verifies player and adds discord tag using String. example /a #123 abc1234#1234");
                     }
                     break;
-                /*
-                case "ban": //bans player
+                case "ban":
                     if (arg.length > 2) {
                         String reason = arg[2];
                         switch (arg.length-1) {
@@ -1546,17 +1547,10 @@ public class Main extends Plugin {
                                 reason = arg[2] + " " + arg[3] + " " + arg[4];
                                 break;
                         }
-                        player.sendMessage(byteCode.ban(arg[1], reason));
-                    } else if (arg.length > 1) {
-                        player.sendMessage("You must give reason!");
-                    } else {
-                        player.sendMessage("Bans a player using uuid and reason. example; ban asd123 being a griefer");
-                    }
-                    break;
-                 */
-                case "ban":
-                    if (arg.length > 2) {
-                        player.sendMessage(byteCode.ban(arg[1],arg[2]));
+                        String string = byteCode.ban(arg[1], reason);
+                        player.sendMessage(string);
+                        string = string.replace("[B]Success!\n","");
+                        getTextChannel(data.getString("bl_channel_id")).sendMessage(string);
                     } else if (arg.length > 1) {
                         player.sendMessage("[salmon]BAN[]: You must provide a reason.");
                     } else {
@@ -1613,18 +1607,7 @@ public class Main extends Plugin {
                     }
                     break;
                 case "test": //test commands;
-                    x = byteCode.sti(arg[1]);
-                    x = byteCode.sti(arg[1]);
-                    if (x == -647) {
-                        player.sendMessage("ID must be a number!");
-                        return;
-                    }
-                    Player p = idTempDatabase.get(x);
-                    player.sendMessage("START: \n" +
-                            p.name + "\n" +
-                            p.uuid + "\n" +
-                            p.getInfo().lastIP);
-
+                    getTextChannel("690935783141671022").sendMessage("this is a test");
                     break;
 
                 case "info": //all commands

@@ -171,6 +171,8 @@ public class BotThread extends Thread{
             embed.setColor(Color.getHSBColor(21,84,50));
             embed.setTitle("Server Info:");
             embed.setUrl("http://cn-discord.ddns.net");
+            embed.addField("Map", byteCode.noColors(world.getMap().name()) + " by " + byteCode.noColors(world.getMap().author()));
+            embed.addField("Wave: ", ""+state.wave);
             embed.addField("Players Online:",lijst.toString());
             embed.addField("Team Info:",myteam);
             embed.setTimestampToNow();

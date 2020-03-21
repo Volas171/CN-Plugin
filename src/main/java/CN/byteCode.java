@@ -6,6 +6,7 @@ import mindustry.core.NetServer;
 import mindustry.entities.type.Player;
 import mindustry.gen.Call;
 import mindustry.net.Administration;
+import org.javacord.api.entity.channel.TextChannel;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -92,7 +93,7 @@ public class byteCode {
             } catch (IOException i) {
                 i.printStackTrace();
             }
-            return "[B]Success!\n" + dateFormat.format(thisDate) + nameR + " | " + uuid + " | " + reason;
+            return "[B]Success!\n" + dateFormat.format(thisDate) + nameR + " | " + reason + " ;";
         }
         Log.err("Ban got past return!");
         return "error";

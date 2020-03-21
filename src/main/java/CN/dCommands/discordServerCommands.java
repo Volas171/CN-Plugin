@@ -80,17 +80,9 @@ public class discordServerCommands implements MessageCreateListener {
                 Vars.net.dispose(); //todo: check
                 Core.app.exit();
 
-
                 //testing
             } else if (event.getMessageContent().startsWith("..test") || event.getMessageContent().startsWith(data.getString("prefix") + "test")) {
-                Call.sendMessage("1");
-                if (!data.has("mtci")) {
-                    if (event.isPrivateMessage()) return;
-                    event.getChannel().sendMessage(commandDisabled);
-                    return;
-                }
-
-                Call.sendMessage("/help");
+                return;
             }
         } else if (event.getChannel().getIdAsString().equals(data.getString("live_chat_channel_id_again")) && !event.getMessageAuthor().getName().contains("CN - ")) {
             if (!event.getMessageContent().contains("@everyone") && !event.getMessageContent().contains("@here")) {
