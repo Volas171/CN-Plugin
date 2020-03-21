@@ -1,6 +1,10 @@
 ### Description
 CN's Official Plugin. Has useful commands, admin commands and a reaper spawner.
 
+### Downloading a Jar
+1) go to https://github.com/L0615T1C5-216AC-9437/CN-Plugin/releases and download latest version, (not rexommended to use alpha)
+2) follow #Installing
+
 ### Building a Jar
 
 1) download src
@@ -15,6 +19,9 @@ Note: Highly recommended to use Java 8.
 
 Simply place the output jar from the step above in your server's `config/mods` directory and restart the server.
 List your currently installed plugins/mods by running the `mods` command.
+
+### Credits
+The original discordplugin was made by J-VdS, you can visit his repository here: https://github.com/J-VdS/DiscordPlugin
 
 ### Self Promotion
 Our discord server: http://cn-discord.ddns.net  
