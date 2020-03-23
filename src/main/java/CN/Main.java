@@ -364,8 +364,8 @@ public class Main extends Plugin {
                     //live chat
                     if (data.has("live_chat_channel_id")) {
                         TextChannel tc = this.getTextChannel(data.getString("live_chat_channel_id"));
-                        if (tc != null && !event.message.contains("@everyone") && !event.message.contains("@here")) {
-                            String string = event.message.replace("\\@here","").replaceAll("\\@everyone","").replaceAll("\\@(.*) "," ").replaceAll("\\@(.*)#(.*) ","");
+                        if (tc != null) {
+                            String string = event.message.replace("\\@here","").replaceAll("\\@everyone","@every1").replaceAll("\\@here","@h3r3").replaceAll("\\@(.*)#(.*)","<some tag>");
                             tc.sendMessage(byteCode.noColors(event.player.name) + ": " + string);
                         }
                     }
@@ -1092,6 +1092,8 @@ public class Main extends Plugin {
                                                 .setTitle("Griefer online")
                                                 .setDescription(data.getString("serverdown_name"))
                                                 .addField("name", found.name)
+                                                .addField("id", ""+found.id)
+                                                .addField("uuid", found.uuid)
                                                 .addField("reason", args[1])
                                                 .setColor(Color.ORANGE)
                                                 .setFooter("Reported by " + byteCode.noColors(player.name)))
@@ -1102,6 +1104,8 @@ public class Main extends Plugin {
                                                 .setTitle("Griefer online")
                                                 .setDescription(data.getString("serverdown_name"))
                                                 .addField("name", found.name)
+                                                .addField("id", ""+found.id)
+                                                .addField("uuid", found.uuid)
                                                 .setColor(Color.ORANGE)
                                                 .setFooter("Reported by " + byteCode.noColors(player.name)))
                                         .send(tc);
