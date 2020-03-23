@@ -4,6 +4,7 @@ package CN.dCommands;
 import mindustry.Vars;
 import mindustry.content.Items;
 import mindustry.entities.type.Player;
+import mindustry.game.EventType;
 import mindustry.gen.Call;
 
 //javacord
@@ -12,6 +13,7 @@ import mindustry.world.modules.ItemModule;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.MessageBuilder;
 import org.javacord.api.event.message.MessageCreateEvent;
+import org.javacord.api.event.server.member.ServerMemberJoinEvent;
 import org.javacord.api.listener.message.MessageCreateListener;
 import org.json.JSONObject;
 
@@ -62,7 +64,7 @@ public class discordCommands implements MessageCreateListener {
                     e.printStackTrace();
                 }
             }
-            //info in core
+            //resoirces in core
             else if (event.getMessageContent().equalsIgnoreCase("..infores") || event.getMessageContent().startsWith(data.getString("prefix") + "infores")) {
                 //event.getChannel().sendMessage("not implemented yet...");
                 if (!Vars.state.rules.waves) {
@@ -88,6 +90,15 @@ public class discordCommands implements MessageCreateListener {
                     new MessageBuilder().appendCode("", lijst.toString()).send(event.getChannel());
                 }
             }
+            //all commands
+            else if (event.getMessageContent().startsWith(data.getString("prefix") + "help")) {
+
+            }
+        }
+    }
+    public void onPlayerJoin(ServerMemberJoinEvent event) {
+        if (data.has("server_name") && data.getString("server_name").equalsIgnoreCase("1111")) {
+            event.getUser().sendMessage("Welcome to CN network.");
         }
     }
 }

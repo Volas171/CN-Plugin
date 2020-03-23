@@ -148,22 +148,35 @@ public class Main extends Plugin {
         Events.on(EventType.PlayerJoin.class, event -> {
             Player player = event.player;
             if (autoBan) {
-                if (player.getInfo().timesKicked > (player.getInfo().timesJoined / 5)) {
-                    Call.onInfoMessage(player.con,"(AutoBan) Banned for being kicked most of the time. If you want to appeal, give the previous as reason.");
-                    Call.onInfoMessage(player.con,"(AutoBan) Banned for being kicked most of the time. If you want to appeal, give the previous as reason.");
-                    Log.info("[B] Banned \"{0}\" [{1}] for (Kick) > (join)/5", player.name, player.uuid);
-                    byteCode.ban(player.uuid,"Kicked > Joined/5");
-                    player.con.kick("(AutoBan) Banned for being kicked most of the time. If you want to appeal, give the previous as reason.");
+                if (player.getInfo().timesKicked > (player.getInfo().timesJoined / 10)) {
+                    Log.info("[B] Banned \"{0}\" [{1}] kick/join ratio greater than 1/10.", player.name, player.uuid);//log player is being banned
+                    Call.onInfoMessage(player.con,"(AutoBan) Banned for: kick/join ratio greater than 1/10.");//to player
+                    Call.onInfoMessage(player.con,"(AutoBan) Banned for: kick/join ratio greater than 1/10.");//to player
+                    String string = byteCode.ban(player.uuid, "Banned for: kick/join ratio greater than 1/10.");//ban by uuid
+                    getTextChannel(data.getString("bl_channel_id")).sendMessage(string.replace("[B]Success!\n",""));//send to discord
+                    player.con.kick("(AutoBan) Banned for: kick/join ratio greater than 1/10.");//kick player
+
                 } else if (player.getInfo().timesKicked > 15) {
-                    Call.onInfoMessage(player.con,"(AutoBan) Banned for being kicked than 15. If you want to appeal, give the previous as reason.");
-                    Call.onInfoMessage(player.con,"(AutoBan) Banned for being kicked than 15. If you want to appeal, give the previous as reason.");
-                    byteCode.ban(player.uuid,"Kick > 15");
-                    Log.info("[B] Banned \"{0}\" [{1}] for Kick > 15.", player.name, player.uuid);
-                    player.con.kick("(AutoBan) Banned for being kicked than 15. If you want to appeal, give the previous as reason.");
+                    Log.info("[B] Banned \"{0}\" [{1}] for being kicked more than 15.", player.name, player.uuid);//log player is being banned
+                    Call.onInfoMessage(player.con,"(AutoBan) Banned for being kicked more than 15. If you want to appeal, give the previous as reason.");//to player
+                    Call.onInfoMessage(player.con,"(AutoBan) Banned for being kicked more than 15. If you want to appeal, give the previous as reason.");//to player
+                    String string = byteCode.ban(player.uuid, "Banned for: Banned for being kicked more than 15.");//ban by uuid
+                    getTextChannel(data.getString("bl_channel_id")).sendMessage(string.replace("[B]Success!\n",""));//send to discord
+                    player.con.kick("(AutoBan) Banned for: Banned for being kicked more than 15. If you want to appeal, give the previous as reason.");//kick player
+
                 } else if (database.containsKey(player.uuid) && database.get(player.uuid).getRank() == 7 && !player.getInfo().lastIP.equals("127.0.0.1")) {
+                    Call.onInfoMessage(player.con,"(AutoBan) Banned for ==Rank 7==. If you want to appeal, give the previous as reason.");
+                    Call.onInfoMessage(player.con,"(AutoBan) Banned for ==Rank 6== . If you want to appeal, give the previous as reason.");
                     byteCode.ban(player.uuid,"Rank 7");
                     Log.info("[B] Banned \"{0}\" [{1}] for Rank 6.", player.name, player.uuid);
                     player.con.kick("(AutoBan) Banned for ==Rank 6== . If you want to appeal, give the previous as reason.");
+
+                    Log.info("[B] Banned \"{0}\" [{1}] for being kicked more than 15.", player.name, player.uuid);//log player is being banned
+                    Call.onInfoMessage(player.con,"(AutoBan) Banned for ==Rank 7==. If you want to appeal, give the previous as reason.");//to player
+                    Call.onInfoMessage(player.con,"(AutoBan) Banned for ==Rank 7==. If you want to appeal, give the previous as reason.");//to player
+                    String string = byteCode.ban(player.uuid, "Banned for: Banned for ==Rank 7==.");//ban by uuid
+                    getTextChannel(data.getString("bl_channel_id")).sendMessage(string.replace("[B]Success!\n",""));//send to discord
+                    player.con.kick("(AutoBan) Banned for: Banned for ==Rank 7==. If you want to appeal, give the previous as reason.");//kick player
                 }
             }
             if(player.getInfo().timesKicked > 10) {
@@ -287,6 +300,12 @@ public class Main extends Plugin {
 
                 if (playerGroup.size() > 5 && database.containsKey(player.uuid) && database.get(player.uuid).getRank() == 0) {
                     Teams.TeamData teamData = state.teams.get(player.getTeam());
+                    if (!teamData.hasCore()) {
+                        Log.err("addAdminFilter - Core is null");
+                        player.getInfo().timesKicked--;
+                        player.con.kick("ERROR - addAdminActionFilter\nplease report what you did to get this issue in CN discord.",1);
+                        return true;
+                    }
                     CoreBlock.CoreEntity core = teamData.cores.first();
                     if (core == null) {
                         Log.err("addAdminFilter - Core is null");
@@ -957,6 +976,7 @@ public class Main extends Plugin {
                 player.sendMessage("You must be [sky]Verified [white]to use this command.");
             }
         });
+        //calls for help and location
         handler.<Player>register("halp","Calls for help and setups /go", (arg, player) -> {
             String rankI = byteCode.rankI(database.get(player.uuid).getRank());
             String dI = "";
@@ -968,11 +988,13 @@ public class Main extends Plugin {
             Call.sendMessage(rankI + dI + " [white]" + player.name + ": [white]Need help at ([lightgray]" + halpX + "[white],[lightgray]" + halpY + "[white]). \ndo `[lightgray]/go[white]` to come to me.");
             Log.info(player.name + ": [white]Need help at ([lightgray]" + halpX + "[white],[lightgray]" + halpY + "[white]). do `[lightgray]/go[white]` to come to me.");
         });
+        //goes to position
         handler.<Player>register("go","goes to location from /here or /halp", (arg, player) -> {
             player.set(halpX*8,halpY*8);
             player.setNet(halpX*8,halpY*8);
             player.set(halpX*8,halpY*8);
         });
+        //calls location
         handler.<Player>register("here","setups /go to go to your location", (arg, player) -> {
             String rankI = byteCode.rankI(database.get(player.uuid).getRank());
             String dI = "";
@@ -1606,8 +1628,10 @@ public class Main extends Plugin {
                         player.sendMessage("[salmon]CHAT[white]: Turns chat on/off, on/off");
                     }
                     break;
+                case "cat"://clear all tag, clear all tags containing user#tag
+             break;
                 case "test": //test commands;
-                    getTextChannel("690935783141671022").sendMessage("this is a test");
+
                     break;
 
                 case "info": //all commands
