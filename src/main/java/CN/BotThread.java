@@ -1,5 +1,6 @@
 package CN;
 
+import CN.dCommands.aDiscord;
 import CN.dCommands.discordCommands;
 import CN.dCommands.discordServerCommands;
 import mindustry.Vars;
@@ -41,6 +42,7 @@ public class BotThread extends Thread{
         //communication commands
         api.addMessageCreateListener(new discordCommands(data));
         api.addMessageCreateListener(new discordServerCommands(data));
+        api.addMessageCreateListener(new aDiscord(data));
     }
 
     public void run(){

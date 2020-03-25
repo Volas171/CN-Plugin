@@ -33,14 +33,8 @@ public class discordCommands implements MessageCreateListener {
     @Override
     public void onMessageCreate(MessageCreateEvent event) {
         if (data.has("prefix") && data.has("bot_channel_id") && event.getChannel().getIdAsString().equals(data.getString("bot_channel_id"))){
-            if (event.getMessageContent().startsWith("..chat ") || event.getMessageContent().startsWith(data.getString("prefix") + "chat ")) {
-                //discord -> server
-                String[] msg = event.getMessageContent().split(" ", 2);
-                Call.sendMessage("[sky]" + event.getMessageAuthor().getName() + " @discord >[] " + msg[1].trim());
-            }
-
             //playerlist
-            else if (event.getMessageContent().equalsIgnoreCase("..players") || event.getMessageContent().startsWith(data.getString("prefix") + "players")) {
+            if (event.getMessageContent().equalsIgnoreCase("..players") || event.getMessageContent().startsWith(data.getString("prefix") + "players")) {
                 StringBuilder lijst = new StringBuilder();
                 lijst.append("players: " + Vars.playerGroup.size() + "\n");
                 //lijst.append("online admins: " + Vars.playerGroup.all().count(p->p.isAdmin)+"\n");
@@ -68,7 +62,7 @@ public class discordCommands implements MessageCreateListener {
             else if (event.getMessageContent().equalsIgnoreCase("..infores") || event.getMessageContent().startsWith(data.getString("prefix") + "infores")) {
                 //event.getChannel().sendMessage("not implemented yet...");
                 if (!Vars.state.rules.waves) {
-                    event.getChannel().sendMessage("Only available when playing survivalmode!");
+                    event.getChannel().sendMessage("Only available when playing survival mode!");
                     return;
                 } else if (Vars.playerGroup.isEmpty()) {
                     event.getChannel().sendMessage("No players online!");
