@@ -344,7 +344,7 @@ public class Main extends Plugin {
             if (database.containsKey(player.uuid)) {
                 database.get(player.uuid).addBb(1);
                 if (database.get(player.uuid).getBB() == 10000) {
-                    Call.sendMessage("Congratulations to " + player.name + " []for building his/her 10,000th block!");
+                    Call.sendMessage("Congratulations to " + player.name + " [white]for building his/her 10,000th block!");
                 }
             }
         });
@@ -1534,6 +1534,14 @@ public class Main extends Plugin {
                             //run
                             uid = arg[1];
                             tag = arg[2];
+                            switch (arg.length-1) {
+                                case 3:
+                                    tag = arg[2] + " " + arg[3];
+                                    break;
+                                case 4:
+                                    tag = arg[2] + " " + arg[3] + " " + arg[4];
+                                    break;
+                            }
                             proceed = true;
                         } else {
                             player.sendMessage("[salmon]ST[]: UUID not found!");
