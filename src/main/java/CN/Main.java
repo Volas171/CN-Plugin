@@ -106,10 +106,6 @@ public class Main extends Plugin {
         bt.setDaemon(false);
         bt.start();
 
-        Cycle cy = new Cycle(api, Thread.currentThread(), alldata.getJSONObject("discord"));
-        cy.setDaemon(false);
-        cy.start();
-
         //load all player info.
         try {
             FileInputStream loadFile = new FileInputStream("PDF.cn");
