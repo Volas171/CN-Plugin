@@ -191,6 +191,9 @@ public class Main extends Plugin {
                     "\nFor \uE801 Info, do /info" +
                     "\n[white]======================================================================");
             //Remove all <> in name
+            if (player.name.contains("<") && player.name.contains(">")) {
+                Call.onInfoToast(player.con, "<TAG> Removed", 30);
+            }
             player.name = player.name.replaceAll("\\<(.*)\\>", "").replace("<","").replace(">","").replace("\n","");
             //add tags
             if (database.containsKey(player.uuid)) {
