@@ -53,6 +53,7 @@ public class Main extends Plugin {
     public static int halpX = 0;
     public static int halpY = 0;
     public static boolean sandbox = false;
+    public static String liveChat = "";
 
     private boolean summonEnable = true;
     private boolean reaperEnable = true;
@@ -105,6 +106,9 @@ public class Main extends Plugin {
         bt.setDaemon(false);
         bt.start();
 
+        Cycle cy = new Cycle(api, Thread.currentThread(), alldata.getJSONObject("discord"));
+        cy.setDaemon(false);
+        cy.start();
 
         //load all player info.
         try {
@@ -122,28 +126,9 @@ public class Main extends Plugin {
             c.printStackTrace();
             return;
         }
-        //PIAS Start
-        Log.info("Attempting to start PIAS...");
 
         Events.on(EventType.ServerLoadEvent.class, event -> {
-
             netServer.admins.addChatFilter((player, text) -> null);
-
-
-            Thread PIAS = new Thread() {
-                public void run() {
-                    Log.info("PIAS started Successfully!");
-                    while (true) {
-                        try {
-                            Thread.sleep(60 * 1000);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            };
-            Log.info("Attempting to start PIAS...");
-            PIAS.start();
         });
         Events.on(EventType.PlayerJoin.class, event -> {
             Player player = event.player;
@@ -366,11 +351,8 @@ public class Main extends Plugin {
 
                     //live chat
                     if (data.has("live_chat_channel_id")) {
-                        TextChannel tc = this.getTextChannel(data.getString("live_chat_channel_id"));
-                        if (tc != null) {
-                            String string = event.message.replace("\\@here","").replaceAll("\\@everyone","@every1").replaceAll("\\@here","@h3r3").replaceAll("\\@(.*)#(.*)","<some tag>");
-                            tc.sendMessage(byteCode.noColors(event.player.name) + ": " + string);
-                        }
+                        String string = event.message.replace("\\@here","").replaceAll("\\@everyone","@every1").replaceAll("\\@here","@h3r3").replaceAll("\\@(.*)#(.*)","<some tag>");
+                        liveChat = liveChat + byteCode.noColors(event.player.name) + " [white]: " + string + "\n";
                     }
                 } else if (!database.containsKey(event.player.uuid)) {
                     event.player.getInfo().timesKicked--;
