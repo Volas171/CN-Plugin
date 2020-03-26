@@ -85,11 +85,16 @@ public class discordServerCommands implements MessageCreateListener {
                 return;
             }
         } else if (event.getChannel().getIdAsString().equals(data.getString("live_chat_channel_id_again")) && !event.getMessageAuthor().getName().contains("CN - ")) {
-            if (!event.getMessageContent().contains("@everyone") && !event.getMessageContent().contains("@here")) {
-                Call.sendMessage("[sky]" + event.getMessageAuthor().getName() + " @discord >[] " + event.getMessageContent());
-                Log.info("[sky]" + event.getMessageAuthor().getName() + " @discord >[] " + event.getMessageContent());
+            if (event.getMessageContent().length() < 128) {
+                if (!event.getMessageContent().contains("@everyone") && !event.getMessageContent().contains("@here")) {
+                    Call.sendMessage("[sky]" + event.getMessageAuthor().getName() + " @discord >[] " + event.getMessageContent());
+                    Log.info("[sky]" + event.getMessageAuthor().getName() + " @discord >[] " + event.getMessageContent());
+                    event.getChannel().deleteMessages(event.getMessage());
+                    event.getChannel().sendMessage(event.getMessageAuthor().getName() + " @discord > " + event.getMessageContent());
+                }
+            } else {
                 event.getChannel().deleteMessages(event.getMessage());
-                event.getChannel().sendMessage(event.getMessageAuthor().getName() + " @discord > " + event.getMessageContent());
+                event.getChannel().sendMessage("" + event.getMessage().getAuthor().getName() + " your message was too long, please send a shorter message.");
             }
         }
 

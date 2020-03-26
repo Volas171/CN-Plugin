@@ -653,6 +653,10 @@ public class Main extends Plugin {
         //Shows team info
         handler.<Player>register("myteam","[Info]", "Gives team info", (arg, player) -> {
             Teams.TeamData teamData = state.teams.get(player.getTeam());
+            if (!teamData.hasCore()) {
+                player.sendMessage("Your team doesn't have a core!");
+                return;
+            }
             CoreBlock.CoreEntity core = teamData.cores.first();
             if (core == null) {
                 player.sendMessage("Your team doesn't have a core.");

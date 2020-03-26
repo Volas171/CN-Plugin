@@ -35,7 +35,7 @@ public class byteCode {
             case 2:
                 return "[accent]<\uE809>";
             case 1:
-                return "<>";
+                return "[accent]<>";
             case 0:
                 return "[lightgray]<>";
             default:
