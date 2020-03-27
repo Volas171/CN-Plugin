@@ -1177,6 +1177,10 @@ public class Main extends Plugin {
 
                 case "10k":
                     Teams.TeamData teamData = state.teams.get(player.getTeam());
+                    if (!teamData.hasCore()) {
+                        player.sendMessage("Your team doesnt have a core!");
+                        return;
+                    }
                     CoreBlock.CoreEntity core = teamData.cores.first();
                     core.items.add(Items.copper, 10000);
                     core.items.add(Items.lead, 10000);

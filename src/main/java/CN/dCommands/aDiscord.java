@@ -3,11 +3,15 @@ package CN.dCommands;
 import arc.Events;
 import arc.util.Log;
 import mindustry.Vars;
+import mindustry.content.Items;
 import mindustry.core.GameState;
+import mindustry.entities.type.Player;
 import mindustry.game.EventType;
 import mindustry.game.Team;
+import mindustry.game.Teams;
 import mindustry.gen.Call;
 
+import mindustry.world.blocks.storage.CoreBlock;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.permission.Role;
 import org.javacord.api.event.message.MessageCreateEvent;
@@ -16,7 +20,7 @@ import org.json.JSONObject;
 
 import java.util.Optional;
 
-import static mindustry.Vars.netServer;
+import static mindustry.Vars.*;
 
 public class aDiscord implements MessageCreateListener {
     final long minMapChangeTime = 30L; //30 seconds
@@ -56,9 +60,9 @@ public class aDiscord implements MessageCreateListener {
             String[] arg = event.getMessageContent().split(" ", 3);
 
             if (arg[0].startsWith("..") || arg[0].startsWith(data.getString("prefix"))) {
-                arg[0].replaceAll("..", "").replaceAll(data.getString("prefix"), "");
+                arg[0] = arg[0].replaceAll("\\.\\.","").replaceAll(data.getString("prefix"),"");
                 switch (arg[0]) {
-                    case "uap":
+                    case "uap": //to be removed... too risky
                         if (rank == 7) {
                             if (arg.length > 1 && arg[1].length() > 0) {
                                 netServer.admins.unAdminPlayer(arg[1]);
@@ -74,21 +78,64 @@ public class aDiscord implements MessageCreateListener {
                         }
                         break;
                     case "gameover":
-                        if (rank == 6) {
+                        if (rank >= 6) {
                             if (Vars.state.is(GameState.State.menu)) {
                                 return;
                             }
                             //inExtraRound = false;
                             Events.fire(new EventType.GameOverEvent(Team.crux));
                             event.getChannel().sendMessage("Game ended.");
-                            Call.sendMessage(event.getMessage().getAuthor().getDisplayName() + " [white]has ended the game.");
+                            Call.sendMessage("[scarlet]<Admin> [lightgray]" + event.getMessage().getAuthor().getDisplayName() + " [white]has ended the game.");
                         } else {
                             if (event.isPrivateMessage()) return;
                             event.getChannel().sendMessage(noPermission);
                             return;
                         }
+                    case "sandbox":
+                        if (rank >= 6) {
+                            if (state.rules.infiniteResources) {
+                                state.rules.infiniteResources = false;
+                                Call.sendMessage("[scarlet]<Admin> [lightgray]" + event.getMessage().getAuthor().getDisplayName() + " [white]has [lightgray]Disabled [white]Sandbox Mode.");
+                                event.getChannel().sendMessage("Sandbox Mode turned off.");
+                            } else {
+                                state.rules.infiniteResources = true;
+                                Call.sendMessage("[scarlet]<Admin> [lightgray]" + event.getMessage().getAuthor().getDisplayName() + " [white]has [lightgray]Enabled [white]Sandbox Mode.");
+                                event.getChannel().sendMessage("Sandbox Mode turned on.");
+                            }
+                            for (Player p : playerGroup.all()) {
+                                Call.onWorldDataBegin(p.con);
+                                netServer.sendWorldData(p);
+                                Call.onInfoToast(p.con, "Auto Sync completed.", 5);
+                            }
+                        } else {
+                            if (event.isPrivateMessage()) return;
+                            event.getChannel().sendMessage(noPermission);
+                            return;
+                        }
+                        break;
+                    case "10k":
+                        Teams.TeamData teamData = state.teams.get(Team.sharded);
+                        if (!teamData.hasCore()) {
+                            player.sendMessage("Your team doesn't have a core!");
+                            return;
+                        }
+                        CoreBlock.CoreEntity core = teamData.cores.first();
+                        core.items.add(Items.copper, 10000);
+                        core.items.add(Items.lead, 10000);
+                        core.items.add(Items.metaglass, 10000);
+                        core.items.add(Items.graphite, 10000);
+                        core.items.add(Items.titanium, 10000);
+                        core.items.add(Items.thorium, 10000);
+                        core.items.add(Items.silicon, 10000);
+                        core.items.add(Items.plastanium, 10000);
+                        core.items.add(Items.phasefabric, 10000);
+                        core.items.add(Items.surgealloy, 10000);
+                        Call.sendMessage("[scarlet]<Admin> [lightgray]" + player.name + " [white] has given 10k resources to core.");
+                        event.getChannel().sendMessage("Added 10k of all resources to core.");
+                        break;
                     default:
-                        throw new IllegalStateException("Unexpected value: " + arg[0]);
+                        event.getChannel().sendMessage(arg[0] + " is not a command!");
+                        return;
                 }
             }
         }
