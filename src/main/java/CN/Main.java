@@ -347,7 +347,7 @@ public class Main extends Plugin {
 
                     //live chat
                     if (data.has("live_chat_channel_id")) {
-                        String string = event.message.replace("\\@here","").replaceAll("\\@everyone","@every1").replaceAll("\\@here","@h3r3").replaceAll("\\@(.*)#(.*)","<some tag>");
+                        String string = event.message.replace("\\@here","").replaceAll("\\@everyone","@every1").replaceAll("\\@here","@h3r3").replaceAll("\\@(.*)#(.*)","<someone's tag>").replaceAll("<@(.*)>", "<someone's tag>");
                         liveChat = liveChat + byteCode.noColors(event.player.name) + " [white]: " + string + "\n";
                     }
                 } else if (!database.containsKey(event.player.uuid)) {
