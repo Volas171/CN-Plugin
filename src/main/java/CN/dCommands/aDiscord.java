@@ -84,7 +84,7 @@ public class aDiscord implements MessageCreateListener {
                             }
                             //inExtraRound = false;
                             Events.fire(new EventType.GameOverEvent(Team.crux));
-                            event.getChannel().sendMessage("Game ended.");
+                            event.getChannel().sendMessage("<@" + event.getMessage().getAuthor().getName() + "> Game ended.");
                             Call.sendMessage("[scarlet]<Admin> [lightgray]" + event.getMessage().getAuthor().getDisplayName() + " [white]has ended the game.");
                         } else {
                             if (event.isPrivateMessage()) return;
@@ -96,11 +96,11 @@ public class aDiscord implements MessageCreateListener {
                             if (state.rules.infiniteResources) {
                                 state.rules.infiniteResources = false;
                                 Call.sendMessage("[scarlet]<Admin> [lightgray]" + event.getMessage().getAuthor().getDisplayName() + " [white]has [lightgray]Disabled [white]Sandbox Mode.");
-                                event.getChannel().sendMessage("Sandbox Mode turned off.");
+                                event.getChannel().sendMessage("<@" + event.getMessage().getAuthor().getName() + "> Sandbox Mode turned off.");
                             } else {
                                 state.rules.infiniteResources = true;
                                 Call.sendMessage("[scarlet]<Admin> [lightgray]" + event.getMessage().getAuthor().getDisplayName() + " [white]has [lightgray]Enabled [white]Sandbox Mode.");
-                                event.getChannel().sendMessage("Sandbox Mode turned on.");
+                                event.getChannel().sendMessage("<@" + event.getMessage().getAuthor().getName() + "> Sandbox Mode turned on.");
                             }
                             for (Player p : playerGroup.all()) {
                                 Call.onWorldDataBegin(p.con);
@@ -113,10 +113,10 @@ public class aDiscord implements MessageCreateListener {
                             return;
                         }
                         break;
-                    case "10k":
+                    case "tk":
                         Teams.TeamData teamData = state.teams.get(Team.sharded);
                         if (!teamData.hasCore()) {
-                            player.sendMessage("Your team doesn't have a core!");
+                            event.getChannel().sendMessage("<@" + event.getMessage().getAuthor().getName() + "> Your team doesn't have a core!");
                             return;
                         }
                         CoreBlock.CoreEntity core = teamData.cores.first();
@@ -130,8 +130,8 @@ public class aDiscord implements MessageCreateListener {
                         core.items.add(Items.plastanium, 10000);
                         core.items.add(Items.phasefabric, 10000);
                         core.items.add(Items.surgealloy, 10000);
-                        Call.sendMessage("[scarlet]<Admin> [lightgray]" + player.name + " [white] has given 10k resources to core.");
-                        event.getChannel().sendMessage("Added 10k of all resources to core.");
+                        Call.sendMessage("[scarlet]<Admin> [lightgray]" + event.getMessage().getAuthor().getDisplayName() + " [white] has given 10k resources to core.");
+                        event.getChannel().sendMessage("<@" + event.getMessage().getAuthor().getName() + "> Added 10k of all resources to core.");
                         break;
                     default:
                         event.getChannel().sendMessage(arg[0] + " is not a command!");
