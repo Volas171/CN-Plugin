@@ -2,6 +2,7 @@ package CN.dCommands;
 
 import arc.Events;
 import arc.util.Log;
+import arc.util.Strings;
 import mindustry.Vars;
 import mindustry.content.Items;
 import mindustry.core.GameState;
@@ -77,7 +78,7 @@ public class aDiscord implements MessageCreateListener {
                             return;
                         }
                         break;
-                    case "gameover":
+                    case "gameover": //triggers a game over, no arguments
                         if (rank >= 6) {
                             if (Vars.state.is(GameState.State.menu)) {
                                 return;
@@ -91,7 +92,7 @@ public class aDiscord implements MessageCreateListener {
                             event.getChannel().sendMessage(noPermission);
                             return;
                         }
-                    case "sandbox":
+                    case "sandbox": //changes sandbox mode on/off, no arguments
                         if (rank >= 6) {
                             if (state.rules.infiniteResources) {
                                 state.rules.infiniteResources = false;
@@ -113,7 +114,7 @@ public class aDiscord implements MessageCreateListener {
                             return;
                         }
                         break;
-                    case "tk":
+                    case "tk": //adds 10k resources to core
                         Teams.TeamData teamData = state.teams.get(Team.sharded);
                         if (!teamData.hasCore()) {
                             event.getChannel().sendMessage("<@" + event.getMessage().getAuthor().getName() + "> Your team doesn't have a core!");
@@ -133,6 +134,19 @@ public class aDiscord implements MessageCreateListener {
                         Call.sendMessage("[scarlet]<Admin> [lightgray]" + event.getMessage().getAuthor().getDisplayName() + " [white] has given 10k resources to core.");
                         event.getChannel().sendMessage("<@" + event.getMessage().getAuthor().getName() + "> Added 10k of all resources to core.");
                         break;
+                    case "team": //changes team, #id - team
+                        if (arg.length > 1) {
+                            if (arg[1].startsWith("#") && arg[1].length() > 3 && Strings.canParseInt(arg[1].substring(1))) {
+                                //run
+                                int id = Strings.parseInt(arg[1].substring(1));
+                                Player p = playerGroup.getByID(id);
+                                if (p==null) {
+                                    event.getChannel().sendMessage("<@" + event.getMessage().getAuthor().getName() + "> Player ID '"+arg[1]+"' not found.");
+                                }
+                            } else if (arg[1].startsWith("#")) {
+                                player.sendMessage("ID can only contain numbers!");
+                            }
+                        }
                     default:
                         event.getChannel().sendMessage(arg[0] + " is not a command!");
                         return;

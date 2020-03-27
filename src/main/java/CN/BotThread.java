@@ -225,6 +225,7 @@ public class BotThread extends Thread{
                         float z = (float) Main.database.get(p.uuid).getTP()/60;
                         if ((float) y == z) {
                             Call.sendMessage("Congratulations to " + p.name + " [white]for staying active for " + y + " Hours!");
+                            Main.liveChat = Main.liveChat + "Congratulations to " + p.name + " [white]for staying active for " + y + " Hours!\n";
                         }
                         byteCode.aRank(p.uuid);
                     }
