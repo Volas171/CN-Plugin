@@ -3,6 +3,7 @@ package CN;
 import CN.dCommands.aDiscord;
 import CN.dCommands.discordCommands;
 import CN.dCommands.discordServerCommands;
+import CN.byteCode;
 import mindustry.Vars;
 import mindustry.content.Items;
 import mindustry.entities.type.Player;
@@ -25,6 +26,7 @@ import java.awt.*;
 import java.io.*;
 import java.lang.Thread;
 import java.util.Optional;
+import java.util.Random;
 import java.util.concurrent.ExecutionException;
 
 import static mindustry.Vars.*;
@@ -46,9 +48,16 @@ public class BotThread extends Thread{
     }
 
     public void run(){
+        try {
+            Thread.sleep(60 * 1000);
+        } catch (Exception e) {
+        }
+
+
         String liveChat = "";
 
         int x = 0;
+        int fm = 0;
         int players = 0;
         //
         int draug = 0;
@@ -203,6 +212,7 @@ public class BotThread extends Thread{
             //save and add a minute
             if (x == 60 * 1000) {
                 x = 0;
+                fm++;
                 //output PI save file
                 try {
                     FileOutputStream fileOut = new FileOutputStream("PDF.cn");
@@ -231,6 +241,12 @@ public class BotThread extends Thread{
                     }
                 }
             }
+            if (fm == 5) {
+                fm = 0;
+                Random rand = new Random();
+                Call.sendMessage(byteCode.tips[rand.nextInt(3)]);
+            }
+
         }
         if (data.has("serverdown_role_id")){
             Role r = new utilmethods().getRole(api, data.getString("serverdown_role_id"));

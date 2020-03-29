@@ -2,6 +2,7 @@ package CN;
 
 import arc.util.Log;
 import arc.util.Strings;
+import arc.util.Time;
 import mindustry.core.NetServer;
 import mindustry.entities.type.Player;
 import mindustry.gen.Call;
@@ -19,6 +20,20 @@ import java.util.HashMap;
 import static mindustry.Vars.*;
 
 public class byteCode {
+    //storage
+    public static String[] tips;
+
+    public byteCode() {
+        tips = new String[]{
+                tips[0] = "Tip #1: When on the [lightgray]Upgrade [white]Menu, \uE850, little colored short arrows will point you towards Upgrade Pads.",
+                tips[1] = "Tip #1: When on the [lightgray]Upgrade [white]Menu, \uE850, little colored short arrows will point you towards Upgrade Pads.",
+                tips[2] = "Tip #2: You can Overdrive  Weapons to make them shoot faster.",
+                tips[3] = "Tip #3: If you disconnect a power source and connect it with Diodes \uF87C, you can prevent them from dying when power crashes.",
+                tips[4] = "Tip #4: You can overdrive Upgrade Pads to make spawning faster, this includes the core!"
+        };
+    }
+
+    //code
     public static String nameR(String name) {return name.replaceAll("\\[", "[[");}
     public static String rankI(int i) {
         switch (i) {
@@ -45,7 +60,7 @@ public class byteCode {
     public static String verifiedI() {
         return "<[sky]\uE848[accent]>";
     }
-    public static String ban(String IDuuid, String reason) {
+    public static String ban(String IDuuid, String reason, String who) {
         //setup
         Date thisDate = new Date();
         SimpleDateFormat dateFormat = new SimpleDateFormat("[MM/dd/Y | HH:mm:ss] ");
@@ -88,12 +103,13 @@ public class byteCode {
                 File file = new File("bl.cn");
                 FileWriter out = new FileWriter(file, true);
                 PrintWriter pw = new PrintWriter(out);
-                pw.println(dateFormat.format(thisDate) + nameR + " | " + uuid + " | " + reason);
+                pw.println(dateFormat.format(thisDate) + nameR + " | " + uuid + " | " + reason + " | by: " + who + " ;");
                 out.close();
             } catch (IOException i) {
                 i.printStackTrace();
             }
-            return "[B]Success!\n" + dateFormat.format(thisDate) + nameR + " | " + reason + " ;";
+            Main.milisecondSinceBan = Time.millis() + 250;
+            return "[B]Success!\n" + dateFormat.format(thisDate) + nameR + " | " + reason + " | by: " + who + " ;";
         }
         Log.err("Ban got past return!");
         return "error";

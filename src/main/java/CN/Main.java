@@ -54,6 +54,7 @@ public class Main extends Plugin {
     public static int halpY = 0;
     public static boolean sandbox = false;
     public static String liveChat = "";
+    public static long milisecondSinceBan = Time.millis();
 
     private boolean summonEnable = true;
     private boolean reaperEnable = true;
@@ -133,30 +134,25 @@ public class Main extends Plugin {
                     Log.info("[B] Banned \"{0}\" [{1}] kick/join ratio greater than 1/10.", player.name, player.uuid);//log player is being banned
                     Call.onInfoMessage(player.con,"(AutoBan) Banned for: kick/join ratio greater than 1/10.");//to player
                     Call.onInfoMessage(player.con,"(AutoBan) Banned for: kick/join ratio greater than 1/10.");//to player
-                    String string = byteCode.ban(player.uuid, "Banned for: kick/join ratio greater than 1/10.");//ban by uuid
-                    getTextChannel(data.getString("bl_channel_id")).sendMessage(string.replace("[B]Success!\n",""));//send to discord
+                    String string = byteCode.ban(player.uuid, "Banned for: kick/join ratio greater than 1/10.", "Autoban");//ban by uuid
+                    string = string.replace("[B]Success!\n","");//replaces success message
+                    if (data.has("bl_channel_id")) getTextChannel(data.getString("bl_channel_id")).sendMessage(string);//send to discord
                     player.con.kick("(AutoBan) Banned for: kick/join ratio greater than 1/10.");//kick player
-
                 } else if (player.getInfo().timesKicked > 15) {
                     Log.info("[B] Banned \"{0}\" [{1}] for being kicked more than 15.", player.name, player.uuid);//log player is being banned
                     Call.onInfoMessage(player.con,"(AutoBan) Banned for being kicked more than 15. If you want to appeal, give the previous as reason.");//to player
                     Call.onInfoMessage(player.con,"(AutoBan) Banned for being kicked more than 15. If you want to appeal, give the previous as reason.");//to player
-                    String string = byteCode.ban(player.uuid, "Banned for: Banned for being kicked more than 15.");//ban by uuid
-                    getTextChannel(data.getString("bl_channel_id")).sendMessage(string.replace("[B]Success!\n",""));//send to discord
+                    String string = byteCode.ban(player.uuid, "Banned for: Banned for being kicked more than 15.", "Autoban");//ban by uuid
+                    string = string.replace("[B]Success!\n","");//replaces success message
+                    if (data.has("bl_channel_id")) getTextChannel(data.getString("bl_channel_id")).sendMessage(string);//send to discord
                     player.con.kick("(AutoBan) Banned for: Banned for being kicked more than 15. If you want to appeal, give the previous as reason.");//kick player
-
                 } else if (database.containsKey(player.uuid) && database.get(player.uuid).getRank() == 7 && !player.getInfo().lastIP.equals("127.0.0.1")) {
-                    Call.onInfoMessage(player.con,"(AutoBan) Banned for ==Rank 7==. If you want to appeal, give the previous as reason.");
-                    Call.onInfoMessage(player.con,"(AutoBan) Banned for ==Rank 6== . If you want to appeal, give the previous as reason.");
-                    byteCode.ban(player.uuid,"Rank 7");
-                    Log.info("[B] Banned \"{0}\" [{1}] for Rank 6.", player.name, player.uuid);
-                    player.con.kick("(AutoBan) Banned for ==Rank 6== . If you want to appeal, give the previous as reason.");
-
                     Log.info("[B] Banned \"{0}\" [{1}] for being kicked more than 15.", player.name, player.uuid);//log player is being banned
                     Call.onInfoMessage(player.con,"(AutoBan) Banned for ==Rank 7==. If you want to appeal, give the previous as reason.");//to player
                     Call.onInfoMessage(player.con,"(AutoBan) Banned for ==Rank 7==. If you want to appeal, give the previous as reason.");//to player
-                    String string = byteCode.ban(player.uuid, "Banned for: Banned for ==Rank 7==.");//ban by uuid
-                    getTextChannel(data.getString("bl_channel_id")).sendMessage(string.replace("[B]Success!\n",""));//send to discord
+                    String string = byteCode.ban(player.uuid, "Banned for: Banned for ==Rank 7==.", "Autoban");//ban by uuid
+                    string = string.replace("[B]Success!\n","");//replaces success message
+                    if (data.has("bl_channel_id")) getTextChannel(data.getString("bl_channel_id")).sendMessage(string);//send to discord
                     player.con.kick("(AutoBan) Banned for: Banned for ==Rank 7==. If you want to appeal, give the previous as reason.");//kick player
                 }
             }
@@ -249,6 +245,12 @@ public class Main extends Plugin {
 
         Events.on(EventType.PlayerLeave.class, event -> {
             Player player = event.player;
+            //if banned
+            if (milisecondSinceBan > Time.millis() && player.getInfo().banned && data.has("bl_channel_id")) {
+                Date thisDate = new Date();
+                SimpleDateFormat dateFormat = new SimpleDateFormat("[MM/dd/Y | HH:mm:ss] ");
+                getTextChannel(data.getString("bl_channel_id")).sendMessage(dateFormat.format(thisDate) + byteCode.nameR(player.name) + " | " + "manual ban" + " ;");//send to discord
+            }
             //pjl
             Date thisDate = new Date();
             SimpleDateFormat dateFormat = new SimpleDateFormat("[MM/dd/Y | HH:mm:ss] ");
@@ -359,6 +361,7 @@ public class Main extends Plugin {
                 event.player.sendMessage("[lightgray]Chat is disabled.");
             }
         });
+
     }
 
     @Override
@@ -1570,10 +1573,10 @@ public class Main extends Plugin {
                                 reason = arg[2] + " " + arg[3] + " " + arg[4];
                                 break;
                         }
-                        String string = byteCode.ban(arg[1], reason);
+                        String string = byteCode.ban(arg[1], reason, byteCode.noColors(player.name));
                         player.sendMessage(string);
                         string = string.replace("[B]Success!\n","");
-                        getTextChannel(data.getString("bl_channel_id")).sendMessage(string);
+                        if (data.has("bl_channel_id") && string.startsWith("[")) getTextChannel(data.getString("bl_channel_id")).sendMessage(string);
                     } else if (arg.length > 1) {
                         player.sendMessage("[salmon]BAN[]: You must provide a reason.");
                     } else {
@@ -1630,7 +1633,7 @@ public class Main extends Plugin {
                     }
                     break;
                 case "cat"://clear all tag, clear all tags containing user#tag
-             break;
+                    break;
                 case "test": //test commands;
 
                     break;
@@ -1655,6 +1658,7 @@ public class Main extends Plugin {
                             "\nban              - Bans a player, #ID/UUID - reason" +
                             "\npjl              - List of last 50 player joins and leaves." +
                             "\nkill             - Kills player, #ID" +
+                            "\nchat             - turns chat on or off, on/off" +
                             "\ninfo             - Shows all commands and brief description, uuid");
                     break;
 
