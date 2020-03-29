@@ -65,21 +65,6 @@ public class aDiscord implements MessageCreateListener {
             if (arg[0].startsWith("..") || arg[0].startsWith(data.getString("prefix"))) {
                 arg[0] = arg[0].replaceAll("\\.\\.","").replaceAll(data.getString("prefix"),"");
                 switch (arg[0]) {
-                    case "uap": //to be removed... too risky
-                        if (rank == 7) {
-                            if (arg.length > 1 && arg[1].length() > 0) {
-                                netServer.admins.unAdminPlayer(arg[1]);
-                                event.getChannel().sendMessage("unAdmin: " + arg[1]);
-                                return;
-                            } else {
-                                event.getChannel().sendMessage("[salmon]CT[white]: Un Admins Player, do `/a uap <UUID>`.");
-                            }
-                        } else {
-                            if (event.isPrivateMessage()) return;
-                            event.getChannel().sendMessage(noPermission);
-                            return;
-                        }
-                        break;
                     case "gameover": //triggers a game over, no arguments
                         if (rank >= 6) {
                             if (Vars.state.is(GameState.State.menu)) {

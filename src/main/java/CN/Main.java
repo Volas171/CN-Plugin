@@ -398,6 +398,25 @@ public class Main extends Plugin {
                 i.printStackTrace();
             }
         });
+        handler.register("uap","<UUID>", "Un admins player, even if offline", arg -> {
+            Administration.PlayerInfo p = netServer.admins.getInfo(arg[0]);
+            if (p != null) {
+                if (p.timesJoined > 0) {
+                    for (Administration.PlayerInfo pi : netServer.admins.getAdmins()) {
+                        if (pi.id.equals(arg[0])) {
+                            netServer.admins.unAdminPlayer(arg[0]);
+                            Log.info("unAdmin: " + arg[0]);
+                            return;
+                        }
+                    }
+                    Log.err("UUID `"+arg[0]+"` is not Admin!");
+                } else {
+                    Log.err("UUID `"+arg[0]+"` not found!");
+                }
+            } else {
+                Log.err("UUID `"+arg[0]+"` not found!");
+            }
+        });
     }
 
     @Override
@@ -1127,21 +1146,6 @@ public class Main extends Plugin {
             int y;
             float z;
             switch (arg[0]) {
-                //un admin player - un-admins uuid, even if player is offline.
-                case "uap": //Un-Admin Player
-                    if (database.containsKey(player.uuid) && database.get(player.uuid).getRank() == 7) {
-                        if (arg.length > 1 && arg[1].length() > 0) {
-                            netServer.admins.unAdminPlayer(arg[1]);
-                            player.sendMessage("unAdmin: " + arg[1]);
-                            break;
-                        } else {
-                            player.sendMessage("[salmon]CT[white]: Un Admins Player, do `/a uap <UUID>`.");
-                        }
-                    } else {
-                        player.sendMessage("[salmon]UAP[]: You don't have permission to use this command!");
-                    }
-                    break;
-
                 //gameover - triggers gameover for admins team.
                 case "gameover": //Game is over
                     if (GOW.contains(player.uuid)) {
