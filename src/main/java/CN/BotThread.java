@@ -237,7 +237,7 @@ public class BotThread extends Thread{
                             Call.sendMessage("Congratulations to " + p.name + " [white]for staying active for " + y + " Hours!");
                             Main.liveChat = Main.liveChat + "Congratulations to " + p.name + " [white]for staying active for " + y + " Hours!\n";
                         }
-                        byteCode.aRank(p.uuid);
+                        byteCode.aRank(p);
                     }
                 }
             }

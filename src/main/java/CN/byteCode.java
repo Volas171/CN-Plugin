@@ -110,28 +110,28 @@ public class byteCode {
         }
         return -643; //GAE XD
     }
-    public static void aRank(String uuid) {
-        if (Main.database.containsKey(uuid)) {
+    public static void aRank(Player player) {
+        if (Main.database.containsKey(player.uuid)) {
             if (Main.sandbox) {
-                if (Main.database.get(uuid).getRank() == 1) {
-                    pi d = Main.database.get(uuid);
+                if (Main.database.get(player.uuid).getRank() == 1) {
+                    pi d = Main.database.get(player.uuid);
                     if (d.getTP() > 8 * 60 * 60 && d.getBB() > 25000) {
                         Call.sendMessage("Rank Updated for " + player.name + " [white]to [accent]Active Player[white]!");
                     }
-                } else if (Main.database.get(uuid).getRank() == 2) {
-                    pi d = Main.database.get(uuid);
+                } else if (Main.database.get(player.uuid).getRank() == 2) {
+                    pi d = Main.database.get(player.uuid);
                     if (d.getTP() > 24 * 60 * 60 && d.getBB() > 100000) {
                         Call.sendMessage("Rank Updated for " + player.name + " [white]to [gold]Super Active [white]Player!");
                     }
                 }
             } else {
-                if (Main.database.get(uuid).getRank() == 1) {
-                    pi d = Main.database.get(uuid);
+                if (Main.database.get(player.uuid).getRank() == 1) {
+                    pi d = Main.database.get(player.uuid);
                     if (d.getTP() > 8 * 60 * 60 && d.getGP() > 15) {
                         Call.sendMessage("Rank Updated for " + player.name + " [white]to [accent]Active Player[white]!");
                     }
-                } else if (Main.database.get(uuid).getRank() == 2) {
-                    pi d = Main.database.get(uuid);
+                } else if (Main.database.get(player.uuid).getRank() == 2) {
+                    pi d = Main.database.get(player.uuid);
                     if (d.getTP() > 24 * 60 * 60 && d.getGP() > 45) {
                         Call.sendMessage("Rank Updated for " + player.name + " [white]to [gold]Super Active [white]Player!");
                     }
