@@ -997,7 +997,11 @@ public class Main extends Plugin {
             Call.sendMessage(rankI + dI + " [white]" + player.name + ": [white]Here at ([lightgray]" + halpX + "[white],[lightgray]" + halpY + "[white]). \ndo `[lightgray]/go[white]` to come to me.");
             Log.info(player.name + ": [white]Here at ([lightgray]" + halpX + "[white],[lightgray]" + halpY + "[white]). do `[lightgray]/go[white]` to come to me.");
         });
-
+        //sends you tips
+        handler.<Player>register("tips","sends you a tip", (arg, player) -> {
+            Random rand = new Random();
+            player.sendMessage("[accent]"+byteCode.tips[rand.nextInt(byteCode.tips.length)]);
+        });
         //-----Discord----//
         if (api != null) {
             handler.<Player>register("d", "<text...>", "Sends a message to discord.", (args, player) -> {

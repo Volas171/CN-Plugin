@@ -244,7 +244,7 @@ public class BotThread extends Thread{
             if (fm == 5) {
                 fm = 0;
                 Random rand = new Random();
-                Call.sendMessage("[accent]"+byteCode.tips[rand.nextInt(5)]);
+                Call.sendMessage("[accent]"+byteCode.tips[rand.nextInt(byteCode.tips.length)]);
             }
 
         }
