@@ -118,80 +118,79 @@ public class BotThread extends Thread{
 
                 //update core resources and team info
                 Teams.TeamData teamData = state.teams.get(Team.sharded);
-                if (!teamData.hasCore()) {
-                    continue;
-                }
-                CoreBlock.CoreEntity core = teamData.cores.first();
-                String playerTeam = "Sharded";
-                //
-                draug = 0;
-                spirit = 0;
-                phantom = 0;
-                dagger = 0;
-                crawler = 0;
-                titan = 0;
-                fortress = 0;
-                eruptor = 0;
-                chaosArray = 0;
-                eradicator = 0;
-                wraith = 0;
-                ghoul = 0;
-                ;
-                revenant = 0;
-                lich = 0;
-                reaper = 0;
-                All = 0;
-                //
-                for (Unit u : unitGroup.all()) {
-                    if (u.getTeam() == Team.sharded) {
-                        if (u.getTypeID().name.equals("draug")) draug = draug + 1;
-                        if (u.getTypeID().name.equals("spirit")) spirit = spirit + 1;
-                        if (u.getTypeID().name.equals("phantom")) phantom = phantom + 1;
-                        if (u.getTypeID().name.equals("dagger")) dagger = dagger + 1;
-                        if (u.getTypeID().name.equals("crawler")) crawler = crawler + 1;
-                        if (u.getTypeID().name.equals("titan")) titan = titan + 1;
-                        if (u.getTypeID().name.equals("fortress")) fortress = fortress + 1;
-                        if (u.getTypeID().name.equals("eruptor")) eruptor = eruptor + 1;
-                        if (u.getTypeID().name.equals("chaos-array")) chaosArray = chaosArray + 1;
-                        if (u.getTypeID().name.equals("eradicator")) eradicator = eradicator + 1;
-                        if (u.getTypeID().name.equals("wraith")) wraith = wraith + 1;
-                        if (u.getTypeID().name.equals("ghoul")) ghoul = ghoul + 1;
-                        if (u.getTypeID().name.equals("revenant")) revenant = revenant + 1;
-                        if (u.getTypeID().name.equals("lich")) lich = lich + 1;
-                        if (u.getTypeID().name.equals("reaper")) reaper = reaper + 1;
-                        All = All + 1;
+                if (teamData.hasCore()) {
+                    CoreBlock.CoreEntity core = teamData.cores.first();
+                    String playerTeam = "Sharded";
+                    //
+                    draug = 0;
+                    spirit = 0;
+                    phantom = 0;
+                    dagger = 0;
+                    crawler = 0;
+                    titan = 0;
+                    fortress = 0;
+                    eruptor = 0;
+                    chaosArray = 0;
+                    eradicator = 0;
+                    wraith = 0;
+                    ghoul = 0;
+                    ;
+                    revenant = 0;
+                    lich = 0;
+                    reaper = 0;
+                    All = 0;
+                    //
+                    for (Unit u : unitGroup.all()) {
+                        if (u.getTeam() == Team.sharded) {
+                            if (u.getTypeID().name.equals("draug")) draug = draug + 1;
+                            if (u.getTypeID().name.equals("spirit")) spirit = spirit + 1;
+                            if (u.getTypeID().name.equals("phantom")) phantom = phantom + 1;
+                            if (u.getTypeID().name.equals("dagger")) dagger = dagger + 1;
+                            if (u.getTypeID().name.equals("crawler")) crawler = crawler + 1;
+                            if (u.getTypeID().name.equals("titan")) titan = titan + 1;
+                            if (u.getTypeID().name.equals("fortress")) fortress = fortress + 1;
+                            if (u.getTypeID().name.equals("eruptor")) eruptor = eruptor + 1;
+                            if (u.getTypeID().name.equals("chaos-array")) chaosArray = chaosArray + 1;
+                            if (u.getTypeID().name.equals("eradicator")) eradicator = eradicator + 1;
+                            if (u.getTypeID().name.equals("wraith")) wraith = wraith + 1;
+                            if (u.getTypeID().name.equals("ghoul")) ghoul = ghoul + 1;
+                            if (u.getTypeID().name.equals("revenant")) revenant = revenant + 1;
+                            if (u.getTypeID().name.equals("lich")) lich = lich + 1;
+                            if (u.getTypeID().name.equals("reaper")) reaper = reaper + 1;
+                            All = All + 1;
+                        }
                     }
-                }
 
-                myteam = "\n\nCore Resources:" +
-                        "\n" + core.items.get(Items.copper) + " copper" +
-                        "\n" + core.items.get(Items.lead) + " lead" +
-                        "\n" + core.items.get(Items.metaglass) + " metaglass" +
-                        "\n" + core.items.get(Items.graphite) + " graphite" +
-                        "\n" + core.items.get(Items.titanium) + " titanium" +
-                        "\n" + core.items.get(Items.thorium) + " thorium" +
-                        "\n" + core.items.get(Items.silicon) + " Silicon" +
-                        "\n" + core.items.get(Items.plastanium) + " plastanium" +
-                        "\n" + core.items.get(Items.phasefabric) + " phase fabric" +
-                        "\n" + core.items.get(Items.surgealloy) + " surge alloy" +
-                        "\n\nTeam Units: " +
-                        "\n" + draug + " Draug Miner Drone" +
-                        "\n" + spirit + " Spirit Repair Drone" +
-                        "\n" + phantom + " Phantom Builder Drone" +
-                        "\n" + dagger + " Dagger" +
-                        "\n" + crawler + " Crawlers" +
-                        "\n" + titan + " Titan" +
-                        "\n" + fortress + " Fortress" +
-                        "\n" + eruptor + " Eruptor" +
-                        "\n" + chaosArray + " Chaos Array" +
-                        "\n" + eradicator + " Eradicator" +
-                        "\n" + wraith + " Wraith Fighter" +
-                        "\n" + ghoul + " Ghoul Bomber" +
-                        "\n" + revenant + " Revenant" +
-                        "\n" + lich + " Lich" +
-                        "\n" + reaper + " Reaper" +
-                        "\n" + All + " Total" +
-                        "\n";
+                    myteam = "\n\nCore Resources:" +
+                            "\n" + core.items.get(Items.copper) + " copper" +
+                            "\n" + core.items.get(Items.lead) + " lead" +
+                            "\n" + core.items.get(Items.metaglass) + " metaglass" +
+                            "\n" + core.items.get(Items.graphite) + " graphite" +
+                            "\n" + core.items.get(Items.titanium) + " titanium" +
+                            "\n" + core.items.get(Items.thorium) + " thorium" +
+                            "\n" + core.items.get(Items.silicon) + " Silicon" +
+                            "\n" + core.items.get(Items.plastanium) + " plastanium" +
+                            "\n" + core.items.get(Items.phasefabric) + " phase fabric" +
+                            "\n" + core.items.get(Items.surgealloy) + " surge alloy" +
+                            "\n\nTeam Units: " +
+                            "\n" + draug + " Draug Miner Drone" +
+                            "\n" + spirit + " Spirit Repair Drone" +
+                            "\n" + phantom + " Phantom Builder Drone" +
+                            "\n" + dagger + " Dagger" +
+                            "\n" + crawler + " Crawlers" +
+                            "\n" + titan + " Titan" +
+                            "\n" + fortress + " Fortress" +
+                            "\n" + eruptor + " Eruptor" +
+                            "\n" + chaosArray + " Chaos Array" +
+                            "\n" + eradicator + " Eradicator" +
+                            "\n" + wraith + " Wraith Fighter" +
+                            "\n" + ghoul + " Ghoul Bomber" +
+                            "\n" + revenant + " Revenant" +
+                            "\n" + lich + " Lich" +
+                            "\n" + reaper + " Reaper" +
+                            "\n" + All + " Total" +
+                            "\n";
+                }
                 //update info
                 EmbedBuilder embed = new EmbedBuilder();
                 embed.setColor(Color.getHSBColor(21, 84, 50));

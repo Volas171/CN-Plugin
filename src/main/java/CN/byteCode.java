@@ -178,13 +178,15 @@ public class byteCode {
         finalString = finalString.replaceAll("\\[#(.*)\\]","");
         return  finalString;}
     public static void loadTips() {
-        tips = new String[6];
+        tips = new String[8];
         tips[0] = "Tip #1: When on the [lightgray]Upgrade []Menu, [white]\uE850[], little colored short arrows will point you towards Upgrade Pads.";
         tips[1] = "Tip #1: When on the [lightgray]Upgrade []Menu, [white]\uE850[], little colored short arrows will point you towards Upgrade Pads.";
         tips[2] = "Tip #2: You can Overdrive [white]\uF899 []Weapons to make them shoot faster.";
         tips[3] = "Tip #3: If you disconnect a power source and connect it with Diodes [white]\uF87C[], you can prevent them from dying when power crashes.";
         tips[4] = "Tip #4: You can overdrive Upgrade Pads [white]\uF842 []to make spawning faster, this includes the core!";
         tips[5] = "Tip #5: You can report a Griefer using [lightgray]/gr[]. By doing so, CN Mods will be notified.";
+        tips[6] = "Tip #6: You can call for help by doing /halp.";
+        tips[7] = "Tip #7: Use [lightgray]/tips []to get a random tip!";
     }
 }
 /*

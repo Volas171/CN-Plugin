@@ -234,7 +234,7 @@ public class Main extends Plugin {
             pjl.add("[lime][+] [white]" + dateFormat.format(thisDate) + byteCode.nameR(player.name) + " | " + player.uuid + " | " +player.getInfo().lastIP);
 
             //auto rank
-            byteCode.aRank(player.uuid);
+            byteCode.aRank(player);
             // add to idTempDatabase
             idTempDatabase.put(player.id, player);
             //update status
@@ -926,6 +926,7 @@ public class Main extends Plugin {
                     "\nThings Built: " + database.get(player.uuid).getBB() +
                     "\nGames Played: " + database.get(player.uuid).getGP() +
                     "\nDiscord Verified?: " + dv);
+            if (dv.equals("true")) player.sendMessage("Discord Tag: " + database.get(player.uuid).getDiscordTag());
         });
         //Shows info.
         handler.<Player>register("info","[colors]","Shows the player info.", (arg, player) -> {
