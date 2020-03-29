@@ -124,6 +124,9 @@ public class Main extends Plugin {
             return;
         }
 
+        //load tips
+        byteCode.loadTips();
+
         Events.on(EventType.ServerLoadEvent.class, event -> {
             netServer.admins.addChatFilter((player, text) -> null);
         });

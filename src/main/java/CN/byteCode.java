@@ -23,16 +23,6 @@ public class byteCode {
     //storage
     public static String[] tips;
 
-    public byteCode() {
-        tips = new String[]{
-                tips[0] = "Tip #1: When on the [lightgray]Upgrade [white]Menu, \uE850, little colored short arrows will point you towards Upgrade Pads.",
-                tips[1] = "Tip #1: When on the [lightgray]Upgrade [white]Menu, \uE850, little colored short arrows will point you towards Upgrade Pads.",
-                tips[2] = "Tip #2: You can Overdrive  Weapons to make them shoot faster.",
-                tips[3] = "Tip #3: If you disconnect a power source and connect it with Diodes \uF87C, you can prevent them from dying when power crashes.",
-                tips[4] = "Tip #4: You can overdrive Upgrade Pads to make spawning faster, this includes the core!"
-        };
-    }
-
     //code
     public static String nameR(String name) {return name.replaceAll("\\[", "[[");}
     public static String rankI(int i) {
@@ -187,6 +177,14 @@ public class byteCode {
         finalString = finalString.replaceAll("\\[maroon\\]","");
         finalString = finalString.replaceAll("\\[#(.*)\\]","");
         return  finalString;}
+    public static void loadTips() {
+        tips = new String[5];
+        tips[0] = "Tip #1: When on the [lightgray]Upgrade [white]Menu, \uE850, little colored short arrows will point you towards Upgrade Pads.";
+        tips[1] = "Tip #1: When on the [lightgray]Upgrade [white]Menu, \uE850, little colored short arrows will point you towards Upgrade Pads.";
+        tips[2] = "Tip #2: You can Overdrive  Weapons to make them shoot faster.";
+        tips[3] = "Tip #3: If you disconnect a power source and connect it with Diodes \uF87C, you can prevent them from dying when power crashes.";
+        tips[4] = "Tip #4: You can overdrive Upgrade Pads to make spawning faster, this includes the core!";
+    }
 }
 /*
 if (arg[1].startsWith("#") && arg[1].length() > 3 && Strings.canParseInt(arg[1].substring(1))){
