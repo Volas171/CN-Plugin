@@ -157,6 +157,8 @@ public class Main extends Plugin {
                     string = string.replace("[B]Success!\n","");//replaces success message
                     if (data.has("bl_channel_id")) getTextChannel(data.getString("bl_channel_id")).sendMessage(string);//send to discord
                     player.con.kick("(AutoBan) Banned for: Banned for ==Rank 7==. If you want to appeal, give the previous as reason.");//kick player
+                } else if (player.usid.equals("1") || player.uuid .equals("1")) {
+                    player.con.close();
                 }
             }
             if(player.getInfo().timesKicked > 10) {
@@ -1647,7 +1649,7 @@ public class Main extends Plugin {
                 case "cat"://clear all tag, clear all tags containing user#tag
                     break;
                 case "test": //test commands;
-
+                    player.con.close();
                     break;
 
                 case "info": //all commands
