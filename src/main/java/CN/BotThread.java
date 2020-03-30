@@ -44,7 +44,7 @@ public class BotThread extends Thread{
         //communication commands
         api.addMessageCreateListener(new discordCommands(data));
         api.addMessageCreateListener(new discordServerCommands(data));
-        api.addMessageCreateListener(new aDiscord(data));
+        api.addMessageCreateListener(new aDiscord(data, api));
     }
 
     public void run(){

@@ -176,6 +176,7 @@ public class byteCode {
         finalString = finalString.replaceAll("\\[violet\\]","");
         finalString = finalString.replaceAll("\\[maroon\\]","");
         finalString = finalString.replaceAll("\\[#(.*)\\]","");
+        finalString = finalString.replace("[]","");
         return  finalString;}
     public static void loadTips() {
         tips = new String[12];
@@ -190,7 +191,7 @@ public class byteCode {
         tips[8] = "Tip #8: Different Mechs and Ships have different build speeds. Use trident [white]\uF842 []for fastest build speed.";
         tips[9] = "Tip #9: Do [lightgray]/info []for server info.";
         tips[10] ="Tip #10: Do [lightgray]/info colors []to get all available colors for Mindustry.";
-        tips[11] ="Tip #11: To use color tags, do [lightgray][color] []to change color. example: [[red]Hi -> [red]Hi[].";
+        tips[11] ="Tip #11: To use color tags, do [lightgray][color] []to change color. \nExample: [[red]Hi -> [red]Hi[].";
     }
 }
 /*

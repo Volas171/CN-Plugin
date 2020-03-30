@@ -55,6 +55,7 @@ public class Main extends Plugin {
     public static boolean sandbox = false;
     public static String liveChat = "";
     public static long milisecondSinceBan = Time.millis();
+    public static boolean chat = true;
 
     private boolean summonEnable = true;
     private boolean reaperEnable = true;
@@ -63,7 +64,6 @@ public class Main extends Plugin {
     //private boolean buffEnable = true;
     private String mba = "[white]You must be [scarlet]<Admin> [white]to use this command.";
     private boolean autoBan = true;
-    private boolean chat = true;
     //discord shat
     private final Long CDT = 300L;
     private final String FileNotFoundErrorMessage = "File not found: config\\mods\\settings.json";
@@ -251,7 +251,7 @@ public class Main extends Plugin {
         Events.on(EventType.PlayerLeave.class, event -> {
             Player player = event.player;
             //if banned
-            if (milisecondSinceBan > Time.millis() && player.getInfo().banned && data.has("bl_channel_id")) {
+            if (milisecondSinceBan < Time.millis() && player.getInfo().banned && data.has("bl_channel_id")) {
                 Date thisDate = new Date();
                 SimpleDateFormat dateFormat = new SimpleDateFormat("[MM/dd/Y | HH:mm:ss] ");
                 getTextChannel(data.getString("bl_channel_id")).sendMessage(dateFormat.format(thisDate) + byteCode.nameR(player.name) + " | " + "manual ban" + " ;");//send to discord
@@ -291,22 +291,17 @@ public class Main extends Plugin {
 
                 if (playerGroup.size() > 5 && database.containsKey(player.uuid) && database.get(player.uuid).getRank() == 0) {
                     Teams.TeamData teamData = state.teams.get(player.getTeam());
-                    if (!teamData.hasCore()) {
+                    if (teamData.hasCore()) {
+                        CoreBlock.CoreEntity core = teamData.cores.first();
+                        if (action.tile.x >= ((core.x/8) - 15) && ((core.x/8) + 15) >= action.tile.x && action.tile.y >= ((core.y/8) - 15) && ((core.y/8) + 15) >= action.tile.y) {
+                            player.sendMessage("Unable to edit core - please get verified through discord.");
+                            return  false;
+                        }
+                    } else if (!teamData.hasCore()) {
                         Log.err("addAdminFilter - Core is null");
                         player.getInfo().timesKicked--;
                         player.con.kick("ERROR - addAdminActionFilter\nplease report what you did to get this issue in CN discord.",1);
                         return true;
-                    }
-                    CoreBlock.CoreEntity core = teamData.cores.first();
-                    if (core == null) {
-                        Log.err("addAdminFilter - Core is null");
-                        player.getInfo().timesKicked--;
-                        player.con.kick("ERROR - addAdminActionFilter\nplease report what you did to get this issue in CN discord",1);
-                        return true;
-                    }
-                    if (action.tile.x >= ((core.x/8) - 15) && ((core.x/8) + 15) >= action.tile.x && action.tile.y >= ((core.y/8) - 15) && ((core.y/8) + 15) >= action.tile.y) {
-                        player.sendMessage("Unable to edit core - please get verified through discord.");
-                        return  false;
                     }
                 }
 
@@ -1591,6 +1586,7 @@ public class Main extends Plugin {
                         player.sendMessage(string);
                         string = string.replace("[B]Success!\n","");
                         if (data.has("bl_channel_id") && string.startsWith("[")) getTextChannel(data.getString("bl_channel_id")).sendMessage(string);
+                        milisecondSinceBan = Time.millis() + 250;
                     } else if (arg.length > 1) {
                         player.sendMessage("[salmon]BAN[]: You must provide a reason.");
                     } else {
