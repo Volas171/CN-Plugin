@@ -1092,7 +1092,7 @@ public class Main extends Plugin {
                             player.sendMessage("[scarlet]Only players on your team can be reported.");
                         } else {
                             TextChannel tc = this.getTextChannel(data.getString("channel_id"));
-                            Role r = this.getRole(data.getString("role_id"));
+                            Role r = this.getRole(data.getString("mod-role-id"));
                             if (tc == null || r == null) {
                                 player.sendMessage("[scarlet]This command is disabled.");
                                 return;
@@ -1102,28 +1102,25 @@ public class Main extends Plugin {
                                 new MessageBuilder()
                                         .setEmbed(new EmbedBuilder()
                                                 .setTitle("Griefer online")
-                                                .setDescription(data.getString("serverdown_name"))
+                                                .setDescription(r.getMentionTag())
                                                 .addField("name", found.name)
-                                                .addField("id", ""+found.id)
-                                                .addField("uuid", found.uuid)
                                                 .addField("reason", args[1])
                                                 .setColor(Color.ORANGE)
-                                                .setFooter("Reported by " + byteCode.noColors(player.name)))
+                                                .setFooter("Reported by " + player.name))
                                         .send(tc);
+                                tc.sendMessage(r.getMentionTag());
                             } else {
                                 new MessageBuilder()
                                         .setEmbed(new EmbedBuilder()
                                                 .setTitle("Griefer online")
-                                                .setDescription(data.getString("serverdown_name"))
+                                                .setDescription(r.getMentionTag())
                                                 .addField("name", found.name)
-                                                .addField("id", ""+found.id)
-                                                .addField("uuid", found.uuid)
                                                 .setColor(Color.ORANGE)
-                                                .setFooter("Reported by " + byteCode.noColors(player.name)))
+                                                .setFooter("Reported by " + player.name))
                                         .send(tc);
                                 tc.sendMessage(r.getMentionTag());
                             }
-                            player.sendMessage(found.name + "[sky] is reported to discord.");
+                            Call.sendMessage(found.name + "[sky] is reported to discord.");
                             cooldowns.put(System.currentTimeMillis() / 1000L, player.uuid);
                         }
                     } else {

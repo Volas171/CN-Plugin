@@ -1,9 +1,8 @@
 package CN;
 
-import CN.dCommands.aDiscord;
+import CN.dCommands.Discordia;
 import CN.dCommands.discordCommands;
 import CN.dCommands.discordServerCommands;
-import CN.byteCode;
 import mindustry.Vars;
 import mindustry.content.Items;
 import mindustry.entities.type.Player;
@@ -17,7 +16,6 @@ import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.channel.Channel;
 import org.javacord.api.entity.channel.TextChannel;
 import org.javacord.api.entity.message.MessageBuilder;
-import org.javacord.api.entity.message.embed.Embed;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.entity.permission.Role;
 import org.json.JSONObject;
@@ -44,7 +42,7 @@ public class BotThread extends Thread{
         //communication commands
         api.addMessageCreateListener(new discordCommands(data));
         api.addMessageCreateListener(new discordServerCommands(data));
-        api.addMessageCreateListener(new aDiscord(data, api));
+        api.addMessageCreateListener(new Discordia(data, api));
     }
 
     public void run(){
