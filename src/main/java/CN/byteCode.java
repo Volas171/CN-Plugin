@@ -65,8 +65,9 @@ public class byteCode {
             if (p == null) {
                 return "Player ID " + id + " not found.";
             } else if (p.isAdmin) {
-                return "[scarlet]Did you really expect to be able to kick an admin?";
+                return "[scarlet]Did you really expect to be able to ban a admin?";
             }
+            Main.flaggedIP.add(p.getInfo().lastIP);
             nameR = nameR(p.name);
             uuid = p.uuid;
             proceed = true;

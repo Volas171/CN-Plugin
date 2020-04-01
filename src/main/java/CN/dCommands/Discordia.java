@@ -80,7 +80,7 @@ public class Discordia implements MessageCreateListener {
                                 return;
                             }
                             //inExtraRound = false;
-                            Events.fire(new EventType.GameOverEvent(Team.crux));
+                            Events.fire(new EventType.GameOverEvent(Team.sharded));
                             event.getChannel().sendMessage("<@" + event.getMessage().getAuthor().getIdAsString() + "> has ended the game.");
                             Call.sendMessage("[scarlet]<Admin> [lightgray]" + event.getMessage().getAuthor().getDisplayName() + " [white]has ended the game.");
                         } else {
@@ -173,8 +173,8 @@ public class Discordia implements MessageCreateListener {
                                             return;
                                     }
                                     player.setTeam(setTeam);
-                                    event.getChannel().sendMessage("[salmon]CT[white]: Changed team to " + setTeamColor + arg[1] + "[white].");
-                                    event.getChannel().sendMessage("<@" + event.getMessage().getAuthor().getIdAsString() + ">, Team set to " + arg[1] + " for " + byteCode.noColors(player.name) + ".");
+                                    player.sendMessage("[salmon]CT[white]: Changed team to " + setTeamColor + arg[1] + "[white].");
+                                    event.getChannel().sendMessage("<@" + event.getMessage().getAuthor().getIdAsString() + ">, Team set to " + arg[2] + " for " + byteCode.noColors(player.name) + ".");
                                 } else if (arg[1].startsWith("#")) {
                                     event.getChannel().sendMessage("ID can only contain numbers!");
                                 }
@@ -207,14 +207,14 @@ public class Discordia implements MessageCreateListener {
                                             "\nName Raw: " + rname +
                                             "\nTimes Joined: " + p.getInfo().timesJoined +
                                             "\nTimes Kicked: " + p.getInfo().timesKicked +
-                                            "\nCurrent IP: " + p.getInfo().lastIP +
-                                            "\nUUID: " + p.uuid +
+                                            "\nCurrent IP: ||" + p.getInfo().lastIP +"||"+
+                                            "\nUUID: ||" + p.uuid +"||"+
                                             "\nRank: " + Main.database.get(p.uuid).getRank() +
                                             "\nBuildings Built: " + Main.database.get(p.uuid).getBB() +
                                             "\nMinutes Played: " + Main.database.get(p.uuid).getTP() +
                                             "\nGames Played: " + Main.database.get(p.uuid).getGP() +
                                             "\nDiscord Verified?: " + dv +
-                                            "\nDiscord Tag: " + Main.database.get(p.uuid).getDiscordTag());
+                                            "\nDiscord Tag: ||" + Main.database.get(p.uuid).getDiscordTag()+"||");
                                 } else if (arg[1].startsWith("#")) {
                                     event.getChannel().sendMessage("<@" + event.getMessage().getAuthor().getIdAsString() + ">, ID can only contain numbers!");
                                     return;
@@ -228,14 +228,14 @@ public class Discordia implements MessageCreateListener {
                                             "\nName Raw: " + rname +
                                             "\nTimes Joined: " + p.timesJoined +
                                             "\nTimes Kicked: " + p.timesKicked +
-                                            "\nCurrent IP: " + p.lastIP +
-                                            "\nUUID: " + arg[1] +
+                                            "\nCurrent IP: ||" + p.lastIP +"||"+
+                                            "\nUUID: ||" + arg[1] + "||"+
                                             "\nRank: " + Main.database.get(arg[1]).getRank() +
                                             "\nBuildings Built: " + Main.database.get(arg[1]).getBB() +
                                             "\nMinutes Played: " + Main.database.get(arg[1]).getTP() +
                                             "\nGames Played: " + Main.database.get(arg[1]).getGP() +
                                             "\nDiscord Verified?: " + dv +
-                                            "\nDiscord Tag: " + Main.database.get(arg[1]).getDiscordTag());
+                                            "\nDiscord Tag: ||" + Main.database.get(arg[1]).getDiscordTag()+"||");
                                 } else {
                                     event.getChannel().sendMessage("<@" + event.getMessage().getAuthor().getIdAsString() + ">, UUID `" + arg[1] + "` not found!");
                                     return;
@@ -266,23 +266,23 @@ public class Discordia implements MessageCreateListener {
                                     int id = Strings.parseInt(arg[1].substring(1));
                                     Player p = playerGroup.getByID(id);
                                     if (p == null) {
-                                        event.getChannel().sendMessage(", Could not find player ID '" + id + "'.");
+                                        event.getChannel().sendMessage("<@" + event.getMessage().getAuthor().getIdAsString() + ">, Could not find player ID '" + id + "'.");
                                         return;
                                     }
                                     p.getInfo().timesKicked = 0;
                                     p.getInfo().timesJoined = 0;
-                                    event.getChannel().sendMessage(", Times kicked set to zero for player " + p.getInfo().lastName);
+                                    event.getChannel().sendMessage("<@" + event.getMessage().getAuthor().getIdAsString() + ">, Times kicked set to zero for player " + p.getInfo().lastName);
                                     Log.info("<Admin> " + event.getMessage().getAuthor().getName() + " has reset times kicked for " + p.name + " ID " + id);
                                 } else if (arg[1].startsWith("#")) {
-                                    event.getChannel().sendMessage(", ID can only contain numbers!");
+                                    event.getChannel().sendMessage("<@" + event.getMessage().getAuthor().getIdAsString() + ">, ID can only contain numbers!");
                                 } else if (netServer.admins.getInfo(arg[1]).timesJoined > 0) {
                                     Administration.PlayerInfo p = netServer.admins.getInfo(arg[1]);
                                     p.timesKicked = 0;
                                     p.timesJoined = 0;
-                                    event.getChannel().sendMessage(" set Times Kicked to zero for player uuid " + arg[1]);
+                                    event.getChannel().sendMessage("<@" + event.getMessage().getAuthor().getIdAsString() + "> set Times Kicked to zero for player uuid " + arg[1]);
                                     Log.info("<Admin> " + event.getMessage().getAuthor().getName() + " has reset times kicked for " + p.lastName + " UUID " + arg[1]);
                                 } else {
-                                    event.getChannel().sendMessage(", UUID " + arg[1] + " not found!");
+                                    event.getChannel().sendMessage("<@" + event.getMessage().getAuthor().getIdAsString() + ">, UUID " + arg[1] + " not found!");
                                 }
                             } else {
                                 event.getChannel().sendMessage("Get Player Info, use ID or UUID, to get a player's info");
@@ -297,7 +297,7 @@ public class Discordia implements MessageCreateListener {
                                     int id = Strings.parseInt(arg[1].substring(1));
                                     Player p = playerGroup.getByID(id);
                                     if (p == null) {
-                                        event.getChannel().sendMessage(", Could not find player ID '" + id + "'.");
+                                        event.getChannel().sendMessage("<@" + event.getMessage().getAuthor().getIdAsString() + ">, Could not find player ID '" + id + "'.");
                                         return;
                                     }
                                     String reason = arg[2];
@@ -313,11 +313,11 @@ public class Discordia implements MessageCreateListener {
                                     p.con.kick(reason, 1);
 
                                 } else if (arg[1].startsWith("#")) {
-                                    event.getChannel().sendMessage(", ID can only contain numbers!");
+                                    event.getChannel().sendMessage("<@" + event.getMessage().getAuthor().getIdAsString() + ">, ID can only contain numbers!");
                                     return;
                                 }
                             } else if (arg.length > 1) {
-                                event.getChannel().sendMessage(", You must provide a reason!");
+                                event.getChannel().sendMessage("<@" + event.getMessage().getAuthor().getIdAsString() + ">, You must provide a reason!");
                             } else {
                                 event.getChannel().sendMessage("PCC Uses player ID to kick.");
                             }
@@ -328,9 +328,9 @@ public class Discordia implements MessageCreateListener {
                             if (arg.length > 1) {
                                 if (netServer.admins.getInfo(arg[1]).lastKicked > Time.millis()) {
                                     netServer.admins.getInfo(arg[1]).lastKicked = Time.millis();
-                                    event.getChannel().sendMessage(" Un-Kicked player UUID " + arg[1] + ".");
+                                    event.getChannel().sendMessage("<@" + event.getMessage().getAuthor().getIdAsString() + "> Un-Kicked player UUID " + arg[1] + ".");
                                 } else {
-                                    event.getChannel().sendMessage(", UUID " + arg[1] + " wasn't found or isn't kicked.");
+                                    event.getChannel().sendMessage("<@" + event.getMessage().getAuthor().getIdAsString() + ">, UUID " + arg[1] + " wasn't found or isn't kicked.");
                                 }
                             } else {
                                 event.getChannel().sendMessage("Un-Kick uses uuid to un-kick players.");
@@ -345,39 +345,39 @@ public class Discordia implements MessageCreateListener {
                                     int id = Strings.parseInt(arg[1].substring(1));
                                     Player p = playerGroup.getByID(id);
                                     if (p == null) {
-                                        event.getChannel().sendMessage(", Could not find player ID '" + id + "'.");
+                                        event.getChannel().sendMessage("<@" + event.getMessage().getAuthor().getIdAsString() + ">, Could not find player ID '" + id + "'.");
                                         return;
                                     }
                                     String x2 = arg[2].replaceAll("[^0-9]", "");
                                     String y2 = arg[3].replaceAll("[^0-9]", "");
                                     if (x2.equals("") || y2.equals("")) {
-                                        event.getChannel().sendMessage(", Coordinates must contain numbers!");
+                                        event.getChannel().sendMessage("<@" + event.getMessage().getAuthor().getIdAsString() + ">, Coordinates must contain numbers!");
                                         return;
                                     }
                                     float x2f = Float.parseFloat(x2);
                                     float y2f = Float.parseFloat(y2);
 
                                     if (x2f > world.getMap().width) {
-                                        event.getChannel().sendMessage(", Your x coordinate is too large. Max: " + world.getMap().width);
+                                        event.getChannel().sendMessage("<@" + event.getMessage().getAuthor().getIdAsString() + ">, Your x coordinate is too large. Max: " + world.getMap().width);
                                         return;
                                     }
                                     if (y2f > world.getMap().height) {
-                                        event.getChannel().sendMessage("[salmon]TP[white]: y must be: 0 <= y <= " + world.getMap().height);
+                                        event.getChannel().sendMessage("<@" + event.getMessage().getAuthor().getIdAsString() + ">[salmon]TP[white]: y must be: 0 <= y <= " + world.getMap().height);
                                         return;
                                     }
-                                    event.getChannel().sendMessage(" Moved " + p.name + " from (" + p.x / 8 + " , " + p.y / 8 + ") to (" + x2 + " , " + y2 + ").");
+                                    event.getChannel().sendMessage("<@" + event.getMessage().getAuthor().getIdAsString() + "> Moved " + p.name + " from (" + p.x / 8 + " , " + p.y / 8 + ") to (" + x2 + " , " + y2 + ").");
                                     player.set(8 * x2f, 8 * y2f);
                                     player.setNet(8 * x2f, 8 * y2f);
                                     player.set(8 * x2f, 8 * y2f);
 
                                 } else if (arg[1].startsWith("#")) {
-                                    event.getChannel().sendMessage(", ID can only contain numbers!");
+                                    event.getChannel().sendMessage("<@" + event.getMessage().getAuthor().getIdAsString() + ">, ID can only contain numbers!");
                                     return;
                                 }
                             } else if (arg.length > 2) {
-                                event.getChannel().sendMessage(", you must provide Y coordinate!");
+                                event.getChannel().sendMessage("<@" + event.getMessage().getAuthor().getIdAsString() + ">, you must provide Y coordinate!");
                             } else if (arg.length > 1) {
-                                event.getChannel().sendMessage(", you must provide x coordinate!");
+                                event.getChannel().sendMessage("<@" + event.getMessage().getAuthor().getIdAsString() + ">, you must provide x coordinate!");
                             } else {
                                 event.getChannel().sendMessage("TP uses #ID - x coordinate - y coordinate : to teleport player.");
                             }
@@ -394,20 +394,20 @@ public class Discordia implements MessageCreateListener {
                                     int id = Strings.parseInt(arg[1].substring(1));
                                     Player p = playerGroup.getByID(id);
                                     if (p == null) {
-                                        event.getChannel().sendMessage("[salmon]CR[white]: Could not find player ID `" + id + "`.");
+                                        event.getChannel().sendMessage("<@" + event.getMessage().getAuthor().getIdAsString() + ">, Could not find player ID `" + id + "`.");
                                         return;
                                     }
                                     //run
                                     uid = p.uuid;
                                     proceed = true;
                                 } else if (arg[1].startsWith("#")) {
-                                    event.getChannel().sendMessage("[salmon]CR[white]: ID can only contain numbers!");
+                                    event.getChannel().sendMessage("<@" + event.getMessage().getAuthor().getIdAsString() + ">, ID can only contain numbers!");
                                 } else if (netServer.admins.getInfo(arg[1]).timesJoined > 0) {
                                     //run
                                     uid = arg[1];
                                     proceed = true;
                                 } else {
-                                    event.getChannel().sendMessage("[salmon]CR[white]: UUID not found!");
+                                    event.getChannel().sendMessage("<@" + event.getMessage().getAuthor().getIdAsString() + ">, UUID not found!");
                                 }
                                 if (proceed && arg[2].length() == 1 && Strings.canParseInt(arg[2])) {
                                     int rankF = Strings.parseInt(arg[2]);
@@ -416,19 +416,19 @@ public class Discordia implements MessageCreateListener {
                                             event.getChannel().sendMessage("[salmon]CR[white]: You don't have permission to change rank!");
                                         } else if (rank > rankF) {
                                             Main.database.get(uid).setRank(rank);
-                                            event.getChannel().sendMessage("[salmon]CR[white]: Changed rank of `" + uid + "` to " + rank + ".");
+                                            event.getChannel().sendMessage("<@" + event.getMessage().getAuthor().getIdAsString() + "> Changed rank of `" + uid + "` to " + rank + ".");
 
                                         } else if (rank <= rankF) {
-                                            event.getChannel().sendMessage("[salmon]CR[white]: You don't have permission to change rank to " + rank +
+                                            event.getChannel().sendMessage("<@" + event.getMessage().getAuthor().getIdAsString() + ">, You don't have permission to change rank to " + rank +
                                                     "\nYou may only change ranks up to " + (rank - 1) + ".");
 
                                         }
                                     }
                                 } else {
-                                    event.getChannel().sendMessage("[salmon]CR[white]: Rank can only contain numbers!");
+                                    event.getChannel().sendMessage("<@" + event.getMessage().getAuthor().getIdAsString() + ">, Rank can only contain numbers!");
                                 }
                             } else {
-                                event.getChannel().sendMessage("[salmon]CR[white]: Change Rank; Changes rank for selected player. example: /a cr #123 2");
+                                event.getChannel().sendMessage("Changes rank for selected player.");
                             }
                         }
                         break;
