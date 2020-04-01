@@ -44,9 +44,10 @@ import static mindustry.Vars.*;
 
 
 public class Main extends Plugin {
-    public static Array<String> GOW = new Array<>();
-    public static Array<String> IW = new Array<>();
-    public static HashMap<String, String> buffList = new HashMap<>();
+    //public static Array<String> GOW = new Array<>();
+    //public static Array<String> IW = new Array<>();
+    //public static HashMap<String, String> buffList = new HashMap<>();
+    public static Array<String> flaggedIP = new Array<>();
     public static HashMap<String, pi> database = new HashMap<>();
     public static HashMap<Integer, Player> idTempDatabase = new HashMap<>();
     public static Array<String> pjl = new Array<>();
@@ -64,6 +65,7 @@ public class Main extends Plugin {
     //private boolean buffEnable = true;
     private String mba = "[white]You must be [scarlet]<Admin> [white]to use this command.";
     private boolean autoBan = true;
+    private boolean autokick = true;
     //discord shat
     private final Long CDT = 300L;
     private final String FileNotFoundErrorMessage = "File not found: config\\mods\\settings.json";
@@ -157,8 +159,22 @@ public class Main extends Plugin {
                     string = string.replace("[B]Success!\n","");//replaces success message
                     if (data.has("bl_channel_id")) getTextChannel(data.getString("bl_channel_id")).sendMessage(string);//send to discord
                     player.con.kick("(AutoBan) Banned for: Banned for ==Rank 7==. If you want to appeal, give the previous as reason.");//kick player
-                } else if (player.usid.equals("1") || player.uuid .equals("1")) {
+                } else if (flaggedIP.contains(player.getInfo().lastIP) && player.getInfo().timesJoined == 1) {
                     player.con.close();
+                    netServer.admins.banPlayer(player.uuid);
+                    Log.info("Banned Flagged ip with 1 join");
+                }
+            }
+            if (autokick) {
+                if (player.usid.equals("1") || player.uuid .equals("1")) {
+                    player.con.close();
+                } else if (player.name.toLowerCase().equals("igggames")) {
+                    player.getInfo().timesKicked--;
+                    player.con.kick("Invalid Name - Try another name",1);
+                } else if (player.name.toLowerCase().equals("nezxity")) {
+                    player.getInfo().timesKicked--;
+                    flaggedIP.add(player.getInfo().lastIP);
+                    player.con.kick("Invalid Name - Try another name");
                 }
             }
             if(player.getInfo().timesKicked > 10) {
@@ -272,9 +288,9 @@ public class Main extends Plugin {
             }
         });
         Events.on(EventType.WorldLoadEvent.class, event -> {
-            IW.clear();
-            GOW.clear();
-            buffList.clear();
+            //IW.clear();
+            //GOW.clear();
+            //buffList.clear();
             sandbox = false;
 
             if(state.rules.infiniteResources) {
