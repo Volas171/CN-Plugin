@@ -1130,7 +1130,7 @@ public class Main extends Plugin {
             });
         }
         //-----ADMINS-----//
-
+        /*
         handler.<Player>register("a","<Info> [1] [2] [3...]", "[scarlet]<Admin> [lightgray]- Admin commands", (arg, player) -> {
             if (database.get(player.uuid).getRank() >= 5) {
             } else if(!player.isAdmin){
@@ -1702,6 +1702,7 @@ public class Main extends Plugin {
                     player.sendMessage(arg[0] + " Is not a command. Do `/a info` to see all available commands");
             }
         });
+        */
     }
 
     public TextChannel getTextChannel(String id){
