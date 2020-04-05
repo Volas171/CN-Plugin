@@ -171,14 +171,14 @@ public class Main extends Plugin {
                 } else if (player.name.toLowerCase().equals("igggames")) {
                     player.getInfo().timesKicked--;
                     player.con.kick("Invalid Name - Try another name",1);
-                } else if (player.name.toLowerCase().equals("nezxity")) {
+                } else if (byteCode.noColors(player.name.toLowerCase()).equals("nezxity")) {
                     player.getInfo().timesKicked--;
                     flaggedIP.add(player.getInfo().lastIP);
                     player.con.kick("Invalid Name - Try another name");
                 }
             }
             if(player.getInfo().timesKicked > 10) {
-                Call.onInfoMessage(player.con,"You've been kicked " + player.getInfo().timesKicked + " times, 15 kicks and you're banned.");
+                Call.onInfoMessage(player.con,"You've been kicked " + player.getInfo().timesKicked + " times, 10 kicks and you're banned.");
             }
 
             //Join Message

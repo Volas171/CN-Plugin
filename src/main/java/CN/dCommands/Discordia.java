@@ -415,11 +415,11 @@ public class Discordia implements MessageCreateListener {
                                         if (Main.database.get(uid).getRank() >= rank) {
                                             event.getChannel().sendMessage("[salmon]CR[white]: You don't have permission to change rank!");
                                         } else if (rank > rankF) {
-                                            Main.database.get(uid).setRank(rank);
-                                            event.getChannel().sendMessage("<@" + event.getMessage().getAuthor().getIdAsString() + "> Changed rank of `" + uid + "` to " + rank + ".");
+                                            Main.database.get(uid).setRank(rankF);
+                                            event.getChannel().sendMessage("<@" + event.getMessage().getAuthor().getIdAsString() + "> Changed rank of `" + uid + "` to " + rankF + ".");
 
                                         } else if (rank <= rankF) {
-                                            event.getChannel().sendMessage("<@" + event.getMessage().getAuthor().getIdAsString() + ">, You don't have permission to change rank to " + rank +
+                                            event.getChannel().sendMessage("<@" + event.getMessage().getAuthor().getIdAsString() + ">, You don't have permission to change rank to " + rankF +
                                                     "\nYou may only change ranks up to " + (rank - 1) + ".");
 
                                         }
@@ -559,7 +559,7 @@ public class Discordia implements MessageCreateListener {
                         break;
                     case "chat"://turns chan on/off
                         if (rank >= 6) {
-                            if (Main.chat = true) {
+                            if (Main.chat) {
                                 Main.chat = false;
                                 event.getChannel().sendMessage("<@" + event.getMessage().getAuthor().getIdAsString() + "> turned chat off.");
                             } else {
@@ -590,7 +590,7 @@ public class Discordia implements MessageCreateListener {
                                 "\ntp               - Teleports player, x - y" +
                                 "\nac               - Admin Chat" +
                                 "\ncr               - Changes player rank." +
-                                "\nsetTag           - Sets discord tag for player, #id/uuid - Tag#Number" +
+                                "\nst           - Sets discord tag for player, #id/uuid - Tag#Number" +
                                 "\nban              - Bans a player, #ID/UUID - reason" +
                                 "\npjl              - List of last 50 player joins and leaves." +
                                 "\nkill             - Kills player, #ID" +
