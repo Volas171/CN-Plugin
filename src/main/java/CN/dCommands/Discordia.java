@@ -4,14 +4,12 @@ import CN.Main;
 import CN.byteCode;
 
 import arc.Events;
-import arc.struct.Array;
 import arc.util.Log;
 import arc.util.Strings;
 import arc.util.Time;
 import mindustry.Vars;
 import mindustry.content.Items;
 import mindustry.core.GameState;
-import mindustry.core.NetClient;
 import mindustry.entities.type.Player;
 import mindustry.game.EventType;
 import mindustry.game.Team;
@@ -29,6 +27,7 @@ import org.javacord.api.listener.message.MessageCreateListener;
 import org.json.JSONObject;
 
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static mindustry.Vars.*;
 
@@ -569,9 +568,32 @@ public class Discordia implements MessageCreateListener {
                         }
                         break;
                     case "cat"://clear all tag, clear all tags containing user#tag
+                        if (arg.length > 1) {
+                            if (!arg[1].contains("#")) {
+                                event.getChannel().sendMessage("<@" + event.getMessage().getAuthor().getIdAsString() + ">, Discord tag must contain `#`! example: abc123#4567");
+                                return;
+                            } else if (arg[1].length() <= 5) {
+                                event.getChannel().sendMessage("<@" + event.getMessage().getAuthor().getIdAsString() + ">, Discord tag must be at least 6 digits! example: abc123#4567");
+                                return;
+                            }
+                            AtomicInteger found = new AtomicInteger();
+                            Main.database.forEach((k, p) -> {
+                                if (p.getDiscordTag().contentEquals(arg[1])) {
+                                    found.set(found.get() + 1);
+                                    p.setVerified(false);
+                                    p.setDiscordTag("N/A");
+                                }
+                            });
+                            if (found.get() != 0) {
+                                event.getChannel().sendMessage("Cleared " + found.get() + " users with this Discord Tag!");
+                            } else {
+                                event.getChannel().sendMessage("Found no users with the tag `" + arg[1] + "`");
+                            }
+                        } else {
+                            event.getChannel().sendMessage("cat, clears all users with specified tag, *usage: discord#Tag*");
+                        }
                         break;
                     case "test": //test commands;
-
                         break;
 
                     case "info": //all commands

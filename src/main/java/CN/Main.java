@@ -1016,8 +1016,8 @@ public class Main extends Plugin {
             }
             halpX = (int) (player.x/8);
             halpY = (int) (player.y/8);
-            Call.sendMessage(rankI + dI + " [white]" + player.name + ": [white]Need help at ([lightgray]" + halpX + "[white],[lightgray]" + halpY + "[white]). \ndo `[lightgray]/go[white]` to come to me.");
-            Log.info(player.name + ": [white]Need help at ([lightgray]" + halpX + "[white],[lightgray]" + halpY + "[white]). do `[lightgray]/go[white]` to come to me.");
+            Call.sendMessage("[coral][[[white]"+rankI + dI + " [white]" + player.name + " [coral]]: [white]Need help at ([lightgray]" + halpX + "[white],[lightgray]" + halpY + "[white]). \ndo `[lightgray]/go[white]` to come to me.");
+            Log.info("[coral][[[white]"+player.name + " [coral]]: [white]Need help at ([lightgray]" + halpX + "[white],[lightgray]" + halpY + "[white]). do `[lightgray]/go[white]` to come to me.");
         });
         //goes to position
         handler.<Player>register("go","goes to location from /here or /halp", (arg, player) -> {
