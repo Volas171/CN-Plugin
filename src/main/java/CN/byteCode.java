@@ -118,6 +118,7 @@ public class byteCode {
                     pi d = Main.database.get(player.uuid);
                     if (d.getTP() > 8 * 60 * 60 && d.getBB() > 25000) {
                         Call.sendMessage("Rank Updated for " + player.name + " [white]to [accent]Active Player[white]!");
+                        Call.onEffectReliable(Fx.explosion, player.x, player.y, 0, Pal.accent);
                     }
                 } else if (Main.database.get(player.uuid).getRank() == 2) {
                     pi d = Main.database.get(player.uuid);
@@ -193,7 +194,7 @@ public class byteCode {
         tips[9] = "Tip #9: Do [lightgray]/info []for server info.";
         tips[10] ="Tip #10: Do [lightgray]/info colors []to get all available colors for Mindustry.";
         tips[11] ="Tip #11: To use color tags, do [lightgray][color] []to change color. \nExample: [[red]Hi -> [red]Hi[].";
-        tips[12] ="Tip #12: If you have a Grievance, ";
+        tips[12] ="Tip #12: If you have a Grievance, Praise or Recommendation, you can tell us in the #recommendations discord [sky]\uE848 []channel.";
     }
 }
 /*

@@ -171,13 +171,13 @@ public class Main extends Plugin {
                 } else if (player.name.toLowerCase().equals("igggames")) {
                     player.getInfo().timesKicked--;
                     player.con.kick("Invalid Name - Try another name",1);
-                } else if (byteCode.noColors(player.name.toLowerCase()).equals("nezxity")) {
+                } else if (player.name.toLowerCase().equals("nezxity")) {
                     player.getInfo().timesKicked--;
                     flaggedIP.add(player.getInfo().lastIP);
                     player.con.kick("Invalid Name - Try another name");
                 }
             }
-            if(player.getInfo().timesKicked > 10) {
+            if(player.getInfo().timesKicked > 5) {
                 Call.onInfoMessage(player.con,"You've been kicked " + player.getInfo().timesKicked + " times, 10 kicks and you're banned.");
             }
 
@@ -428,6 +428,13 @@ public class Main extends Plugin {
                 }
             } else {
                 Log.err("UUID `"+arg[0]+"` not found!");
+            }
+        });
+        handler.register("unkick", "<UUID>", "unkick player through uuid", arg -> {
+            if (netServer.admins.getInfo(arg[0]).lastKicked > Time.millis()) {
+                netServer.admins.getInfo(arg[1]).lastKicked = Time.millis();
+            } else {
+                Log.err("Player UUID {0} is not kicked/found!", arg[0]);
             }
         });
     }
@@ -1047,7 +1054,8 @@ public class Main extends Plugin {
                         player.sendMessage("[scarlet]This command is disabled.");
                         return;
                     }
-                    tc.sendMessage(byteCode.noColors(player.name) + " *@" +data.getString("server_name")+"* : " + args[0]);
+                    String string = args[0].replace("\\@here","").replaceAll("\\@everyone","@every1").replaceAll("\\@here","@h3r3").replaceAll("\\@(.*)#(.*)","<someone's tag>").replaceAll("<@(.*)>", "<someone's tag>");
+                    tc.sendMessage(byteCode.noColors(player.name) + " *@" +data.getString("server_name")+"* : " + string);
                     player.sendMessage(byteCode.noColors(player.name) + "[sky] to @discord[]: " + args[0]);
                 }
 
