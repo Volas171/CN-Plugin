@@ -172,9 +172,9 @@ public class Discordia implements MessageCreateListener {
                                             event.getChannel().sendMessage("[salmon]CT[lightgray]: Available teams: [accent]Sharded, [royal]Blue[lightgray], [scarlet]Crux[lightgray], [lightgray]Derelict[lightgray], [lime]Green[lightgray], [purple]Purple[lightgray].");
                                             return;
                                     }
-                                    player.setTeam(setTeam);
-                                    player.sendMessage("[salmon]CT[white]: Changed team to " + setTeamColor + arg[1] + "[white].");
-                                    event.getChannel().sendMessage("<@" + event.getMessage().getAuthor().getIdAsString() + ">, Team set to " + arg[2] + " for " + byteCode.noColors(player.name) + ".");
+                                    p.setTeam(setTeam);
+                                    p.sendMessage("[salmon]CT[white]: Changed team to " + setTeamColor + arg[1] + "[white].");
+                                    event.getChannel().sendMessage("<@" + event.getMessage().getAuthor().getIdAsString() + ">, Team set to " + arg[2] + " for " + byteCode.noColors(p.name) + ".");
                                 } else if (arg[1].startsWith("#")) {
                                     event.getChannel().sendMessage("ID can only contain numbers!");
                                 }

@@ -365,7 +365,7 @@ public class Main extends Plugin {
 
                     //live chat
                     if (data.has("live_chat_channel_id")) {
-                        String string = event.message.replace("\\@here","").replaceAll("\\@everyone","@every1").replaceAll("\\@here","@h3r3").replaceAll("\\@(.*)#(.*)","<someone's tag>").replaceAll("<@(.*)>", "<someone's tag>");
+                        String string = event.message.replace("\\@here","").replaceAll("\\@everyone","@every1").replaceAll("\\@here","@h3r3").replaceAll("\\@(.*)#(.*)","<someone's tag>").replaceAll("<@(.*)>", "<someone's tag>").replaceAll("\\*","\\*").replaceAll("_","\\_").replaceAll("\\|\\|","\\|\\|").replaceAll("~","\\~");
                         liveChat = liveChat + byteCode.noColors(event.player.name) + " [white]: " + string + "\n";
                     }
                 } else if (!database.containsKey(event.player.uuid)) {
@@ -1054,7 +1054,8 @@ public class Main extends Plugin {
                         player.sendMessage("[scarlet]This command is disabled.");
                         return;
                     }
-                    String string = args[0].replace("\\@here","").replaceAll("\\@everyone","@every1").replaceAll("\\@here","@h3r3").replaceAll("\\@(.*)#(.*)","<someone's tag>").replaceAll("<@(.*)>", "<someone's tag>");
+                    String string = args[0].replace("\\@here","").replaceAll("\\@everyone","@every1").replaceAll("\\@here","@h3r3").replaceAll("\\@(.*)#(.*)","<someone's tag>").replaceAll("<@(.*)>", "<someone's tag>").replaceAll("\\*","\\*").replaceAll("_","\\_").replaceAll("\\|\\|","\\|\\|").replaceAll("~","\\~");
+
                     tc.sendMessage(byteCode.noColors(player.name) + " *@" +data.getString("server_name")+"* : " + string);
                     player.sendMessage(byteCode.noColors(player.name) + "[sky] to @discord[]: " + args[0]);
                 }
