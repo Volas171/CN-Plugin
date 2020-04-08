@@ -359,14 +359,14 @@ public class Main extends Plugin {
                     if (database.get(event.player.uuid).getVerified()) {
                         dI = " " + byteCode.verifiedI();
                     }
-                    Call.sendMessage(rankI + dI + " [white]" + event.player.name + ": [white]" + event.message);
+                    Call.sendMessage("[coral][[[white]"+rankI + dI + " [white]" + event.player.name + " [coral]][white]: " + event.message);
                     if (!chat) event.player.sendMessage("[lightgray]Chat is disabled. - [scarlet] ADMIN bypass");
                     Log.info(event.player.name + ": [white]" + event.message);
 
                     //live chat
                     if (data.has("live_chat_channel_id")) {
                         String string = event.message.replace("\\@here","").replaceAll("\\@everyone","@every1").replaceAll("\\@here","@h3r3").replaceAll("\\@(.*)#(.*)","<someone's tag>").replaceAll("<@(.*)>", "<someone's tag>").replaceAll("\\*","\\*").replaceAll("_","\\_").replaceAll("\\|\\|","\\|\\|").replaceAll("~","\\~");
-                        liveChat = liveChat + byteCode.noColors(event.player.name) + " [white]: " + string + "\n";
+                        liveChat = liveChat + byteCode.noColors(event.player.name) + " : " + string + "\n";
                     }
                 } else if (!database.containsKey(event.player.uuid)) {
                     event.player.getInfo().timesKicked--;
