@@ -359,7 +359,7 @@ public class Main extends Plugin {
                     if (database.get(event.player.uuid).getVerified()) {
                         dI = " " + byteCode.verifiedI();
                     }
-                    Call.sendMessage("[coral][[[white]"+rankI + dI + " [white]" + event.player.name + " [coral]][white]: " + event.message);
+                    Call.sendMessage("[coral][[[white]"+rankI + dI + " [white]" + event.player.name + "\uE95F[coral]]: [white]" + event.message);
                     if (!chat) event.player.sendMessage("[lightgray]Chat is disabled. - [scarlet] ADMIN bypass");
                     Log.info(event.player.name + ": [white]" + event.message);
 
