@@ -1,7 +1,12 @@
 package CN.dCommands;
 
+import CN.Main;
+import CN.byteCode;
 //mindustry + arc
+import CN.key;
+import arc.util.Timer;
 import mindustry.Vars;
+import mindustry.content.Blocks;
 import mindustry.content.Items;
 import mindustry.entities.type.Player;
 import mindustry.game.EventType;
@@ -20,6 +25,7 @@ import org.json.JSONObject;
 import java.nio.channels.Channel;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class discordCommands implements MessageCreateListener {
 
@@ -33,6 +39,7 @@ public class discordCommands implements MessageCreateListener {
     @Override
     public void onMessageCreate(MessageCreateEvent event) {
         if (data.has("prefix") && data.has("bot_channel_id") && event.getChannel().getIdAsString().equals(data.getString("bot_channel_id"))){
+            String[] arg = event.getMessageContent().split(" ", 4);
             //playerlist
             if (event.getMessageContent().equalsIgnoreCase("..players") || event.getMessageContent().startsWith(data.getString("prefix") + "players")) {
                 StringBuilder lijst = new StringBuilder();
@@ -84,9 +91,42 @@ public class discordCommands implements MessageCreateListener {
                     new MessageBuilder().appendCode("", lijst.toString()).send(event.getChannel());
                 }
             }
-            //all commands
-            else if (event.getMessageContent().startsWith(data.getString("prefix") + "help")) {
+            //get verified
+            else if (event.getMessageContent().startsWith(data.getString("prefix") + "verify")) {
+                AtomicInteger found = new AtomicInteger();
+                Main.database.forEach((k, p) -> {
+                    if (p.getDiscordTag().contentEquals(event.getMessage().getAuthor().getDiscriminatedName())) {
+                        found.set(found.get() + 1);
+                    }
+                });
 
+                if (found.get() > 2) {
+                    event.getChannel().sendMessage("You too many accounts using this tag! Removing tag from all other accounts...\nUse command again to get verified.");
+                    Main.database.forEach((k, p) -> {
+                        if (p.getDiscordTag().contentEquals(event.getMessage().getAuthor().getDiscriminatedName())) {
+                            p.setVerified(false);
+                            p.setDiscordTag("N/A");
+                        }
+                    });
+                } else {
+                    String hash = byteCode.hash(6);
+                    Main.keyList.put(hash, new key("verify", event.getMessage().getAuthor().getDiscriminatedName()));
+                    event.getChannel().sendMessage("do ||/key " + hash + "|| to get verified! You have 30s!");
+
+                    new Object() {
+                        private Timer.Task task;
+                        {
+                            task = Timer.schedule(() -> {
+                                if (Main.keyList.containsKey(hash)) {
+                                    Main.keyList.remove(hash);
+                                    event.getChannel().sendMessage("Key Expired");
+                                } else {
+                                    task.cancel();
+                                }
+                            }, 30, 1);
+                        }
+                    };
+                }
             }
         }
     }

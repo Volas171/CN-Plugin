@@ -4,12 +4,10 @@ import arc.util.Log;
 import arc.util.Strings;
 import arc.util.Time;
 import mindustry.content.Fx;
-import mindustry.core.NetServer;
 import mindustry.entities.type.Player;
 import mindustry.gen.Call;
 import mindustry.graphics.Pal;
 import mindustry.net.Administration;
-import org.javacord.api.entity.channel.TextChannel;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -17,7 +15,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashMap;
+import java.util.Random;
 
 import static mindustry.Vars.*;
 
@@ -197,6 +195,22 @@ public class byteCode {
         tips[10] ="Tip #10: Do [lightgray]/info colors []to get all available colors for Mindustry.";
         tips[11] ="Tip #11: To use color tags, do [lightgray][color] []to change color. \nExample: [[red]Hi -> [red]Hi[].";
         tips[12] ="Tip #12: If you have a Grievance, Praise or Recommendation, you can tell us in the #recommendations discord [sky]\uE848 []channel.";
+    }
+    public static String hash(int length) { //not my code - https://www.baeldung.com/java-random-string
+        int leftLimit = 48; //0
+        int rightLimit = 122; //z
+        Random rand = new Random();
+
+        String hash = rand.ints(leftLimit, rightLimit + 1)
+                .filter(i -> (i <= 57 || i >= 65) && (i <= 90 || i >= 97))
+                .limit(length)
+                .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
+                .toString();
+        if (Main.keyList.containsKey(hash)) {
+            return "-ERROR-hash already exists!";
+        } else {
+            return hash;
+        }
     }
 }
 /*

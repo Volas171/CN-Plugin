@@ -10,6 +10,7 @@ import arc.util.Log;
 import arc.util.Strings;
 import arc.util.Time;
 import mindustry.Vars;
+import mindustry.content.Fx;
 import mindustry.core.NetClient;
 import mindustry.core.World;
 import mindustry.entities.type.Player;
@@ -18,6 +19,7 @@ import mindustry.game.EventType;
 import mindustry.game.Team;
 import mindustry.game.Teams;
 import mindustry.gen.Call;
+import mindustry.graphics.Pal;
 import mindustry.net.Administration;
 import mindustry.plugin.Plugin;
 import mindustry.world.blocks.storage.CoreBlock;
@@ -57,6 +59,8 @@ public class Main extends Plugin {
     public static String liveChat = "";
     public static long milisecondSinceBan = Time.millis();
     public static boolean chat = true;
+    public static HashMap<String, Integer> tips = new HashMap<>();
+    public static HashMap<String, key> keyList = new HashMap<>();
 
     private boolean summonEnable = true;
     private boolean reaperEnable = true;
@@ -359,14 +363,14 @@ public class Main extends Plugin {
                     if (database.get(event.player.uuid).getVerified()) {
                         dI = " " + byteCode.verifiedI();
                     }
-                    Call.sendMessage("[coral][[[white]"+rankI + dI + " [white]" + event.player.name + "\uE95F[coral]]: [white]" + event.message);
+                    Call.sendMessage(rankI + dI + " [white]" + event.player.name + ": [white]" + event.message);
                     if (!chat) event.player.sendMessage("[lightgray]Chat is disabled. - [scarlet] ADMIN bypass");
                     Log.info(event.player.name + ": [white]" + event.message);
 
                     //live chat
                     if (data.has("live_chat_channel_id")) {
                         String string = event.message.replace("\\@here","").replaceAll("\\@everyone","@every1").replaceAll("\\@here","@h3r3").replaceAll("\\@(.*)#(.*)","<someone's tag>").replaceAll("<@(.*)>", "<someone's tag>").replaceAll("\\*","\\*").replaceAll("_","\\_").replaceAll("\\|\\|","\\|\\|").replaceAll("~","\\~");
-                        liveChat = liveChat + byteCode.noColors(event.player.name) + " : " + string + "\n";
+                        liveChat = liveChat + "[coral][[[white]" + byteCode.noColors(event.player.name) + ": " + string + "\n";
                     }
                 } else if (!database.containsKey(event.player.uuid)) {
                     event.player.getInfo().timesKicked--;
@@ -1041,6 +1045,48 @@ public class Main extends Plugin {
         handler.<Player>register("tips","sends you a tip", (arg, player) -> {
             Random rand = new Random();
             player.sendMessage("[accent]"+byteCode.tips[rand.nextInt(byteCode.tips.length)]);
+        });
+        //test
+        handler.<Player>register("buff", "buffs player", (arg, player) -> {
+            if (database.containsKey(player.uuid)) {
+                if (database.get(player.uuid).getRank() >= 5) {
+                    player.health = player.health * 64;
+                    Call.onEffectReliable(Fx.bigShockwave, player.x, player.y, 0, Pal.accent);
+                    player.sendMessage("Buffed");
+                }
+            }
+        });
+        handler.<Player>register("key", "<key>", "Enter key to redeem Rank or pi.", (arg, player) -> {
+            if (arg[0].length() == 6) {
+                if (keyList.containsKey(arg[0])) {
+                    switch (keyList.get(arg[0]).getAction()) {
+                        case "cr":
+                            if (database.containsKey(player.uuid)) {
+                                String pid= keyList.get(arg[0]).getValue().replaceAll("[^0-9]", "");
+                                database.get(player.uuid).setRank(Integer.parseInt(pid));
+                                player.sendMessage("[sky]Changed rank to [lightgray]" + pid + "[].");
+                            }
+                            break;
+                        case "verify":
+                            if (database.containsKey(player.uuid)) {
+                                if (database.get(player.uuid).getDiscordTag().equals("N/A")) {
+                                    database.get(player.uuid).setVerified(true);
+                                }
+                                database.get(player.uuid).setDiscordTag(keyList.get(arg[0]).getValue());
+                                player.sendMessage("[sky]Set discord tag to `[lightgray]" + keyList.get(arg[0]).getValue() + "[]`.");
+                            }
+                            break;
+                        default:
+                            player.sendMessage("---ERROR---");
+                            keyList.remove(arg[0]);
+                    }
+                } else {
+                    player.sendMessage("Invalid Key.");
+                }
+                keyList.remove(arg[0]);
+            } else {
+                player.sendMessage("Invalid Key.");
+            }
         });
         //-----Discord----//
         if (api != null) {

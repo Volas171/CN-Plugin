@@ -68,7 +68,7 @@ public class Discordia implements MessageCreateListener {
             r = getRole(event.getApi(), data.getString("owner_role_id"));
             if (hasPermission(r, event)) rank = 7;
 
-            String[] arg = event.getMessageContent().split(" ", 5);
+            String[] arg = event.getMessageContent().split(" ", 3);
 
             if (arg[0].startsWith("..") || arg[0].startsWith(data.getString("prefix"))) {
                 arg[0] = arg[0].replaceAll("\\.\\.","").replaceAll(data.getString("prefix"),"");
