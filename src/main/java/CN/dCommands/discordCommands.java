@@ -119,8 +119,10 @@ public class discordCommands implements MessageCreateListener {
                             task = Timer.schedule(() -> {
                                 if (Main.keyList.containsKey(hash)) {
                                     Main.keyList.remove(hash);
-                                    event.getChannel().sendMessage("Key Expired");
+                                    event.getChannel().sendMessage("<@"+event.getMessage().getAuthor().getIdAsString()+ ">, Key Expired");
+                                    task.cancel();
                                 } else {
+                                    event.getChannel().sendMessage("<@"+event.getMessage().getAuthor().getIdAsString()+ ">, Success!");
                                     task.cancel();
                                 }
                             }, 30, 1);

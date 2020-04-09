@@ -363,14 +363,14 @@ public class Main extends Plugin {
                     if (database.get(event.player.uuid).getVerified()) {
                         dI = " " + byteCode.verifiedI();
                     }
-                    Call.sendMessage(rankI + dI + " [white]" + event.player.name + ": [white]" + event.message);
+                    Call.sendMessage("[coral][["+rankI + dI + "[white]" + event.player.name + "[coral]]: [white]" + event.message);
                     if (!chat) event.player.sendMessage("[lightgray]Chat is disabled. - [scarlet] ADMIN bypass");
                     Log.info(event.player.name + ": [white]" + event.message);
 
                     //live chat
                     if (data.has("live_chat_channel_id")) {
                         String string = event.message.replace("\\@here","").replaceAll("\\@everyone","@every1").replaceAll("\\@here","@h3r3").replaceAll("\\@(.*)#(.*)","<someone's tag>").replaceAll("<@(.*)>", "<someone's tag>").replaceAll("\\*","\\*").replaceAll("_","\\_").replaceAll("\\|\\|","\\|\\|").replaceAll("~","\\~");
-                        liveChat = liveChat + "[coral][[[white]" + byteCode.noColors(event.player.name) + ": " + string + "\n";
+                        liveChat = liveChat + byteCode.noColors(event.player.name) + ": " + string + "\n";
                     }
                 } else if (!database.containsKey(event.player.uuid)) {
                     event.player.getInfo().timesKicked--;
@@ -1071,6 +1071,8 @@ public class Main extends Plugin {
                             if (database.containsKey(player.uuid)) {
                                 if (database.get(player.uuid).getDiscordTag().equals("N/A")) {
                                     database.get(player.uuid).setVerified(true);
+                                    if (database.get(player.uuid).getRank() == 0) database.get(player.uuid).setRank(1);
+                                    player.sendMessage("[sky]Rank changed from [lightgray]unverified []to [lightgray]verified[]/");
                                 }
                                 database.get(player.uuid).setDiscordTag(keyList.get(arg[0]).getValue());
                                 player.sendMessage("[sky]Set discord tag to `[lightgray]" + keyList.get(arg[0]).getValue() + "[]`.");
