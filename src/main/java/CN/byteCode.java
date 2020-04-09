@@ -117,12 +117,14 @@ public class byteCode {
                 if (Main.database.get(player.uuid).getRank() == 1) {
                     pi d = Main.database.get(player.uuid);
                     if (d.getTP() > 8 * 60 * 60 && d.getBB() > 25000) {
+                        Main.liveChat = Main.liveChat + "Rank Updated for " + player.name + " [white]to [accent]Active Player[white]!" + "\n";
                         Call.sendMessage("Rank Updated for " + player.name + " [white]to [accent]Active Player[white]!");
                         Call.onEffectReliable(Fx.explosion, player.x, player.y, 0, Pal.accent);
                     }
                 } else if (Main.database.get(player.uuid).getRank() == 2) {
                     pi d = Main.database.get(player.uuid);
                     if (d.getTP() > 24 * 60 * 60 && d.getBB() > 100000) {
+                        Main.liveChat = Main.liveChat + "Rank Updated for " + player.name + " [white]to [gold]Super Active [white]Player!" + "\n";
                         Call.sendMessage("Rank Updated for " + player.name + " [white]to [gold]Super Active [white]Player!");
                     }
                 }
@@ -130,11 +132,13 @@ public class byteCode {
                 if (Main.database.get(player.uuid).getRank() == 1) {
                     pi d = Main.database.get(player.uuid);
                     if (d.getTP() > 8 * 60 * 60 && d.getGP() > 15) {
+                        Main.liveChat = Main.liveChat + "Rank Updated for " + player.name + " [white]to [accent]Active Player[white]!" + "\n";
                         Call.sendMessage("Rank Updated for " + player.name + " [white]to [accent]Active Player[white]!");
                     }
                 } else if (Main.database.get(player.uuid).getRank() == 2) {
                     pi d = Main.database.get(player.uuid);
                     if (d.getTP() > 24 * 60 * 60 && d.getGP() > 45) {
+                        Main.liveChat = Main.liveChat + "Rank Updated for " + player.name + " [white]to [gold]Super Active [white]Player!" + "\n";
                         Call.sendMessage("Rank Updated for " + player.name + " [white]to [gold]Super Active [white]Player!");
                     }
                 }
