@@ -309,19 +309,22 @@ public class Main extends Plugin {
                 String uuid = player.uuid;
                 if (uuid == null) return true;
 
+
                 if (playerGroup.size() > 5 && database.containsKey(player.uuid) && database.get(player.uuid).getRank() == 0) {
+                    if (database.get(player.uuid).getTP() < 15) {
+                        Call.onInfoToast(player.con, "New Player Detected - Unable to Build for your 15 minuted. Get Verified to skip this restriction.", 30);
+                        return false;
+                    }
+
                     Teams.TeamData teamData = state.teams.get(player.getTeam());
                     if (teamData.hasCore()) {
                         CoreBlock.CoreEntity core = teamData.cores.first();
                         if (action.tile.x >= ((core.x/8) - 15) && ((core.x/8) + 15) >= action.tile.x && action.tile.y >= ((core.y/8) - 15) && ((core.y/8) + 15) >= action.tile.y) {
-                            player.sendMessage("Unable to edit core - please get verified through discord.");
+                            Call.onInfoToast(player.con, "Unable to edit core - please get verified through discord.", 15);
                             return  false;
                         }
                     } else if (!teamData.hasCore()) {
-                        Log.err("addAdminFilter - Core is null");
-                        player.getInfo().timesKicked--;
-                        player.con.kick("ERROR - addAdminActionFilter\nplease report what you did to get this issue in CN discord.",1);
-                        return true;
+                        return false;
                     }
                 }
 
