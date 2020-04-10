@@ -185,7 +185,7 @@ public class byteCode {
         finalString = finalString.replace("[]","");
         return  finalString;}
     public static void loadTips() {
-        tips = new String[13];
+        tips = new String[14];
         tips[0] = "Tip #1: When on the [lightgray]Upgrade []Menu, [white]\uE850[], little colored short arrows will point you towards Upgrade Pads.";
         tips[1] = "Tip #1: When on the [lightgray]Upgrade []Menu, [white]\uE850[], little colored short arrows will point you towards Upgrade Pads.";
         tips[2] = "Tip #2: You can Overdrive [white]\uF899 []Weapons to make them shoot faster.";
@@ -199,6 +199,7 @@ public class byteCode {
         tips[10] ="Tip #10: Do [lightgray]/info colors []to get all available colors for Mindustry.";
         tips[11] ="Tip #11: To use color tags, do [lightgray][color] []to change color. \nExample: [[red]Hi -> [red]Hi[].";
         tips[12] ="Tip #12: If you have a Grievance, Praise or Recommendation, you can tell us in the #recommendations discord [sky]\uE848 []channel.";
+        tips[13] ="Tip #13: Water Extractor, Oil extractor and Cultivator speeds can vary depending on what type of land they are placed in.";
     }
     public static String hash(int length) { //not my code - https://www.baeldung.com/java-random-string
         int leftLimit = 48; //0
@@ -211,10 +212,13 @@ public class byteCode {
                 .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
                 .toString();
         if (Main.keyList.containsKey(hash)) {
-            return "-ERROR-hash already exists!";
+            return hash(length);
         } else {
             return hash;
         }
+    }
+    public static String dec(String string) {
+        return string.replace("@", "\\@").replace("*","\\*").replace("~","\\~").replace("`","\\`").replace("|","\\|").replace("_","\\_");
     }
 }
 /*

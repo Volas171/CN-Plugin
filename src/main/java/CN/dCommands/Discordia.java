@@ -28,6 +28,7 @@ import org.json.JSONObject;
 
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static mindustry.Vars.*;
 
@@ -111,24 +112,31 @@ public class Discordia implements MessageCreateListener {
                         }
                         break;
                     case "tk": //adds 10k resources to core
+                    case "hk": //adds 100k resources to core
+                        int amount = 0;
+                        if (arg[0].equals("tk")) {
+                            amount = 10000;
+                        } else {
+                            amount = 100000;
+                        }
                         Teams.TeamData teamData = state.teams.get(Team.sharded);
                         if (!teamData.hasCore()) {
                             event.getChannel().sendMessage("<@" + event.getMessage().getAuthor().getIdAsString() + "> Your team doesn't have a core!");
                             return;
                         }
                         CoreBlock.CoreEntity core = teamData.cores.first();
-                        core.items.add(Items.copper, 10000);
-                        core.items.add(Items.lead, 10000);
-                        core.items.add(Items.metaglass, 10000);
-                        core.items.add(Items.graphite, 10000);
-                        core.items.add(Items.titanium, 10000);
-                        core.items.add(Items.thorium, 10000);
-                        core.items.add(Items.silicon, 10000);
-                        core.items.add(Items.plastanium, 10000);
-                        core.items.add(Items.phasefabric, 10000);
-                        core.items.add(Items.surgealloy, 10000);
-                        Call.sendMessage("[scarlet]<Admin> [lightgray]" + event.getMessage().getAuthor().getDisplayName() + " [white] has given 10k resources to core.");
-                        event.getChannel().sendMessage("<@" + event.getMessage().getAuthor().getIdAsString() + "> has added 10k of all resources to core.");
+                        core.items.add(Items.copper, amount);
+                        core.items.add(Items.lead, amount);
+                        core.items.add(Items.metaglass, amount);
+                        core.items.add(Items.graphite, amount);
+                        core.items.add(Items.titanium, amount);
+                        core.items.add(Items.thorium, amount);
+                        core.items.add(Items.silicon, amount);
+                        core.items.add(Items.plastanium, amount);
+                        core.items.add(Items.phasefabric, amount);
+                        core.items.add(Items.surgealloy, amount);
+                        Call.sendMessage("[scarlet]<Admin> [lightgray]" + event.getMessage().getAuthor().getDisplayName() + " [white] has given "+amount/1000+"k resources to core.");
+                        event.getChannel().sendMessage("<@" + event.getMessage().getAuthor().getIdAsString() + "> has added "+amount/1000+"k of all resources to core.");
                         break;
                     case "team": //changes team, #id - team
                         if (rank >= 5) {
@@ -198,7 +206,7 @@ public class Discordia implements MessageCreateListener {
                                             return;
                                         }
                                     }
-                                    String rname = byteCode.nameR(p.name);
+                                    String rname = byteCode.dec(p.name);
                                     String dv = "false";
                                     if (Main.database.containsKey(p.uuid) && Main.database.get(p.uuid).getVerified())
                                         dv = "true";
@@ -219,7 +227,7 @@ public class Discordia implements MessageCreateListener {
                                     return;
                                 } else if (netServer.admins.getInfo(arg[1]).timesJoined > 0) {
                                     Administration.PlayerInfo p = netServer.admins.getInfo(arg[1]);
-                                    String rname = byteCode.nameR(p.lastName);
+                                    String rname = byteCode.dec(p.lastName);
                                     String dv = "false";
                                     if (Main.database.containsKey(arg[1]) && Main.database.get(arg[1]).getVerified())
                                         dv = "true";
@@ -249,9 +257,9 @@ public class Discordia implements MessageCreateListener {
                             if (arg.length > 1) {
                                 if (netServer.admins.isIDBanned(arg[1])) {
                                     netServer.admins.unbanPlayerID(arg[1]);
-                                    event.getChannel().sendMessage(" Unbanned player UUID " + arg[1] + ".");
+                                    event.getChannel().sendMessage("<@" + event.getMessage().getAuthor().getIdAsString() + "> Unbanned player UUID " + arg[1] + ".");
                                 } else {
-                                    event.getChannel().sendMessage(", UUID " + arg[1] + " wasn't found or isn't banned.");
+                                    event.getChannel().sendMessage("<@" + event.getMessage().getAuthor().getIdAsString() + ">, UUID " + arg[1] + " wasn't found or isn't banned.");
                                 }
                             } else {
                                 event.getChannel().sendMessage("Pardon uses uuid to un-ban players.");
@@ -585,7 +593,32 @@ public class Discordia implements MessageCreateListener {
                                 }
                             });
                             if (found.get() != 0) {
-                                event.getChannel().sendMessage("Cleared " + found.get() + " users with this Discord Tag!");
+                                event.getChannel().sendMessage("<@" + event.getMessage().getAuthor().getIdAsString() + "> Cleared " + found.get() + " users with the "+arg[1]+" Discord Tag!");
+                            } else {
+                                event.getChannel().sendMessage("Found no users with the tag `" + arg[1] + "`");
+                            }
+                        } else {
+                            event.getChannel().sendMessage("cat, clears all users with specified tag, *usage: discord#Tag*");
+                        }
+                        break;
+                    case "ftt"://find through tag
+                        if (arg.length > 1) {
+                            if (!arg[1].contains("#")) {
+                                event.getChannel().sendMessage("<@" + event.getMessage().getAuthor().getIdAsString() + ">, Discord tag must contain `#`! example: abc123#4567");
+                                return;
+                            } else if (arg[1].length() <= 5) {
+                                event.getChannel().sendMessage("<@" + event.getMessage().getAuthor().getIdAsString() + ">, Discord tag must be at least 6 digits! example: abc123#4567");
+                                return;
+                            }
+                            AtomicInteger found = new AtomicInteger();
+                            Main.database.forEach((k, p) -> {
+                                if (p.getDiscordTag().contentEquals(arg[1])) {
+                                    found.set(found.get() + 1);
+                                    event.getChannel().sendMessage("<@" + event.getMessage().getAuthor().getIdAsString() + ">, ||"+k+"|| : "+byteCode.dec(netServer.admins.getInfo(k).lastName));
+                                }
+                            });
+                            if (found.get() != 0) {
+                                event.getChannel().sendMessage("Cleared " + found.get() + " users with the "+arg[1]+" Discord Tag!");
                             } else {
                                 event.getChannel().sendMessage("Found no users with the tag `" + arg[1] + "`");
                             }

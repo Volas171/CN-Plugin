@@ -241,11 +241,10 @@ public class Main extends Plugin {
                         "6) Making and/or using a AFK machine will result in ban.\n\n" +
                         "Survival:\n" +
                         "1) Pixel art permitted but must be less that 16x16. Pixel art may be removed at any point by anyone. Spamming will result in ban.\n" +
-                        "2) Belts going to core must take the least complicated yet most direct route to core. Don't snake belts and/or place on cramped places.\n" +
-                        "3) Thorium reactors must be far away from core. \n" +
-                        "4) No more than 50 draught miners per map.\n" +
-                        "5) Absolutely no exploits allowed; whether beneficial or not.\n" +
-                        "6) High power sources must be dioded.\n" +
+                        "2) Thorium reactors must be far away from core. \n" +
+                        "3) No more than 50 draught miners per map.\n" +
+                        "4) Absolutely no exploits allowed; whether beneficial or not.\n" +
+                        "5) Power sources must be dioded.\n" +
                         "[white]======================================================================\n");
                 database.put(player.uuid, new pi());
             }
@@ -373,6 +372,7 @@ public class Main extends Plugin {
                     //live chat
                     if (data.has("live_chat_channel_id")) {
                         String string = event.message.replace("\\@here","").replaceAll("\\@everyone","@every1").replaceAll("\\@here","@h3r3").replaceAll("\\@(.*)#(.*)","<someone's tag>").replaceAll("<@(.*)>", "<someone's tag>").replaceAll("\\*","\\*").replaceAll("_","\\_").replaceAll("\\|\\|","\\|\\|").replaceAll("~","\\~");
+                        string = string.replace("@", "\\@").replace("*","\\*").replace("~","\\~").replace("`","\\`").replace("|","\\|").replace("_","\\_");
                         liveChat = liveChat + byteCode.noColors(event.player.name) + ": " + string + "\n";
                     }
                 } else if (!database.containsKey(event.player.uuid)) {
@@ -1046,8 +1046,13 @@ public class Main extends Plugin {
         });
         //sends you tips
         handler.<Player>register("tips","sends you a tip", (arg, player) -> {
-            Random rand = new Random();
-            player.sendMessage("[accent]"+byteCode.tips[rand.nextInt(byteCode.tips.length)]);
+            if (tips.containsKey(player.uuid)) {
+                player.sendMessage("[accent]"+byteCode.tips[tips.get(player)]);
+                tips.replace(player.uuid, tips.get(player.uuid)+1);
+            } else {
+                tips.put(player.uuid, 2);
+                player.sendMessage("[accent]"+byteCode.tips[1]);
+            }
         });
         //test
         handler.<Player>register("buff", "buffs player", (arg, player) -> {
