@@ -111,7 +111,11 @@ public class discordCommands implements MessageCreateListener {
                 } else {
                     String hash = byteCode.hash(6);
                     Main.keyList.put(hash, new key("verify", event.getMessage().getAuthor().getDiscriminatedName()));
-                    event.getChannel().sendMessage("do ||/key " + hash + "|| to get verified! You have 30s!");
+                    event.getChannel().sendMessage("By getting verified, you agree to the following:" +
+                            "\n```1) having your discord tag saved on server" +
+                            "\n2) having your discord tag sharable in-game" +
+                            "\n3) having your <verified> revoked at any given time ```" +
+                            "\n\ndo ||/key " + hash + "|| to get verified! You have 30s!");
 
                     new Object() {
                         private Timer.Task task;
@@ -130,11 +134,6 @@ public class discordCommands implements MessageCreateListener {
                     };
                 }
             }
-        }
-    }
-    public void onPlayerJoin(ServerMemberJoinEvent event) {
-        if (data.has("server_name") && data.getString("server_name").equalsIgnoreCase("1111")) {
-            event.getUser().sendMessage("Welcome to CN network.");
         }
     }
 }

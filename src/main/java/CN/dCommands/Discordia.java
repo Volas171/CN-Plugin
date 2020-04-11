@@ -603,27 +603,20 @@ public class Discordia implements MessageCreateListener {
                         break;
                     case "ftt"://find through tag
                         if (arg.length > 1) {
-                            if (!arg[1].contains("#")) {
-                                event.getChannel().sendMessage("<@" + event.getMessage().getAuthor().getIdAsString() + ">, Discord tag must contain `#`! example: abc123#4567");
-                                return;
-                            } else if (arg[1].length() <= 5) {
-                                event.getChannel().sendMessage("<@" + event.getMessage().getAuthor().getIdAsString() + ">, Discord tag must be at least 6 digits! example: abc123#4567");
-                                return;
-                            }
                             AtomicInteger found = new AtomicInteger();
                             Main.database.forEach((k, p) -> {
-                                if (p.getDiscordTag().contentEquals(arg[1])) {
+                                if (p.getDiscordTag().toLowerCase().contains(arg[1].toLowerCase())) {
                                     found.set(found.get() + 1);
                                     event.getChannel().sendMessage("<@" + event.getMessage().getAuthor().getIdAsString() + ">, ||"+k+"|| : "+byteCode.dec(netServer.admins.getInfo(k).lastName));
                                 }
                             });
                             if (found.get() != 0) {
-                                event.getChannel().sendMessage("Cleared " + found.get() + " users with the "+arg[1]+" Discord Tag!");
+                                event.getChannel().sendMessage(", Found " + found.get() + " users containing "+arg[1]+" in their Discord Tag.");
                             } else {
-                                event.getChannel().sendMessage("Found no users with the tag `" + arg[1] + "`");
+                                event.getChannel().sendMessage("Found no users containing `" + arg[1] + "` in their tags.");
                             }
                         } else {
-                            event.getChannel().sendMessage("cat, clears all users with specified tag, *usage: discord#Tag*");
+                            event.getChannel().sendMessage("ftt, finds users containing string in tag, *usage: string*");
                         }
                         break;
                     case "test": //test commands;
@@ -634,7 +627,7 @@ public class Discordia implements MessageCreateListener {
                                 "\nuap              - Un Admins Player, UUID" +
                                 "\ngameover         - Triggers game over." +
                                 "\nsandbox          - Infinite Items." +
-                                "\ntk              - Adds 10k of every resource to core." +
+                                "\ntk               - Adds 10k of every resource to core." +
                                 "\nteam             - Changes team, team" +
                                 "\ngpi              - Gets Player Info, #ID/UUID" +
                                 "\npardon           - Un-Bans a player, UUID" +
@@ -645,12 +638,14 @@ public class Discordia implements MessageCreateListener {
                                 "\ntp               - Teleports player, x - y" +
                                 "\nac               - Admin Chat" +
                                 "\ncr               - Changes player rank." +
-                                "\nst           - Sets discord tag for player, #id/uuid - Tag#Number" +
+                                "\nst               - Sets discord tag for player, #id/uuid - Tag#Number" +
                                 "\nban              - Bans a player, #ID/UUID - reason" +
                                 "\npjl              - List of last 50 player joins and leaves." +
                                 "\nkill             - Kills player, #ID" +
                                 "\nchat             - Toggles chat on or off." +
-                                "\ninfo             - Shows all commands and brief description, uuid");
+                                "\ninfo             - Shows all commands and brief description, uuid" +
+                                "\ncat              - Removes users using Tag, discord#tag" +
+                                "\nftt              - Finds users who contains string in tag, string.");
                         break;
                     default:
                         event.getChannel().sendMessage(arg[0] + " is not a command!");

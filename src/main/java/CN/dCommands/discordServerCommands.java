@@ -94,7 +94,7 @@ public class discordServerCommands implements MessageCreateListener {
                 }
             } else {
                 event.getChannel().deleteMessages(event.getMessage());
-                event.getChannel().sendMessage("" + event.getMessage().getAuthor().getName() + " your message was too long, please send a shorter message.");
+                event.getChannel().sendMessage(">>>" + event.getMessage().getAuthor().getName() + " your message was too long, please send a shorter message.");
             }
         }
 
