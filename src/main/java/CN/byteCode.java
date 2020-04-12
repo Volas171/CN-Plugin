@@ -14,7 +14,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.Random;
 
 import static mindustry.Vars.*;
@@ -50,100 +52,11 @@ public class byteCode {
     public static String verifiedI() {
         return "<[sky]\uE848[accent]>";
     }
-    public static String ban(String IDuuid, String reason, String who) {
-        //setup
-        Date thisDate = new Date();
-        SimpleDateFormat dateFormat = new SimpleDateFormat("[MM/dd/Y | HH:mm:ss] ");
-        String uuid = null;
-        String nameR = null;
-        boolean proceed = false;
-
-        //ban
-        if (IDuuid.startsWith("#") && IDuuid.length() > 3 && Strings.canParseInt(IDuuid.substring(1))) {
-            int id = Strings.parseInt(IDuuid.substring(1));
-            Player p = playerGroup.getByID(id);
-            if (p == null) {
-                return "Player ID " + id + " not found.";
-            } else if (p.isAdmin) {
-                return "[scarlet]Did you really expect to be able to ban a admin?";
-            }
-            Main.flaggedIP.add(p.getInfo().lastIP);
-            nameR = nameR(p.name);
-            uuid = p.uuid;
-            proceed = true;
-            p.con.kick(reason);
-        } else if (IDuuid.startsWith("#")) {
-            return "ID can only contain numbers!"; //if contains letters
-        } else if (netServer.admins.getInfo(IDuuid).timesJoined > 0) {
-            Administration.PlayerInfo p = netServer.admins.getInfo(IDuuid);
-            nameR = nameR(p.lastName);
-            uuid = IDuuid;
-            //check for admin
-            for (Administration.PlayerInfo pi : netServer.admins.getAdmins()) {
-                if (pi.id.equals(IDuuid)) {
-                    return "[scarlet]Did you really expected to ban a admin?";
-                }
-            }
-            proceed = true;
-        } else {
-            return "UUID not found!"; // not found
-        }
-        if (proceed) {
-            netServer.admins.banPlayer(uuid);
-            try {
-                File file = new File("bl.cn");
-                FileWriter out = new FileWriter(file, true);
-                PrintWriter pw = new PrintWriter(out);
-                pw.println(dateFormat.format(thisDate) + nameR + " | " + uuid + " | " + reason + " | by: " + who + " ;");
-                out.close();
-            } catch (IOException i) {
-                i.printStackTrace();
-            }
-            Main.milisecondSinceBan = Time.millis() + 250;
-            return "[B]Success!\n" + dateFormat.format(thisDate) + nameR + " | " + reason + " | by: " + who + " ;";
-        }
-        Log.err("Ban got past return!");
-        return "error";
-    }
     public static Integer sti(String Input) {
         if (Strings.canParseInt(Input)) {
             return Strings.parseInt(Input);
         }
         return -643; //GAE XD
-    }
-    public static void aRank(Player player) {
-        if (Main.database.containsKey(player.uuid)) {
-            if (Main.sandbox) {
-                if (Main.database.get(player.uuid).getRank() == 1) {
-                    pi d = Main.database.get(player.uuid);
-                    if (d.getTP() > 8 * 60 * 60 && d.getBB() > 25000) {
-                        Main.liveChat = Main.liveChat + "Rank Updated for " + player.name + " [white]to [accent]Active Player[white]!" + "\n";
-                        Call.sendMessage("Rank Updated for " + player.name + " [white]to [accent]Active Player[white]!");
-                        Call.onEffectReliable(Fx.explosion, player.x, player.y, 0, Pal.accent);
-                    }
-                } else if (Main.database.get(player.uuid).getRank() == 2) {
-                    pi d = Main.database.get(player.uuid);
-                    if (d.getTP() > 24 * 60 * 60 && d.getBB() > 100000) {
-                        Main.liveChat = Main.liveChat + "Rank Updated for " + player.name + " [white]to [gold]Super Active [white]Player!" + "\n";
-                        Call.sendMessage("Rank Updated for " + player.name + " [white]to [gold]Super Active [white]Player!");
-                    }
-                }
-            } else {
-                if (Main.database.get(player.uuid).getRank() == 1) {
-                    pi d = Main.database.get(player.uuid);
-                    if (d.getTP() > 8 * 60 * 60 && d.getGP() > 15) {
-                        Main.liveChat = Main.liveChat + "Rank Updated for " + player.name + " [white]to [accent]Active Player[white]!" + "\n";
-                        Call.sendMessage("Rank Updated for " + player.name + " [white]to [accent]Active Player[white]!");
-                    }
-                } else if (Main.database.get(player.uuid).getRank() == 2) {
-                    pi d = Main.database.get(player.uuid);
-                    if (d.getTP() > 24 * 60 * 60 && d.getGP() > 45) {
-                        Main.liveChat = Main.liveChat + "Rank Updated for " + player.name + " [white]to [gold]Super Active [white]Player!" + "\n";
-                        Call.sendMessage("Rank Updated for " + player.name + " [white]to [gold]Super Active [white]Player!");
-                    }
-                }
-            }
-        }
     }
     public static String noColors(String string){
         String finalString = string;
@@ -211,15 +124,20 @@ public class byteCode {
                 .limit(length)
                 .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
                 .toString();
-        if (Main.keyList.containsKey(hash)) {
-            return hash(length);
-        } else {
+        if (!Main.adata.has(hash)) {
             return hash;
         }
+        return hash(length);
     }
-    public static String dec(String string) {
+    public static String dec(String string) { //discord escape codes
         return string.replace("@", "\\@").replace("*","\\*").replace("~","\\~").replace("`","\\`").replace("|","\\|").replace("_","\\_");
     }
+    public static Boolean safeName(String name) {
+        if (noColors(name).equals("")) return false;
+        List<String> improper = Arrays.asList("IGGAMES","fuck","nazi","hitler");
+        name = noColors(name);
+        return improper.parallelStream().anyMatch(name::contains);
+    };
 }
 /*
 if (arg[1].startsWith("#") && arg[1].length() > 3 && Strings.canParseInt(arg[1].substring(1))){

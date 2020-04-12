@@ -1,7 +1,7 @@
 {
-  "name": "CN-Plugin",
+  "name": "Database",
   "author": "L0615T1C5.216AC:9437 [Impact Phd]",
-  "main": "CN.Main",
-  "description": "CN's Plugin, has a few features.",
-  "version": 104.10
+  "main": "D.Main",
+  "description": "A Basic database anyone can use.",
+  "version": 104
 }
