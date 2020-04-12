@@ -2,11 +2,10 @@ package CN;
 
 import arc.Core;
 import arc.Events;
-import arc.util.CommandHandler;
-import arc.util.Log;
-import arc.util.Strings;
+import arc.util.*;
 import arc.util.Timer;
 import mindustry.Vars;
+import mindustry.content.Blocks;
 import mindustry.content.Items;
 import mindustry.entities.traits.Entity;
 import mindustry.entities.type.Player;
@@ -15,8 +14,12 @@ import mindustry.game.EventType;
 import mindustry.game.Team;
 import mindustry.game.Teams;
 import mindustry.gen.Call;
+import mindustry.net.Administration;
 import mindustry.plugin.Plugin;
+import mindustry.world.Block;
 import mindustry.world.blocks.storage.CoreBlock;
+import mindustry.world.meta.BlockStat;
+import mindustry.world.meta.StatCategory;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.DiscordApiBuilder;
 import org.javacord.api.entity.channel.Channel;
@@ -53,6 +56,7 @@ public class Main extends Plugin {
     public HashMap<String, Integer> loginAttempts = new HashMap<>();
     public int halpX;
     public int halpY;
+    public String ruleKey;
     //discord shat
     private final Long CDT = 300L;
     private DiscordApi api = null;
@@ -108,16 +112,35 @@ public class Main extends Plugin {
         Cycle c = new Cycle(Thread.currentThread());
         c.setDaemon(false);
         c.start();
+        //Read rules key
+        ruleKey = byteCode.hash(8);
+        keyList.put(ruleKey, new key("Server", "readRules", "1"));
         //auto =========================================================================================================
         Events.on(EventType.PlayerJoin.class, event -> {
             Player player = event.player;
 
             if (true) { //autoban
-
+                if (player.getInfo().timesKicked * 10 > player.getInfo().timesJoined) {
+                    Log.info("[B] {0} : K/10J greater than 1/10", player.uuid);
+                    Call.onInfoMessage(player.con, "BANNED: kick / 10 join ratio grater than 1/10");
+                    Call.onInfoMessage(player.con, "BANNED: kick / 10 join ratio grater than 1/10");
+                    netServer.admins.banPlayer(player.uuid);
+                    player.getInfo().timesKicked--;
+                    player.con.kick("BANNED: kick / 10 join ratio grater than 1/10",1);
+                } else if (player.getInfo().timesKicked >= 10) {
+                    Log.info("[B] {0} : k >= 10", player.uuid);
+                    Call.onInfoMessage(player.con, "BANNED: times kicked >= 10");
+                    Call.onInfoMessage(player.con, "BANNED: times kicked >= 10");
+                    netServer.admins.banPlayer(player.uuid);
+                    player.getInfo().timesKicked--;
+                    player.con.kick("BANNED: times kicked >= 10",1);
+                }
             }
             if (true) { //autokick
-                if (player.name.equals("IGGGAMES")) {
-                    player.con.kick("Invalid name, please choose another name.");
+                if (byteCode.safeName(player.name)) {
+                    Log.info("[K] {0} : Invalid Name", player.uuid);
+                    player.getInfo().timesKicked--;
+                    player.con.kick("Invalid Name!");
                 }
 
             }
@@ -171,7 +194,8 @@ public class Main extends Plugin {
                     Call.sendMessage("Congratulations to " + player.name + " [white]for building his/her " + y * 10000 + " Block!");
                 }
             }
-
+            player.sendMessage(""+event.tile.block().buildCost);
+            //event.tile.block().stats.
             /*
             //auto congratulations
                         int y = Main.database.get(p.uuid).getTP() / 60;
@@ -185,7 +209,12 @@ public class Main extends Plugin {
     }
     @Override
     public void registerServerCommands(CommandHandler handler) {
-
+        handler.register("clearplayer", "<uuid>", "description", arg -> {
+            if (netServer.admins.getInfo(arg[0]).timesJoined > 0) {
+                netServer.admins.getInfo(arg[0]).timesKicked = 0;
+                netServer.admins.getInfo(arg[0]).lastKicked = Time.millis();
+            }
+        });
     }
     @Override
     public void registerClientCommands(CommandHandler handler) {
@@ -318,6 +347,10 @@ public class Main extends Plugin {
                                 player.updateRespawning();
                             }
                             break;
+                        case "readRules":
+                            data.put("readRules", 1);
+                            player.sendMessage("[lime]You read the Rules!");
+                            break;
                         default:
                             player.sendMessage("---ERROR---");
                             keyList.remove(arg[0]);
@@ -326,6 +359,39 @@ public class Main extends Plugin {
                     player.sendMessage("Invalid Key.");
                 }
             }
+        });
+        handler.<Player>register("rules","Sends you the server rules", (arg, player) -> {
+            player.sendMessage("Rules:\n" +
+                    "\nGeneral Rules:\n" +
+                    "1) Grief or Spam.\n" +
+                    "2) Ban/Kick evade.\n" +
+                    "3) Use exploits.\n" +
+                    "4) Nuke/Explode core, just /rtv to vhange maps.\n" +
+                    "5) Use multiple accounts.\n" +
+                    "6) Making and/or using a AFK machine will result in kick/ban.\n" +
+                    "\nDiscord Rules:\n" +
+                    "1) Name must be similar to that of in-game.\n" +
+                    "2) Spamming Caps or messages can result in ban.\n" +
+                    "3) Posting of NSFW and/or Personal information is strictly prohibited.\n" +
+                    "4) Insulting and/or bullying is not tolerated.\n" +
+                    "5) Exploiting bots will result in ban.\n" +
+                    "6) Planning to Grief, Raid or harass will result in ban.\n" +
+                    "\nServer Specific rules:\nautoban:\n" +
+                    "You will be auto banned if:\n" +
+                    "1) If kicked more 10 times.\n" +
+                    "2) If kick to join ratio is more than 1/10\n" +
+                    "\nSurvival:\n" +
+                    "1) Pixel art permitted but must be at most 32x32. Pixel art may be removed at any point by anyone. Spamming will result in ban.\n" +
+                    "2) Thorium reactors must be far away from core.\n" +
+                    "3) No more than 50 draught miners per map.\n" +
+                    "4) Absolutely no exploits allowed; whether beneficial or not.\n" +
+                    "5) Power sources must be dioded." +
+                    "\nSandbox:\n" +
+                    "1) Spamming will result in ban.\n" +
+                    "2) Builds must be constrained to 1 box. (48x48)\n" +
+                    "3) Trying to lag/crash server will result in ban.\n" +
+                    "4) Any machine that purposely makes fire or explosion will result in ban.\n\n" +
+                    "Now that you read the rules, do `[lightgray]/key " + ruleKey + "[]` to confirm you read the rules.");
         });
         //calls for help and location
         handler.<Player>register("halp","Calls for help and setups /go", (arg, player) -> {
@@ -348,7 +414,7 @@ public class Main extends Plugin {
             Log.info("[coral][[[white]" + player.name + " [coral]]: [white]Here at ([lightgray]" + halpX + "[white],[lightgray]" + halpY + "[white]). do `[lightgray]/go[white]` to come to me.");
         });
         //Shows team info
-        handler.<Player>register("myteam","[Info]", "Gives team info", (arg, player) -> {
+        handler.<Player>register("myteam", "Gives team info", (arg, player) -> {
             Teams.TeamData teamData = state.teams.get(player.getTeam());
             if (!teamData.hasCore()) {
                 player.sendMessage("Your team doesn't have a core!");
@@ -381,6 +447,12 @@ public class Main extends Plugin {
                     break;
             }
             //
+            int players = 0;
+            for (Player p : playerGroup.all()) {
+                if (p.getTeam() == player.getTeam()) {
+                    players++;
+                }
+            }
             int draug = 0;
             int spirit = 0;
             int phantom = 0;
@@ -422,6 +494,7 @@ public class Main extends Plugin {
 
             Call.onInfoMessage(player.con,
                     "Your team is " + playerTeam +
+                            "\n[]Your team has " + players + " players" +
                             "\n\n[accent]Core Resources[white]:" +
                             "\n[white]" + core.items.get(Items.copper) +        " \uF838 [#d99d73]copper" +
                             "\n[white]" + core.items.get(Items.lead) +          " \uF837 [#8c7fa9]lead" +
@@ -453,14 +526,8 @@ public class Main extends Plugin {
                             "\n");
         });
 
-        handler.<Player>register("test","<>","aaaaaaaaaaaaaa", (arg, player) -> {
-            int y = Integer.getInteger(arg[0]) / 10000;
-            float z = (float) Integer.getInteger(arg[0]) / 10000;
+        handler.<Player>register("test","<something>","aaaaaaaaaaaaaa", (arg, player) -> {
 
-            Call.sendMessage(y + " " + z);
-            if ((float) y == z) {
-                Call.sendMessage("Congratulations to " + player.name + " [white]for building his/her " + y * 10000 + " Block!");
-            }
         });
 
         if (api != null) {

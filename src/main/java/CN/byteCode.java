@@ -138,6 +138,29 @@ public class byteCode {
         name = noColors(name);
         return improper.parallelStream().anyMatch(name::contains);
     };
+    public int xpn(int level)
+    {
+        if(level >= 1 && level <= 16)
+        {
+            return (int)(Math.pow(level, 2) + 6 * level);
+        }
+        else if(level >= 17 && level <= 31)
+        {
+            return (int)( 2.5 * Math.pow(level, 2) - 40.5 * level + 360);
+        }
+        else if(level >= 32)
+        {
+            return (int)(4.5 * Math.pow(level, 2) - 162.5 * level + 2220);
+        }
+        else
+        {
+            return 0;
+        }
+    }
+    public int bbXPGainMili(int buildtime) {
+        return (int) (((0.0014457 * Math.pow(buildtime, 3)) - (0.0263212 * Math.pow(buildtime, 2)) + (buildtime * 2.31398) - (0.125684)) * 1000);
+        //0.0014457x^3 - 0.026313x^2 + 2.31398x - 0.125684
+    }
 }
 /*
 if (arg[1].startsWith("#") && arg[1].length() > 3 && Strings.canParseInt(arg[1].substring(1))){

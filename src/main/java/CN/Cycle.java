@@ -25,7 +25,7 @@ public class Cycle extends Thread{
             }
 
             try {
-                File file = new File("config\\mods\\database\\settings.json");
+                File file = new File("config\\mods\\database\\settings.cn");
                 FileWriter out = new FileWriter(file, false);
                 PrintWriter pw = new PrintWriter(out);
                 pw.println(Main.adata.toString());

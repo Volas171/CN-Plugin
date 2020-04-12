@@ -15,4 +15,5 @@ public class key {
     public String getUsername() {return username;}
     public String getAction() {return action;}
     public String getValue() {return value;}
+    public Integer getValueInt() {return Integer.parseInt(value);}
 }

@@ -1,16 +1,17 @@
 ### Description
-Basic foundation for a server like chaotic-neutral or .io . with this, you can store player data, login, and whatever you choose.
-To use this plugin, you must fork this repo and add your own code. Should the foundation have an issue, it will be fixed for you too!
+CN's Official Plugin. Has useful commands, admin commands and a reaper spawner.
 
+### Downloading a Jar
+1) go to https://github.com/L0615T1C5-216AC-9437/CN-Plugin/releases and download latest version, (not recommended to use alpha)
+2) follow #Installing
 
 ### Building a Jar
 
-1) fork this repo
-2) download src
-3) run gradlew.bat
-4) go to the plugin folder in cmd. (example: `cd C:\user\one\desk\pluginfolder\`)
-5) type `gradlew jar` and execute (`./gradlew jar` on linux)
-6) done, look for plugin.jar in `pluginfolder\build\libs\`
+1) download src
+2) run gradlew.bat
+3) go to the plugin folder in cmd. (example: `cd C:\user\one\desk\pluginfolder\`)
+4) type `gradlew jar` and execute (`./gradlew jar` on linux)
+5) done, look for plugin.jar in pluginfolder\build\libs\
 
 Note: Highly recommended to use Java 8.
 
@@ -19,10 +20,8 @@ Note: Highly recommended to use Java 8.
 Simply place the output jar from the step above in your server's `config/mods` directory and restart the server.
 List your currently installed plugins/mods by running the `mods` command.
 
-### Coniguring
-
-Make sure you  have settings.cn on `config\mods\database\`
-Then edit setings.cn like a JSON file, make sure to only edit the <data> and not other JSON objects.
+### Credits
+The original discordplugin was made by J-VdS, you can visit his repository here: https://github.com/J-VdS/DiscordPlugin
 
 ### Self Promotion
 Our discord server: http://cn-discord.ddns.net  
