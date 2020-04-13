@@ -447,7 +447,7 @@ public class discordia implements MessageCreateListener {
                                     } else {
                                         uid = arg[1];
                                     }
-                                    getTextChannel(data.getString("bl_channel_id")).sendMessage(byteCode.noColors(string) + " : " + uid);
+                                    getTextChannel(data.getString("bl_channel_admin_id")).sendMessage(byteCode.noColors(string) + " : " + uid);
                                     Main.milisecondSinceBan = Time.millis() + 250;
                                 }
                             } else if (arg.length > 1) {

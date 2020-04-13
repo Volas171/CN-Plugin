@@ -50,6 +50,7 @@ public class Main extends Plugin {
     public static Array<String> pjl = new Array<>();
     public static long milisecondSinceBan = Time.millis();
     public static Array<String> flaggedIP = new Array<>();
+    public static boolean sandbox = false;
     public HashMap<String, String> pastLogin = new HashMap<>();
     public HashMap<String, Integer> loginAttempts = new HashMap<>();
     public int halpX;
@@ -191,6 +192,26 @@ public class Main extends Plugin {
                 player.setTeam(Team.derelict);
                 player.updateRespawning();
                 player.sendMessage("[yellow] /register or /login to have full access to the server!");
+                new Object() {
+                    Player p = player;
+                    private Timer.Task task;
+
+                    {
+                        task = Timer.schedule(() -> {
+                            if (currentLogin.containsKey(p.uuid)) {
+                                task.cancel();
+                            } else if (pastLogin.containsKey(p.uuid)) {
+                                task.cancel();
+                            } else {
+                                if (p.con.isConnected()) {
+                                    p.getInfo().timesKicked--;
+                                    p.con.kick("Spectator session too long - You spent too much time as a spectator without login!");
+                                }
+                            }
+                            task.cancel();
+                        }, 20 * 60 * 60, 1);
+                    }
+                };
             }
         });
         Events.on(EventType.PlayerLeave.class, event -> {
@@ -210,6 +231,10 @@ public class Main extends Plugin {
                     }
                 };
             }
+            //pjl
+            Date thisDate = new Date();
+            SimpleDateFormat dateFormat = new SimpleDateFormat("[MM/dd/Y | HH:mm:ss] ");
+            pjl.add("[scarlet][-] [white]" + dateFormat.format(thisDate) + byteCode.nameR(player.name) + " | " + player.uuid + " | " +player.getInfo().lastIP);
         });
         Events.on(EventType.PlayerBanEvent.class, event -> {
             Player player = event.player;
@@ -288,6 +313,17 @@ public class Main extends Plugin {
                     player.sendMessage("[lightgray]Chat is Disabled.");
                 }
             }
+        });
+        Events.on(EventType.WorldLoadEvent.class, event -> {
+            sandbox = false;
+            if(state.rules.infiniteResources) {
+                sandbox = true;
+                state.wave=2222;
+            }
+        });
+        Events.on(EventType.WaveEvent.class, event -> {
+            //Sandbox
+            if(sandbox && state.wave!=2222) state.wave=2222;
         });
     }
     @Override
@@ -484,31 +520,35 @@ public class Main extends Plugin {
                             if (data.has("readRules")) {
                                 if (data.getInt("readRules") == 1) {
                                     player.sendMessage("[scarlet]You already read the Rules!");
-                                    if (data.has("verified") && data.getInt("verified") == 1) {
-                                        player.setTeam(Team.sharded);
-                                        player.updateRespawning();
-                                        Call.sendMessage("[accent]"+byteCode.noColors(player.name) + " has connected.");
-                                        //pjl
-                                        Date thisDate = new Date();
-                                        SimpleDateFormat dateFormat = new SimpleDateFormat("[MM/dd/Y | HH:mm:ss] ");
-                                        pjl.add("[lime][+] [white]" + dateFormat.format(thisDate) + byteCode.nameR(player.name) + " | " + player.uuid + " | " +player.getInfo().lastIP);
-                                    } else if (data.has("mp") && data.getInt("mp") > 15) {
-                                        player.setTeam(Team.sharded);
-                                        player.updateRespawning();
-                                        Call.sendMessage("[accent]"+byteCode.noColors(player.name) + " has connected.");
-                                        //pjl
-                                        Date thisDate = new Date();
-                                        SimpleDateFormat dateFormat = new SimpleDateFormat("[MM/dd/Y | HH:mm:ss] ");
-                                        pjl.add("[lime][+] [white]" + dateFormat.format(thisDate) + byteCode.nameR(player.name) + " | " + player.uuid + " | " +player.getInfo().lastIP);
-                                    } else {
-                                        player.sendMessage("[yellow] Wait " + (15 - data.getInt("mp")) + " more minutes or get Verified to be able to play");
-                                    }
-                                    return;
+                                } else {
+                                    data.put("readRules", 1);
+                                    player.sendMessage("[lime]You read the Rules!");
                                 }
+                            } else {
+                                data.put("readRules", 1);
+                                player.sendMessage("[lime]You read the Rules!");
                             }
-                            data.put("readRules", 1);
-                            player.sendMessage("[lime]You read the Rules!");
-                            break;
+
+                            if (data.has("verified") && data.getInt("verified") == 1) {
+                                player.setTeam(Team.sharded);
+                                player.updateRespawning();
+                                Call.sendMessage("[accent]"+byteCode.noColors(player.name) + " has connected.");
+                                //pjl
+                                Date thisDate = new Date();
+                                SimpleDateFormat dateFormat = new SimpleDateFormat("[MM/dd/Y | HH:mm:ss] ");
+                                pjl.add("[lime][+] [white]" + dateFormat.format(thisDate) + byteCode.nameR(player.name) + " | " + player.uuid + " | " +player.getInfo().lastIP);
+                            } else if (data.has("mp") && data.getInt("mp") > 15) {
+                                player.setTeam(Team.sharded);
+                                player.updateRespawning();
+                                Call.sendMessage("[accent]"+byteCode.noColors(player.name) + " has connected.");
+                                //pjl
+                                Date thisDate = new Date();
+                                SimpleDateFormat dateFormat = new SimpleDateFormat("[MM/dd/Y | HH:mm:ss] ");
+                                pjl.add("[lime][+] [white]" + dateFormat.format(thisDate) + byteCode.nameR(player.name) + " | " + player.uuid + " | " +player.getInfo().lastIP);
+                            } else {
+                                player.sendMessage("[yellow] Wait " + (15 - data.getInt("mp")) + " more minutes or get Verified to be able to play");
+                            }
+                            return;
                         default:
                             player.sendMessage("---ERROR---");
                             keyList.remove(arg[0]);
@@ -732,6 +772,34 @@ public class Main extends Plugin {
                             "\nReaper: " + reaper +
                             "\nTotal: " + All +
                             "\n");
+        });
+        //Toggles Spectator mode
+        handler.<Player>register("spectator","toggles your spectator mode", (arg, player) -> {
+            if (currentLogin.containsKey(player.uuid)) {
+                if (player.getTeam() == Team.sharded) {
+                    player.setTeam(Team.derelict);
+                    player.updateRespawning();
+                } else {
+                    JSONObject data = adata.getJSONObject(currentLogin.get(player.uuid));
+                    if (data.has("readRules") && data.getInt("readRules") == 1) {
+                        if (data.has("verified") && data.getInt("verified") == 1) {
+                            player.setTeam(Team.sharded);
+                            player.updateRespawning();
+                            Call.sendMessage("[accent]"+byteCode.noColors(player.name) + " has connected.");
+                        } else if (data.has("mp") && data.getInt("mp") > 15) {
+                            player.setTeam(Team.sharded);
+                            player.updateRespawning();
+                            Call.sendMessage("[accent]"+byteCode.noColors(player.name) + " has connected.");
+                        } else if (data.has("mp")) {
+                            player.sendMessage("[yellow] Wait " + (15 - data.getInt("mp")) + " more minutes or get Verified to be able to play");
+                        }
+                    } else {
+                        player.sendMessage("[yellow]Read the /rules to be able to play");
+                    }
+                }
+            } else {
+                player.sendMessage("[scarlet]/login or /register to use this command");
+            }
         });
         handler.<Player>register("test","<something>","aaaaaaaaaaaaaa", (arg, player) -> {
         });

@@ -89,6 +89,7 @@ public class BotThread extends Thread{
                 } else {
                     for (Player p : Vars.playerGroup.all()) {
                         if (Main.currentLogin.containsKey(p.uuid)) lijst.append(byteCode.noColors(p.name.trim()) + "\n");
+                        if (!Main.currentLogin.containsKey(p.uuid)) lijst.append(byteCode.noColors("<SPECTATOR> "+p.name.trim()) + "\n");
                     }
                 }
 

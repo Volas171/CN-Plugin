@@ -5,6 +5,8 @@ import arc.util.Log;
 import arc.util.Time;
 import mindustry.Vars;
 import mindustry.entities.type.Player;
+import mindustry.game.EventType;
+import mindustry.game.Team;
 import mindustry.gen.Call;
 import org.json.JSONObject;
 
@@ -39,6 +41,12 @@ public class Cycle extends Thread{
                     data = Main.adata.getJSONObject(Main.currentLogin.get(p.uuid));
                     data.put("mp", data.getInt("mp") + 1);
                     Call.onInfoToast(p.con, "+1 Minutes Played", 7);
+                    if (data.has("verified") && data.getInt("verified") == 0 && data.has("mp") && data.getInt("mp") == 15) {
+                        p.sendMessage("Verification complete! You can now play!");
+                        p.setTeam(Team.sharded);
+                        p.updateRespawning();
+                        Call.sendMessage("[accent]"+byteCode.noColors(p.name)+" has connected.");
+                    }
 
                     int y = data.getInt("mp") / 60;
                     float z = (float) data.getInt("mp") / 60;
