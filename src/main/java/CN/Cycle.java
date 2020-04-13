@@ -11,6 +11,8 @@ import org.json.JSONObject;
 import java.io.*;
 
 public class Cycle extends Thread{
+    public static int upTime = 0;
+
     private Thread main;
 
     public Cycle(Thread mainThread) {
@@ -18,9 +20,15 @@ public class Cycle extends Thread{
     }
 
     public void run(){
+        try {
+            Thread.sleep(60 * 1000);
+            upTime++;
+        } catch (Exception e) {
+        }
         while (main.isAlive()) {
             try {
                 Thread.sleep(60 * 1000);
+                upTime++;
             } catch (Exception e) {
             }
 
@@ -33,13 +41,19 @@ public class Cycle extends Thread{
             } catch (IOException i) {
                 i.printStackTrace();
             }
-
+            JSONObject data = new JSONObject();
             for (Player p : Vars.playerGroup.all()) {
                 if (Main.currentLogin.containsKey(p.uuid)) {
-                    JSONObject data = Main.adata.getJSONObject(Main.currentLogin.get(p.uuid));
+                    data = Main.adata.getJSONObject(Main.currentLogin.get(p.uuid));
                     data.put("mp", data.getInt("mp") + 1);
                     Call.onInfoToast(p.con, "+1 Minutes Played", 7);
                 }
+            }
+
+            int y = upTime / 5;
+            float z = (float) upTime / 5;
+            if ((float) y == z) {
+                //run
             }
         }
         Log.info(">>> Cycle Terminated");

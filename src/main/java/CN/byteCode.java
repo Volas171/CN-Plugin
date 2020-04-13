@@ -8,16 +8,14 @@ import mindustry.entities.type.Player;
 import mindustry.gen.Call;
 import mindustry.graphics.Pal;
 import mindustry.net.Administration;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 import static mindustry.Vars.*;
 
@@ -138,7 +136,7 @@ public class byteCode {
         name = noColors(name);
         return improper.parallelStream().anyMatch(name::contains);
     };
-    public int xpn(int level)
+    public static int xpn(int level)
     {
         if(level >= 1 && level <= 16)
         {
@@ -157,9 +155,48 @@ public class byteCode {
             return 0;
         }
     }
-    public int bbXPGainMili(int buildtime) {
-        return (int) (((0.0014457 * Math.pow(buildtime, 3)) - (0.0263212 * Math.pow(buildtime, 2)) + (buildtime * 2.31398) - (0.125684)) * 1000);
+    public static int bbXPGainMili(float buildTime) {
+        return (int) (((0.0014457 * Math.pow(buildTime, 3)) - (0.0263212 * Math.pow(buildTime, 2)) + (buildTime * 2.31398) - (0.125684)) * 1000);
         //0.0014457x^3 - 0.026313x^2 + 2.31398x - 0.125684
+    }
+    public static String tag(int rank, int lvl) {
+        switch (rank) {
+            case 7:
+                return "[darkgray]<[white]" + lvl + "[darkgray]>[]";
+            case 6:
+                return "[scarlet]<[white]" + lvl + "[scarlet]>[]";
+            case 5:
+                return "[royal]<[white]" + lvl + "[royal]>[]";
+            case 4:
+                return "[lime]<[white]" + lvl + "[lime]>[]";
+            case 3:
+                return "[gold]<[white]" + lvl + "[gold]>[]";
+            case 2:
+                return "[sky]<[white]" + lvl + "[sky]>[]";
+            case 1:
+                return "[accent]<[white]" + lvl + "[accent]>[]";
+            case 0:
+                return "[lightgray]<[white]" + lvl + "[lightgray]>[]";
+            default:
+                return "<ERROR>";
+        }
+    }
+    public static String censor(String string) {
+        StringBuilder builder = new StringBuilder();
+        String sentence[] = string.split(" ");
+        JSONObject badList = Main.adata.getJSONObject("badList");
+        for (String word: sentence) {
+            if (badList.has(word.toLowerCase())) {
+                builder.append(word.charAt(0));
+                for (int i = 1; i < word.length(); i++) {
+                    builder.append("*");
+                }
+            } else {
+                builder.append(word);
+            }
+            builder.append(" ");
+        }
+        return builder.toString();
     }
 }
 /*

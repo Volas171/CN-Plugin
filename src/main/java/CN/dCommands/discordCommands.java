@@ -24,6 +24,7 @@ import org.javacord.api.listener.message.MessageCreateListener;
 import org.json.JSONObject;
 
 import java.nio.channels.Channel;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -31,6 +32,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class discordCommands implements MessageCreateListener {
 
     private JSONObject data;
+    private HashMap<Long, Integer> verifyAttempts = new HashMap<>();
 
 
     public discordCommands(JSONObject data){
@@ -100,6 +102,28 @@ public class discordCommands implements MessageCreateListener {
                         event.getChannel().sendMessage("Discord Account already in use!");
                         return;
                     } else {
+                        if (verifyAttempts.containsKey(event.getMessage().getAuthor().getId())) {
+                            if (verifyAttempts.get(event.getMessage().getAuthor().getId()) > 5) {
+                                event.getChannel().sendMessage("You attempted to verify too many times! please try again later.");
+                                if (verifyAttempts.get(event.getMessage().getAuthor().getId()) == 6) {
+                                    new Object() {
+                                        long id = event.getMessage().getAuthor().getId();
+                                        private Timer.Task task;
+
+                                        {
+                                            task = Timer.schedule(() -> {
+                                                verifyAttempts.remove(id);
+                                                task.cancel();
+                                            }, 60 * 60, 1);
+                                        }
+                                    };
+                                }
+                            } else {
+                                verifyAttempts.put(event.getMessage().getAuthor().getId(), verifyAttempts.get(event.getMessage().getAuthor().getId()) +1);
+                            }
+                        } else {
+                            verifyAttempts.put(event.getMessage().getAuthor().getId(), 1);
+                        }
                         if (arg.length > 1) {
                             JSONObject login = Main.adata.getJSONObject("login-info");
                             if (login.has(arg[1])) {

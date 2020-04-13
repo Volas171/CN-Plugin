@@ -43,7 +43,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static mindustry.Vars.*;
-import static mindustry.Vars.player;
+import static mindustry.Vars.data;
 
 public class Main extends Plugin {
     //variables
@@ -52,6 +52,7 @@ public class Main extends Plugin {
     public static JSONObject adata;
     public static HashMap<String, String> currentLogin = new HashMap<>();
     public static HashMap<String, key> keyList = new HashMap<>();
+    public static boolean chat = true;
     public HashMap<String, String> pastLogin = new HashMap<>();
     public HashMap<String, Integer> loginAttempts = new HashMap<>();
     public int halpX;
@@ -112,6 +113,7 @@ public class Main extends Plugin {
         Cycle c = new Cycle(Thread.currentThread());
         c.setDaemon(false);
         c.start();
+        byteCode.loadTips();
         //Read rules key
         ruleKey = byteCode.hash(8);
         keyList.put(ruleKey, new key("Server", "readRules", "1"));
@@ -155,9 +157,29 @@ public class Main extends Plugin {
                 Log.err("============");
             }
             if (pastLogin.containsKey(player.uuid)) {
-                currentLogin.put(player.uuid, pastLogin.get(player.uuid));
-                pastLogin.remove(player.uuid);
-                player.sendMessage("[sky]Welcome back!");
+                if (!currentLogin.containsValue(pastLogin.get(player.uuid))) {
+                    currentLogin.put(player.uuid, pastLogin.get(player.uuid));
+                    pastLogin.remove(player.uuid);
+
+                    JSONObject data = adata.getJSONObject(currentLogin.get(player.uuid));
+                    if (data.has("readRules") && data.getInt("readRules") == 1) {
+                        if (data.has("verified") && data.getInt("verified") == 1) {
+                            player.setTeam(Team.sharded);
+                            player.updateRespawning();
+                        } else if (data.has("mp") && data.getInt("mp") > 15) {
+                            player.setTeam(Team.sharded);
+                            player.updateRespawning();
+                        } else {
+                            player.sendMessage("[yellow] Wait " + (15 - data.getInt("mp")) + " more minutes or get Verified to be able to play");
+                            player.setTeam(Team.derelict);
+                            player.updateRespawning();
+                        }
+                    } else {
+                        player.sendMessage("[yellow]Read the /rules to be able to play");
+                    }
+                } else {
+                    player.sendMessage("[scarlet]Error! Account is already in use in this server! If this is not you, contact a Moderator immediately");
+                }
             } else {
                 player.setTeam(Team.derelict);
                 player.updateRespawning();
@@ -166,25 +188,28 @@ public class Main extends Plugin {
         });
         Events.on(EventType.PlayerLeave.class, event -> {
             Player player = event.player;
-            pastLogin.put(player.uuid, currentLogin.get(player.uuid));
-            currentLogin.remove(player.uuid);
-            new Object() {
-                String uid = player.uuid;
-                private Timer.Task task;
+            if (currentLogin.containsKey(player.uuid)) {
+                pastLogin.put(player.uuid, currentLogin.get(player.uuid));
+                currentLogin.remove(player.uuid);
+                new Object() {
+                    String uid = player.uuid;
+                    private Timer.Task task;
 
-                {
-                    task = Timer.schedule(() -> {
-                        pastLogin.remove(uid);
-                        task.cancel();
-                    }, 30 * 60, 1);
-                }
-            };
+                    {
+                        task = Timer.schedule(() -> {
+                            pastLogin.remove(uid);
+                            task.cancel();
+                        }, 30 * 60, 1);
+                    }
+                };
+            }
         });
         Events.on(EventType.BlockBuildEndEvent.class, event -> {
             Player player = event.player;
             if (player == null) return;
             if (event.breaking) return;
             JSONObject data = adata.getJSONObject(currentLogin.get(player.uuid));
+            //auto congratulations
             if (data.has("bb")) {
                 data.put("bb", data.getInt("bb")+1);
 
@@ -194,7 +219,14 @@ public class Main extends Plugin {
                     Call.sendMessage("Congratulations to " + player.name + " [white]for building his/her " + y * 10000 + " Block!");
                 }
             }
-            player.sendMessage(""+event.tile.block().buildCost);
+            //add xp
+            data.put("xp", data.getFloat("xp") + ((float) byteCode.bbXPGainMili(event.tile.block().buildCost/60) / 10000));
+
+            if (byteCode.xpn(data.getInt("lvl")+1) < data.getFloat("xp")) {
+                player.sendMessage("Leveled Up!");
+                data.put("lvl", data.getInt("lvl") + 1);
+            }
+
             //event.tile.block().stats.
             /*
             //auto congratulations
@@ -206,6 +238,32 @@ public class Main extends Plugin {
                         }
              */
         });
+        Events.on(EventType.ServerLoadEvent.class, event -> {
+            netServer.admins.addChatFilter((player, text) -> null);
+        });
+        Events.on(EventType.PlayerChatEvent.class, event -> {
+            Player player = event.player;
+            if (!event.message.startsWith("/")) {
+                if (chat || player.isAdmin) {
+                    if (currentLogin.containsKey(player.uuid)) {
+                        JSONObject data = adata.getJSONObject(currentLogin.get(player.uuid));
+                        if (data.has("lvl") && data.has("rank")) {
+                            Call.sendMessage(byteCode.tag(data.getInt("rank"),data.getInt("lvl")) + " " + player.name + " [white]> " + byteCode.censor(event.message));
+                        } else {
+                            Call.sendMessage(player.name + " [white]> " + byteCode.censor(event.message));
+                            Log.err("============");
+                            Log.err("ERROR - 404");
+                            Log.err("`" + player.uuid + "` does not contain `lvl` or `data`");
+                            Log.err("============");
+                        }
+                    } else {
+                        Call.sendMessage("[lightgray]<SPECTATOR> []"+player.name + " [white]> " + byteCode.censor(event.message));
+                    }
+                } else {
+                    player.sendMessage("[lightgray]Chat is Disabled.");
+                }
+            }
+        });
     }
     @Override
     public void registerServerCommands(CommandHandler handler) {
@@ -214,6 +272,24 @@ public class Main extends Plugin {
                 netServer.admins.getInfo(arg[0]).timesKicked = 0;
                 netServer.admins.getInfo(arg[0]).lastKicked = Time.millis();
             }
+        });
+        handler.register("badlist", "<word>", "description", arg -> {
+            JSONObject badlist = adata.getJSONObject("badList");
+            if (badlist.has(arg[0])) {
+                Log.err("badList already containg `{}`!", arg[0]);
+            } else {
+                badlist.put(arg[0], "bad");
+            }
+            try {
+                File file = new File("config\\mods\\database\\settings.cn");
+                FileWriter out = new FileWriter(file, false);
+                PrintWriter pw = new PrintWriter(out);
+                pw.println(Main.adata.toString());
+                out.close();
+            } catch (IOException i) {
+                i.printStackTrace();
+            }
+            Log.info("Succesfully added {0} to badList!", arg[0]);
         });
     }
     @Override
@@ -234,7 +310,7 @@ public class Main extends Plugin {
                     Matcher ms = ps.matcher(arg[1]);
                     boolean special = ms.find();
 
-                    if (a && number && special) {
+                    if (a && number && special && arg[1].length() >= 8) {
                         //register username and password
                         JSONObject user = new JSONObject();
                         user.put("password", arg[1]);
@@ -249,26 +325,31 @@ public class Main extends Plugin {
                         data.put("mp",0);
                         data.put("bb",0);
                         data.put("rank",0);
+                        data.put("lvl",0);
+                        data.put("xp",0.0000);
                         data.put("verified", 0);
                         //create user data and add time joined
                         adata.put(user.getString("dataID"), data);
                         //finishing off
-                        player.sendMessage("[lime]Account created Successfully!");
-                        player.sendMessage("[sky]Get Verified to have full access to the server or wait 15 minutes.");
-                        //login player
-                        currentLogin.put(player.uuid, user.getString("dataID"));
+                        player.sendMessage("[lime]Account created Successfully! Now try to /login");
+                        player.sendMessage("[yellow]Requirements (0/2):");
+                        player.sendMessage("[yellow]> Get Verified to have full access to the server or wait 15 minutes.");
+                        player.sendMessage("[yellow]> Read the /rules");
+                        player.sendMessage("[sky]Complete all the requirements to be able to play.");
                     } else if (!a) {
-                        player.sendMessage("Your password must contain a letter");
+                        player.sendMessage("[scarlet]Your password must contain a letter");
                     } else if (!number) {
-                        player.sendMessage("Your password must contain a number");
+                        player.sendMessage("[scarlet]Your password must contain a number");
+                    } else if (arg[1].length() < 8) {
+                        player.sendMessage("[scarlet]Your password must be at least 8 characters long");
                     } else {
-                        player.sendMessage("Your password must contain a special character");
+                        player.sendMessage("[scarlet]Your password must contain a special character");
                     }
                 } else {
-                    player.sendMessage("[sky]Username is unavailable");
+                    player.sendMessage("[yellow]Username is unavailable");
                 }
             } else {
-                player.sendMessage("You are already logged in!");
+                player.sendMessage("[scarlet]You are already logged in!");
             }
         });
         handler.<Player>register("login", "<Username> <Password>", "Login into your account.", (arg, player) -> {
@@ -295,20 +376,27 @@ public class Main extends Plugin {
                 if (login.has(arg[0])) {
                     JSONObject user = login.getJSONObject(arg[0]);
                     if (user.get("password").equals(arg[1])) {
-                        currentLogin.put(player.uuid, user.getString("dataID"));
-                        player.sendMessage("[lime]Login Successful!");
-                        if (adata.has(currentLogin.get(player.uuid))) { //if adata has info of player
-                            JSONObject data = adata.getJSONObject(currentLogin.get(player.uuid));
-                            if (data.getInt("verified") == 0) {
-                                player.sendMessage("[sky]Get Verified to have full access to the server");
+                        if (!currentLogin.containsValue(user.getString("dataID"))) {
+                            currentLogin.put(player.uuid, user.getString("dataID"));
+                            player.sendMessage("[lime]Login Successful!");
+                            if (adata.has(currentLogin.get(player.uuid))) { //if adata has info of player
+                                JSONObject data = adata.getJSONObject(currentLogin.get(player.uuid));
+                                if (data.has("readRules") && data.getInt("readRules") == 1) {
+                                    if (data.has("verified") && data.getInt("verified") == 1) {
+                                        player.setTeam(Team.sharded);
+                                        player.updateRespawning();
+                                    } else if (data.has("mp") && data.getInt("mp") > 15) {
+                                        player.setTeam(Team.sharded);
+                                        player.updateRespawning();
+                                    } else if (data.has("mp")) {
+                                        player.sendMessage("[yellow] Wait " + (15 - data.getInt("mp")) + " more minutes or get Verified to be able to play");
+                                    }
+                                } else {
+                                    player.sendMessage("[yellow]Read the /rules to be able to play");
+                                }
                             }
-                            if (data.has("verified") && data.getInt("verified") == 1) {
-                                player.setTeam(Team.sharded);
-                                player.updateRespawning();
-                            } else if (data.has("mp") && data.getInt("mp") > 15) {
-                                player.setTeam(Team.sharded);
-                                player.updateRespawning();
-                            }
+                        } else {
+                            player.sendMessage("[scarlet]Error! Account is already in use in this server! If this is not you, contact a Moderator immediately");
                         }
                     } else {
                         player.sendMessage("[yellow]Username or Password is incorrect.");
@@ -341,13 +429,33 @@ public class Main extends Plugin {
                             if (keyList.get(arg[0]).getUsername().equals(data.getString("username"))) {
                                 data.put("discord-tag", keyList.get(arg[0]).getValue());
                                 data.put("verified", 1);
+                                if (!data.has("rank") || data.getInt("rank") == 0) data.put("rank", 1);
                                 keyList.remove(arg[0]);
                                 player.sendMessage("[lime]Successfully verified your account!");
-                                player.setTeam(Team.sharded);
-                                player.updateRespawning();
+                                if (data.has("readRules") && data.getInt("readRules") == 1) {
+                                    player.setTeam(Team.sharded);
+                                    player.updateRespawning();
+                                } else {
+                                    player.sendMessage("[yellow]Read the /rules to be able to play");
+                                }
                             }
                             break;
                         case "readRules":
+                            if (data.has("readRules")) {
+                                if (data.getInt("readRules") == 1) {
+                                    player.sendMessage("[scarlet]You already read the Rules!");
+                                    if (data.has("verified") && data.getInt("verified") == 1) {
+                                        player.setTeam(Team.sharded);
+                                        player.updateRespawning();
+                                    } else if (data.has("mp") && data.getInt("mp") > 15) {
+                                        player.setTeam(Team.sharded);
+                                        player.updateRespawning();
+                                    } else {
+                                        player.sendMessage("[yellow] Wait " + (15 - data.getInt("mp")) + " more minutes or get Verified to be able to play");
+                                    }
+                                    return;
+                                }
+                            }
                             data.put("readRules", 1);
                             player.sendMessage("[lime]You read the Rules!");
                             break;
@@ -524,6 +632,15 @@ public class Main extends Plugin {
                             "\nReaper: " + reaper +
                             "\nTotal: " + All +
                             "\n");
+        });
+        //Shows player info
+        handler.<Player>register("stats","Shows player stats", (arg, player) -> {
+            JSONObject data = adata.getJSONObject(currentLogin.get(player.uuid));
+            player.sendMessage("STATS:" +
+                    "\nTotal XP: " + data.getFloat("xp") +
+                    "\nTXP to next lvl: " + byteCode.xpn(data.getInt("lvl")+1) +
+                    "\nLevel: " + data.getInt("lvl") +
+                    "\nRank: " + data.getInt("rank"));
         });
 
         handler.<Player>register("test","<something>","aaaaaaaaaaaaaa", (arg, player) -> {
