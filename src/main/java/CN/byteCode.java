@@ -181,6 +181,28 @@ public class byteCode {
                 return "<ERROR>";
         }
     }
+    public static String tagName (int rank) {
+        switch (rank) {
+            case 7:
+                return "Owner";
+            case 6:
+                return "Admin";
+            case 5:
+                return "Moderator";
+            case 4:
+                return "Semi-Moderator";
+            case 3:
+                return "Reactive";
+            case 2:
+                return "Active";
+            case 1:
+                return "Verified";
+            case 0:
+                return "Unverified";
+            default:
+                return "<ERROR>";
+        }
+    }
     public static String censor(String string) {
         StringBuilder builder = new StringBuilder();
         String sentence[] = string.split(" ");

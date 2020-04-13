@@ -45,12 +45,12 @@ public class discordServerCommands implements MessageCreateListener {
     public void onMessageCreate(MessageCreateEvent event) {
         if (data.has("prefix") && data.has("bot-channel-id") && event.getChannel().getIdAsString().equals(data.getString("bot-channel-id"))) {
             if (event.getMessageContent().equalsIgnoreCase("//gameover") || event.getMessageContent().startsWith(data.getString("prefix") + "gameover")) {
-                if (!data.has("admin-role-id")) {
+                if (!data.has("admin_role_id")) {
                     if (event.isPrivateMessage()) return;
                     event.getChannel().sendMessage(commandDisabled);
                     return;
                 }
-                Role r = getRole(event.getApi(), data.getString("admin-role-id"));
+                Role r = getRole(event.getApi(), data.getString("admin_role_id"));
 
                 if (!hasPermission(r, event)) return;
                 // ------------ has permission --------------
@@ -69,12 +69,12 @@ public class discordServerCommands implements MessageCreateListener {
                 new MessageBuilder().appendCode("", mapLijst.toString()).send(event.getChannel());
 
             } else if (event.getMessageContent().startsWith("//exit") || event.getMessageContent().startsWith(data.getString("prefix") + "exit")) {
-                if (!data.has("owner-role-id")) {
+                if (!data.has("owner_role_id")) {
                     if (event.isPrivateMessage()) return;
                     event.getChannel().sendMessage(commandDisabled);
                     return;
                 }
-                Role r = getRole(event.getApi(), data.getString("owner-role-id"));
+                Role r = getRole(event.getApi(), data.getString("owner_role_id"));
                 if (!hasPermission(r, event)) return;
 
                 Vars.net.dispose(); //todo: check

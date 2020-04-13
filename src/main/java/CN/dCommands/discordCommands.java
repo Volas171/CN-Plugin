@@ -104,7 +104,7 @@ public class discordCommands implements MessageCreateListener {
                     } else {
                         if (verifyAttempts.containsKey(event.getMessage().getAuthor().getId())) {
                             if (verifyAttempts.get(event.getMessage().getAuthor().getId()) > 5) {
-                                event.getChannel().sendMessage("You attempted to verify too many times! please try again later.");
+                                event.getChannel().sendMessage("<@" + event.getMessage().getAuthor().getIdAsString() + ">, You attempted to verify too many times! please try again later.");
                                 if (verifyAttempts.get(event.getMessage().getAuthor().getId()) == 6) {
                                     new Object() {
                                         long id = event.getMessage().getAuthor().getId();

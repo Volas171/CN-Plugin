@@ -9,6 +9,7 @@ import mindustry.gen.Call;
 import org.json.JSONObject;
 
 import java.io.*;
+import java.util.Random;
 
 public class Cycle extends Thread{
     public static int upTime = 0;
@@ -53,7 +54,8 @@ public class Cycle extends Thread{
             int y = upTime / 5;
             float z = (float) upTime / 5;
             if ((float) y == z) {
-                //run
+                Random rand = new Random();
+                Call.sendMessage("[accent]"+byteCode.tips[rand.nextInt(byteCode.tips.length)]);
             }
         }
         Log.info(">>> Cycle Terminated");

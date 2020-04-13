@@ -2,6 +2,7 @@ package CN;
 
 import CN.dCommands.discordCommands;
 import CN.dCommands.discordServerCommands;
+import CN.dCommands.discordia;
 import org.javacord.api.DiscordApi;
 
 import org.javacord.api.entity.channel.Channel;
@@ -25,6 +26,7 @@ public class BotThread extends Thread{
         //communication commands
         api.addMessageCreateListener(new discordCommands(data));
         api.addMessageCreateListener(new discordServerCommands(data));
+        api.addMessageCreateListener(new discordia(data, api));
     }
 
     public void run(){

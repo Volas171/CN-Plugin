@@ -5,21 +5,15 @@ import arc.Events;
 import arc.util.*;
 import arc.util.Timer;
 import mindustry.Vars;
-import mindustry.content.Blocks;
 import mindustry.content.Items;
-import mindustry.entities.traits.Entity;
 import mindustry.entities.type.Player;
 import mindustry.entities.type.Unit;
 import mindustry.game.EventType;
 import mindustry.game.Team;
 import mindustry.game.Teams;
 import mindustry.gen.Call;
-import mindustry.net.Administration;
 import mindustry.plugin.Plugin;
-import mindustry.world.Block;
 import mindustry.world.blocks.storage.CoreBlock;
-import mindustry.world.meta.BlockStat;
-import mindustry.world.meta.StatCategory;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.DiscordApiBuilder;
 import org.javacord.api.entity.channel.Channel;
@@ -27,7 +21,6 @@ import org.javacord.api.entity.channel.TextChannel;
 import org.javacord.api.entity.message.MessageBuilder;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.entity.permission.Role;
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
@@ -38,7 +31,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -53,6 +45,7 @@ public class Main extends Plugin {
     public static HashMap<String, String> currentLogin = new HashMap<>();
     public static HashMap<String, key> keyList = new HashMap<>();
     public static boolean chat = true;
+    public static HashMap<Integer, Player> idTempDatabase = new HashMap<>();
     public HashMap<String, String> pastLogin = new HashMap<>();
     public HashMap<String, Integer> loginAttempts = new HashMap<>();
     public int halpX;
@@ -166,9 +159,11 @@ public class Main extends Plugin {
                         if (data.has("verified") && data.getInt("verified") == 1) {
                             player.setTeam(Team.sharded);
                             player.updateRespawning();
+                            Call.sendMessage("[accent]"+byteCode.noColors(player.name) + " has connected.");
                         } else if (data.has("mp") && data.getInt("mp") > 15) {
                             player.setTeam(Team.sharded);
                             player.updateRespawning();
+                            Call.sendMessage("[accent]"+byteCode.noColors(player.name) + " has connected.");
                         } else {
                             player.sendMessage("[yellow] Wait " + (15 - data.getInt("mp")) + " more minutes or get Verified to be able to play");
                             player.setTeam(Team.derelict);
@@ -385,9 +380,11 @@ public class Main extends Plugin {
                                     if (data.has("verified") && data.getInt("verified") == 1) {
                                         player.setTeam(Team.sharded);
                                         player.updateRespawning();
+                                        Call.sendMessage("[accent]"+byteCode.noColors(player.name) + " has connected.");
                                     } else if (data.has("mp") && data.getInt("mp") > 15) {
                                         player.setTeam(Team.sharded);
                                         player.updateRespawning();
+                                        Call.sendMessage("[accent]"+byteCode.noColors(player.name) + " has connected.");
                                     } else if (data.has("mp")) {
                                         player.sendMessage("[yellow] Wait " + (15 - data.getInt("mp")) + " more minutes or get Verified to be able to play");
                                     }
@@ -435,6 +432,7 @@ public class Main extends Plugin {
                                 if (data.has("readRules") && data.getInt("readRules") == 1) {
                                     player.setTeam(Team.sharded);
                                     player.updateRespawning();
+                                    Call.sendMessage("[accent]"+byteCode.noColors(player.name) + " has connected.");
                                 } else {
                                     player.sendMessage("[yellow]Read the /rules to be able to play");
                                 }
@@ -447,9 +445,11 @@ public class Main extends Plugin {
                                     if (data.has("verified") && data.getInt("verified") == 1) {
                                         player.setTeam(Team.sharded);
                                         player.updateRespawning();
+                                        Call.sendMessage("[accent]"+byteCode.noColors(player.name) + " has connected.");
                                     } else if (data.has("mp") && data.getInt("mp") > 15) {
                                         player.setTeam(Team.sharded);
                                         player.updateRespawning();
+                                        Call.sendMessage("[accent]"+byteCode.noColors(player.name) + " has connected.");
                                     } else {
                                         player.sendMessage("[yellow] Wait " + (15 - data.getInt("mp")) + " more minutes or get Verified to be able to play");
                                     }
@@ -500,6 +500,41 @@ public class Main extends Plugin {
                     "3) Trying to lag/crash server will result in ban.\n" +
                     "4) Any machine that purposely makes fire or explosion will result in ban.\n\n" +
                     "Now that you read the rules, do `[lightgray]/key " + ruleKey + "[]` to confirm you read the rules.");
+        });
+        //Shows player info
+        handler.<Player>register("stats","Shows your stats", (arg, player) -> {
+            JSONObject data = adata.getJSONObject(currentLogin.get(player.uuid));
+            int txptl = byteCode.xpn(data.getInt("lvl")+1) - byteCode.xpn(data.getInt("lvl"));
+            int xpil = (int) data.getFloat("xp") - byteCode.xpn(data.getInt("lvl"));
+            int ten = xpil / (txptl / 10);
+
+            StringBuilder builder = new StringBuilder();
+            builder.append("Total XP: "+data.getFloat("xp"));
+            builder.append("\nLevel: "+data.getInt("lvl"));
+            builder.append("\nRank: "+data.getInt("rank")+" - "+byteCode.tagName(data.getInt("rank")));
+            builder.append("\n<");
+            for (int i = 0; i < ten; i++) {
+                builder.append("/");
+            }
+            for (int i = 0; i < 10 - ten; i++) {
+                builder.append("-");
+            }
+            builder.append(">");
+            builder.append("\n"+xpil+"XP / "+txptl+"XP until next level");
+            player.sendMessage(builder.toString());
+
+        });
+        //list of all players
+        handler.<Player>register("players","list of all players", (arg, player) -> {
+            StringBuilder builder = new StringBuilder();
+            builder.append("[accent]List of players: \n");
+            for (Player p : playerGroup.all()) {
+                if (currentLogin.containsKey(p.uuid)) {
+                    JSONObject data = Main.adata.getJSONObject(currentLogin.get(p.uuid));
+                    builder.append(byteCode.tag(data.getInt("rank"),data.getInt("lvl"))).append(" ").append(byteCode.nameR(p.name)).append(" [white]: #").append(p.id);
+                }
+            }
+            player.sendMessage(builder.toString());
         });
         //calls for help and location
         handler.<Player>register("halp","Calls for help and setups /go", (arg, player) -> {
@@ -633,18 +668,10 @@ public class Main extends Plugin {
                             "\nTotal: " + All +
                             "\n");
         });
-        //Shows player info
-        handler.<Player>register("stats","Shows player stats", (arg, player) -> {
-            JSONObject data = adata.getJSONObject(currentLogin.get(player.uuid));
-            player.sendMessage("STATS:" +
-                    "\nTotal XP: " + data.getFloat("xp") +
-                    "\nTXP to next lvl: " + byteCode.xpn(data.getInt("lvl")+1) +
-                    "\nLevel: " + data.getInt("lvl") +
-                    "\nRank: " + data.getInt("rank"));
-        });
-
         handler.<Player>register("test","<something>","aaaaaaaaaaaaaa", (arg, player) -> {
-
+            String pid= arg[0].replaceAll("[^0-9]", "");
+            float x = Float.parseFloat(pid)/10;
+            player.sendMessage((int) x + "");
         });
 
         if (api != null) {
@@ -668,7 +695,7 @@ public class Main extends Plugin {
 
             handler.<Player>register("gr", "[player] [reason...]", "Report a griefer by id (use '/gr' to get a list of ids)", (args, player) -> {
                 //https://github.com/Anuken/Mindustry/blob/master/core/src/io/anuke/mindustry/core/NetServer.java#L300-L351
-                if (!(settings.has("gr-channel-id") && settings.has("mod-role-id"))) {
+                if (!(settings.has("gr-channel-id") && settings.has("mod_role_id"))) {
                     player.sendMessage("[scarlet]This command is disabled.");
                     return;
                 }
@@ -721,7 +748,7 @@ public class Main extends Plugin {
                             player.sendMessage("[scarlet]Only players on your team can be reported.");
                         } else {
                             TextChannel tc = this.getTextChannel(settings.getString("gr-channel-id"));
-                            Role r = this.getRole(settings.getString("mod-role-id"));
+                            Role r = this.getRole(settings.getString("mod_role_id"));
                             if (tc == null || r == null) {
                                 player.sendMessage("[scarlet]This command is disabled.");
                                 return;
