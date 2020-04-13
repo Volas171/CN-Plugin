@@ -25,30 +25,60 @@ public class byteCode {
 
     //code
     public static String nameR(String name) {return name.replaceAll("\\[", "[[");}
-    public static String rankI(int i) {
-        switch (i) {
-            case 7:
-                return "[accent]<[scarlet]\uE814[accent]>";
-            case 6:
-                return "[accent]<[royal]\uE828[accent]>";
-            case 5:
-                return "[accent]<[lightgray]\uE80F[accent]>";
-            case 4:
-                return "[accent]<[lime]\uE85B[accent]>";
-            case 3:
-                return "[accent]<[gold]\uE80E[accent]>";
-            case 2:
-                return "[accent]<\uE809>";
-            case 1:
-                return "[accent]<>";
-            case 0:
-                return "[lightgray]<>";
-            default:
-                return "ERR";
+    public static String ban(String IDuuid, String reason, String who) {
+        //setup
+        Date thisDate = new Date();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("[MM/dd/Y | HH:mm:ss] ");
+        String uuid = null;
+        String nameR = null;
+        boolean proceed = false;
+
+        //ban
+        if (IDuuid.startsWith("#") && IDuuid.length() > 3 && Strings.canParseInt(IDuuid.substring(1))) {
+            int id = Strings.parseInt(IDuuid.substring(1));
+            Player p = playerGroup.getByID(id);
+            if (p == null) {
+                return "Player ID " + id + " not found.";
+            } else if (p.isAdmin) {
+                return "Did you really expect to be able to ban a admin?";
+            }
+            Main.flaggedIP.add(p.getInfo().lastIP);
+            nameR = nameR(p.name);
+            uuid = p.uuid;
+            proceed = true;
+            p.con.kick(reason);
+        } else if (IDuuid.startsWith("#")) {
+            return "ID can only contain numbers!"; //if contains letters
+        } else if (netServer.admins.getInfo(IDuuid).timesJoined > 0) {
+            Administration.PlayerInfo p = netServer.admins.getInfo(IDuuid);
+            nameR = nameR(p.lastName);
+            uuid = IDuuid;
+            //check for admin
+            for (Administration.PlayerInfo pi : netServer.admins.getAdmins()) {
+                if (pi.id.equals(IDuuid)) {
+                    return "Did you really expected to ban a admin?";
+                }
+            }
+            proceed = true;
+        } else {
+            return "UUID not found!"; // not found
         }
-    }
-    public static String verifiedI() {
-        return "<[sky]\uE848[accent]>";
+        if (proceed) {
+            netServer.admins.banPlayer(uuid);
+            try {
+                File file = new File("bl.cn");
+                FileWriter out = new FileWriter(file, true);
+                PrintWriter pw = new PrintWriter(out);
+                pw.println(dateFormat.format(thisDate) + nameR + " | " + uuid + " | " + reason + " | by: " + who + " ;");
+                out.close();
+            } catch (IOException i) {
+                i.printStackTrace();
+            }
+            Main.milisecondSinceBan = Time.millis() + 250;
+            return dateFormat.format(thisDate) + nameR + " | " + reason + " | by: " + who + " ;";
+        }
+        Log.err("Ban got past return!");
+        return "error";
     }
     public static Integer sti(String Input) {
         if (Strings.canParseInt(Input)) {

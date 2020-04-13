@@ -2,6 +2,7 @@ package CN;
 
 import arc.Core;
 import arc.Events;
+import arc.struct.Array;
 import arc.util.*;
 import arc.util.Timer;
 import mindustry.Vars;
@@ -46,6 +47,9 @@ public class Main extends Plugin {
     public static HashMap<String, key> keyList = new HashMap<>();
     public static boolean chat = true;
     public static HashMap<Integer, Player> idTempDatabase = new HashMap<>();
+    public static Array<String> pjl = new Array<>();
+    public static long milisecondSinceBan = Time.millis();
+    public static Array<String> flaggedIP = new Array<>();
     public HashMap<String, String> pastLogin = new HashMap<>();
     public HashMap<String, Integer> loginAttempts = new HashMap<>();
     public int halpX;
@@ -160,10 +164,18 @@ public class Main extends Plugin {
                             player.setTeam(Team.sharded);
                             player.updateRespawning();
                             Call.sendMessage("[accent]"+byteCode.noColors(player.name) + " has connected.");
+                            //pjl
+                            Date thisDate = new Date();
+                            SimpleDateFormat dateFormat = new SimpleDateFormat("[MM/dd/Y | HH:mm:ss] ");
+                            pjl.add("[lime][+] [white]" + dateFormat.format(thisDate) + byteCode.nameR(player.name) + " | " + player.uuid + " | " +player.getInfo().lastIP);
                         } else if (data.has("mp") && data.getInt("mp") > 15) {
                             player.setTeam(Team.sharded);
                             player.updateRespawning();
                             Call.sendMessage("[accent]"+byteCode.noColors(player.name) + " has connected.");
+                            //pjl
+                            Date thisDate = new Date();
+                            SimpleDateFormat dateFormat = new SimpleDateFormat("[MM/dd/Y | HH:mm:ss] ");
+                            pjl.add("[lime][+] [white]" + dateFormat.format(thisDate) + byteCode.nameR(player.name) + " | " + player.uuid + " | " +player.getInfo().lastIP);
                         } else {
                             player.sendMessage("[yellow] Wait " + (15 - data.getInt("mp")) + " more minutes or get Verified to be able to play");
                             player.setTeam(Team.derelict);
@@ -182,6 +194,24 @@ public class Main extends Plugin {
             }
         });
         Events.on(EventType.PlayerLeave.class, event -> {
+            Player player = event.player;
+            if (currentLogin.containsKey(player.uuid)) {
+                pastLogin.put(player.uuid, currentLogin.get(player.uuid));
+                currentLogin.remove(player.uuid);
+                new Object() {
+                    String uid = player.uuid;
+                    private Timer.Task task;
+
+                    {
+                        task = Timer.schedule(() -> {
+                            pastLogin.remove(uid);
+                            task.cancel();
+                        }, 30 * 60, 1);
+                    }
+                };
+            }
+        });
+        Events.on(EventType.PlayerBanEvent.class, event -> {
             Player player = event.player;
             if (currentLogin.containsKey(player.uuid)) {
                 pastLogin.put(player.uuid, currentLogin.get(player.uuid));
@@ -218,7 +248,7 @@ public class Main extends Plugin {
             data.put("xp", data.getFloat("xp") + ((float) byteCode.bbXPGainMili(event.tile.block().buildCost/60) / 10000));
 
             if (byteCode.xpn(data.getInt("lvl")+1) < data.getFloat("xp")) {
-                player.sendMessage("Leveled Up!");
+                Call.onInfoToast(player.con,"[lime]Leveled Up!", 10);
                 data.put("lvl", data.getInt("lvl") + 1);
             }
 
@@ -381,10 +411,18 @@ public class Main extends Plugin {
                                         player.setTeam(Team.sharded);
                                         player.updateRespawning();
                                         Call.sendMessage("[accent]"+byteCode.noColors(player.name) + " has connected.");
+                                        //pjl
+                                        Date thisDate = new Date();
+                                        SimpleDateFormat dateFormat = new SimpleDateFormat("[MM/dd/Y | HH:mm:ss] ");
+                                        pjl.add("[lime][+] [white]" + dateFormat.format(thisDate) + byteCode.nameR(player.name) + " | " + player.uuid + " | " +player.getInfo().lastIP);
                                     } else if (data.has("mp") && data.getInt("mp") > 15) {
                                         player.setTeam(Team.sharded);
                                         player.updateRespawning();
                                         Call.sendMessage("[accent]"+byteCode.noColors(player.name) + " has connected.");
+                                        //pjl
+                                        Date thisDate = new Date();
+                                        SimpleDateFormat dateFormat = new SimpleDateFormat("[MM/dd/Y | HH:mm:ss] ");
+                                        pjl.add("[lime][+] [white]" + dateFormat.format(thisDate) + byteCode.nameR(player.name) + " | " + player.uuid + " | " +player.getInfo().lastIP);
                                     } else if (data.has("mp")) {
                                         player.sendMessage("[yellow] Wait " + (15 - data.getInt("mp")) + " more minutes or get Verified to be able to play");
                                     }
@@ -433,6 +471,10 @@ public class Main extends Plugin {
                                     player.setTeam(Team.sharded);
                                     player.updateRespawning();
                                     Call.sendMessage("[accent]"+byteCode.noColors(player.name) + " has connected.");
+                                    //pjl
+                                    Date thisDate = new Date();
+                                    SimpleDateFormat dateFormat = new SimpleDateFormat("[MM/dd/Y | HH:mm:ss] ");
+                                    pjl.add("[lime][+] [white]" + dateFormat.format(thisDate) + byteCode.nameR(player.name) + " | " + player.uuid + " | " +player.getInfo().lastIP);
                                 } else {
                                     player.sendMessage("[yellow]Read the /rules to be able to play");
                                 }
@@ -446,10 +488,18 @@ public class Main extends Plugin {
                                         player.setTeam(Team.sharded);
                                         player.updateRespawning();
                                         Call.sendMessage("[accent]"+byteCode.noColors(player.name) + " has connected.");
+                                        //pjl
+                                        Date thisDate = new Date();
+                                        SimpleDateFormat dateFormat = new SimpleDateFormat("[MM/dd/Y | HH:mm:ss] ");
+                                        pjl.add("[lime][+] [white]" + dateFormat.format(thisDate) + byteCode.nameR(player.name) + " | " + player.uuid + " | " +player.getInfo().lastIP);
                                     } else if (data.has("mp") && data.getInt("mp") > 15) {
                                         player.setTeam(Team.sharded);
                                         player.updateRespawning();
                                         Call.sendMessage("[accent]"+byteCode.noColors(player.name) + " has connected.");
+                                        //pjl
+                                        Date thisDate = new Date();
+                                        SimpleDateFormat dateFormat = new SimpleDateFormat("[MM/dd/Y | HH:mm:ss] ");
+                                        pjl.add("[lime][+] [white]" + dateFormat.format(thisDate) + byteCode.nameR(player.name) + " | " + player.uuid + " | " +player.getInfo().lastIP);
                                     } else {
                                         player.sendMessage("[yellow] Wait " + (15 - data.getInt("mp")) + " more minutes or get Verified to be able to play");
                                     }
@@ -503,26 +553,41 @@ public class Main extends Plugin {
         });
         //Shows player info
         handler.<Player>register("stats","Shows your stats", (arg, player) -> {
-            JSONObject data = adata.getJSONObject(currentLogin.get(player.uuid));
-            int txptl = byteCode.xpn(data.getInt("lvl")+1) - byteCode.xpn(data.getInt("lvl"));
-            int xpil = (int) data.getFloat("xp") - byteCode.xpn(data.getInt("lvl"));
-            int ten = xpil / (txptl / 10);
+            if (currentLogin.containsKey(player.uuid)) {
+                JSONObject data = adata.getJSONObject(currentLogin.get(player.uuid));
+                int txptl = byteCode.xpn(data.getInt("lvl") + 1) - byteCode.xpn(data.getInt("lvl"));
+                int xpil = (int) data.getFloat("xp") - byteCode.xpn(data.getInt("lvl"));
+                int ten = xpil / (txptl / 10);
 
-            StringBuilder builder = new StringBuilder();
-            builder.append("Total XP: "+data.getFloat("xp"));
-            builder.append("\nLevel: "+data.getInt("lvl"));
-            builder.append("\nRank: "+data.getInt("rank")+" - "+byteCode.tagName(data.getInt("rank")));
-            builder.append("\n<");
-            for (int i = 0; i < ten; i++) {
-                builder.append("/");
+                StringBuilder builder = new StringBuilder();
+                builder.append("Total XP: " + data.getFloat("xp"));
+                builder.append("\nLevel: " + data.getInt("lvl"));
+                builder.append("\nRank: " + data.getInt("rank") + " - " + byteCode.tagName(data.getInt("rank")));
+                builder.append("\n<");
+                for (int i = 0; i < ten; i++) {
+                    builder.append("/");
+                }
+                for (int i = 0; i < 10 - ten; i++) {
+                    builder.append("-");
+                }
+                builder.append(">");
+                builder.append("\n" + xpil + "XP / " + txptl + "XP until next level").append("\n");
+                builder.append("name : ").append(player.name).append("\n");
+                builder.append("times joined : ").append(player.getInfo().timesJoined).append("\n");
+                builder.append("times kicked : ").append(player.getInfo().timesKicked).append("\n");
+                builder.append("uuid : ").append(player.uuid).append("\n");
+                for (String keyStr : data.keySet()) {
+                    Object keyvalue = data.get(keyStr);
+                    //Print key and value
+                    if (keyStr.equals("lvl"))  continue;
+                    if (keyStr.equals("rank")) continue;
+                    if (keyStr.equals("xp")) continue;
+                    builder.append("[white]"+keyStr + ": [lightgray]" + keyvalue).append("\n");
+                }
+                player.sendMessage(builder.toString());
+            } else {
+                player.sendMessage("[scarlet]/login or /register to use this command!");
             }
-            for (int i = 0; i < 10 - ten; i++) {
-                builder.append("-");
-            }
-            builder.append(">");
-            builder.append("\n"+xpil+"XP / "+txptl+"XP until next level");
-            player.sendMessage(builder.toString());
-
         });
         //list of all players
         handler.<Player>register("players","list of all players", (arg, player) -> {
@@ -669,9 +734,6 @@ public class Main extends Plugin {
                             "\n");
         });
         handler.<Player>register("test","<something>","aaaaaaaaaaaaaa", (arg, player) -> {
-            String pid= arg[0].replaceAll("[^0-9]", "");
-            float x = Float.parseFloat(pid)/10;
-            player.sendMessage((int) x + "");
         });
 
         if (api != null) {
@@ -695,7 +757,7 @@ public class Main extends Plugin {
 
             handler.<Player>register("gr", "[player] [reason...]", "Report a griefer by id (use '/gr' to get a list of ids)", (args, player) -> {
                 //https://github.com/Anuken/Mindustry/blob/master/core/src/io/anuke/mindustry/core/NetServer.java#L300-L351
-                if (!(settings.has("gr-channel-id") && settings.has("mod_role_id"))) {
+                if (!(settings.has("gr_channel_id") && settings.has("mod_role_id"))) {
                     player.sendMessage("[scarlet]This command is disabled.");
                     return;
                 }
@@ -747,7 +809,7 @@ public class Main extends Plugin {
                         } else if (found.getTeam() != player.getTeam()) {
                             player.sendMessage("[scarlet]Only players on your team can be reported.");
                         } else {
-                            TextChannel tc = this.getTextChannel(settings.getString("gr-channel-id"));
+                            TextChannel tc = this.getTextChannel(settings.getString("gr_channel_id"));
                             Role r = this.getRole(settings.getString("mod_role_id"));
                             if (tc == null || r == null) {
                                 player.sendMessage("[scarlet]This command is disabled.");

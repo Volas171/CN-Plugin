@@ -33,21 +33,19 @@ public class Cycle extends Thread{
             } catch (Exception e) {
             }
 
-            try {
-                File file = new File("config\\mods\\database\\settings.cn");
-                FileWriter out = new FileWriter(file, false);
-                PrintWriter pw = new PrintWriter(out);
-                pw.println(Main.adata.toString());
-                out.close();
-            } catch (IOException i) {
-                i.printStackTrace();
-            }
             JSONObject data = new JSONObject();
             for (Player p : Vars.playerGroup.all()) {
                 if (Main.currentLogin.containsKey(p.uuid)) {
                     data = Main.adata.getJSONObject(Main.currentLogin.get(p.uuid));
                     data.put("mp", data.getInt("mp") + 1);
                     Call.onInfoToast(p.con, "+1 Minutes Played", 7);
+
+                    int y = data.getInt("mp") / 60;
+                    float z = (float) data.getInt("mp") / 60;
+                    if ((float) y == z) {
+                        Call.sendMessage("Congratulations to " + p.name + " [white]for being acrive for " + y + " hours!");
+                    }
+
                 }
             }
 
@@ -56,6 +54,16 @@ public class Cycle extends Thread{
             if ((float) y == z) {
                 Random rand = new Random();
                 Call.sendMessage("[accent]"+byteCode.tips[rand.nextInt(byteCode.tips.length)]);
+            }
+
+            try {
+                File file = new File("config\\mods\\database\\settings.cn");
+                FileWriter out = new FileWriter(file, false);
+                PrintWriter pw = new PrintWriter(out);
+                pw.println(Main.adata.toString());
+                out.close();
+            } catch (IOException i) {
+                i.printStackTrace();
             }
         }
         Log.info(">>> Cycle Terminated");
