@@ -400,7 +400,7 @@ public class discordia implements MessageCreateListener {
                                 if (proceed && arg[2].length() == 1 && Strings.canParseInt(arg[2])) {
                                     int prankt = Strings.parseInt(arg[2]);
                                     if (Main.currentLogin.containsKey(uid)) {
-                                        JSONObject data = Main.adata.getJSONObject(uid);
+                                        JSONObject data = Main.adata.getJSONObject(Main.currentLogin.get(player.uuid));
                                         int prank = data.getInt("rank");
                                         if (prank >= rank) {
                                             event.getChannel().sendMessage("<@" + event.getMessage().getAuthor().getIdAsString() + ">, You don't have permission to change rank to " + prankt +
