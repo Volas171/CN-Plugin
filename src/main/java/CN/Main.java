@@ -241,21 +241,7 @@ public class Main extends Plugin {
         });
         Events.on(EventType.PlayerBanEvent.class, event -> {
             Player player = event.player;
-            if (currentLogin.containsKey(player.uuid)) {
-                pastLogin.put(player.uuid, currentLogin.get(player.uuid));
-                currentLogin.remove(player.uuid);
-                new Object() {
-                    String uid = player.uuid;
-                    private Timer.Task task;
 
-                    {
-                        task = Timer.schedule(() -> {
-                            pastLogin.remove(uid);
-                            task.cancel();
-                        }, 30 * 60, 1);
-                    }
-                };
-            }
         });
 
         Events.on(EventType.BlockBuildEndEvent.class, event -> {

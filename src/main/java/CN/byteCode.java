@@ -166,8 +166,7 @@ public class byteCode {
         name = noColors(name);
         return improper.parallelStream().anyMatch(name::contains);
     };
-    public static int xpn(int level)
-    {
+    public static int xpn(int level) {
         if(level >= 1 && level <= 16)
         {
             return (int)(Math.pow(level, 2) + 6 * level);
@@ -260,6 +259,6 @@ if (arg[1].startsWith("#") && arg[1].length() > 3 && Strings.canParseInt(arg[1].
 } else if (netServer.admins.getInfo(arg[1]).timesJoined > 0) {
     //run
 } else {
-    player.sendMessage("UUID not found!");
+    player.sendMessage("UUID +not found!");
 }
 */
