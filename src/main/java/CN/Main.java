@@ -51,6 +51,7 @@ public class Main extends Plugin {
     public static long milisecondSinceBan = Time.millis();
     public static Array<String> flaggedIP = new Array<>();
     public static boolean sandbox = false;
+    public HashMap<String, Long> noXP = new HashMap<>();
     public HashMap<String, String> pastLogin = new HashMap<>();
     public HashMap<String, Integer> loginAttempts = new HashMap<>();
     public int halpX;
@@ -165,6 +166,7 @@ public class Main extends Plugin {
                             player.setTeam(Team.sharded);
                             player.updateRespawning();
                             Call.sendMessage("[accent]"+byteCode.noColors(player.name) + " has connected.");
+                            player.sendMessage("[sky]Welcome back!");
                             //pjl
                             Date thisDate = new Date();
                             SimpleDateFormat dateFormat = new SimpleDateFormat("[MM/dd/Y | HH:mm:ss] ");
@@ -173,6 +175,7 @@ public class Main extends Plugin {
                             player.setTeam(Team.sharded);
                             player.updateRespawning();
                             Call.sendMessage("[accent]"+byteCode.noColors(player.name) + " has connected.");
+                            player.sendMessage("[sky]Welcome back!");
                             //pjl
                             Date thisDate = new Date();
                             SimpleDateFormat dateFormat = new SimpleDateFormat("[MM/dd/Y | HH:mm:ss] ");
@@ -254,29 +257,35 @@ public class Main extends Plugin {
                 };
             }
         });
+
         Events.on(EventType.BlockBuildEndEvent.class, event -> {
             Player player = event.player;
             if (player == null) return;
             if (event.breaking) return;
-            JSONObject data = adata.getJSONObject(currentLogin.get(player.uuid));
-            //auto congratulations
-            if (data.has("bb")) {
-                data.put("bb", data.getInt("bb")+1);
+            if (currentLogin.containsKey(player.uuid)) {
+                JSONObject data = adata.getJSONObject(currentLogin.get(player.uuid));
+                //auto congratulations
+                if (data.has("bb")) {
+                    data.put("bb", data.getInt("bb") + 1);
 
-                int y = data.getInt("bb") / 10000;
-                float z = (float) data.getInt("bb") / 10000;
-                if ((float) y == z) {
-                    Call.sendMessage("Congratulations to " + player.name + " [white]for building his/her " + y * 10000 + " Block!");
+                    int y = data.getInt("bb") / 10000;
+                    float z = (float) data.getInt("bb") / 10000;
+                    if ((float) y == z) {
+                        Call.sendMessage("Congratulations to " + player.name + " [white]for building his/her " + y * 10000 + " Block!");
+                    }
+                }
+                //add xp
+                if (sandbox) return;
+                if (noXP.containsKey(player.uuid) && noXP.get(player.uuid) > Time.millis()) {
+                    return;
+                }
+                noXP.put(player.uuid, (long) (Time.millis() + (1000 / 2.51 * event.tile.block().buildCost / 60)));
+                data.put("xp", data.getFloat("xp") + ((float) byteCode.bbXPGainMili(event.tile.block().buildCost / 60) / 10000));
+                if (byteCode.xpn(data.getInt("lvl") + 1) < data.getFloat("xp")) {
+                    Call.onInfoToast(player.con, "[lime]Leveled Up!", 10);
+                    data.put("lvl", data.getInt("lvl") + 1);
                 }
             }
-            //add xp
-            data.put("xp", data.getFloat("xp") + ((float) byteCode.bbXPGainMili(event.tile.block().buildCost/60) / 10000));
-
-            if (byteCode.xpn(data.getInt("lvl")+1) < data.getFloat("xp")) {
-                Call.onInfoToast(player.con,"[lime]Leveled Up!", 10);
-                data.put("lvl", data.getInt("lvl") + 1);
-            }
-
             //event.tile.block().stats.
             /*
             //auto congratulations
@@ -299,6 +308,7 @@ public class Main extends Plugin {
                         JSONObject data = adata.getJSONObject(currentLogin.get(player.uuid));
                         if (data.has("lvl") && data.has("rank")) {
                             Call.sendMessage(byteCode.tag(data.getInt("rank"),data.getInt("lvl")) + " " + player.name + " [white]> " + byteCode.censor(event.message));
+                            Log.info(byteCode.noColors(byteCode.tag(data.getInt("rank"),data.getInt("lvl")) + " " + player.name + " [white]> " + event.message));
                         } else {
                             Call.sendMessage(player.name + " [white]> " + byteCode.censor(event.message));
                             Log.err("============");
@@ -308,6 +318,7 @@ public class Main extends Plugin {
                         }
                     } else {
                         Call.sendMessage("[lightgray]<SPECTATOR> []"+player.name + " [white]> " + byteCode.censor(event.message));
+                        Log.info("[lightgray]<SPECTATOR> []"+player.name + " [white]> " + byteCode.noColors(event.message));
                     }
                 } else {
                     player.sendMessage("[lightgray]Chat is Disabled.");
@@ -556,6 +567,8 @@ public class Main extends Plugin {
                 } else {
                     player.sendMessage("Invalid Key.");
                 }
+            } else {
+                player.sendMessage("[scarlet]/login or /register to use this command!");
             }
         });
         handler.<Player>register("rules","Sends you the server rules", (arg, player) -> {
@@ -595,36 +608,40 @@ public class Main extends Plugin {
         handler.<Player>register("stats","Shows your stats", (arg, player) -> {
             if (currentLogin.containsKey(player.uuid)) {
                 JSONObject data = adata.getJSONObject(currentLogin.get(player.uuid));
-                int txptl = byteCode.xpn(data.getInt("lvl") + 1) - byteCode.xpn(data.getInt("lvl"));
-                int xpil = (int) data.getFloat("xp") - byteCode.xpn(data.getInt("lvl"));
-                int ten = xpil / (txptl / 10);
+                if (data.getInt("lvl") >= 2) {
+                    int txptl = byteCode.xpn(data.getInt("lvl") + 1) - byteCode.xpn(data.getInt("lvl"));
+                    int xpil = (int) data.getFloat("xp") - byteCode.xpn(data.getInt("lvl"));
+                    int ten = xpil / (txptl / 10);
 
-                StringBuilder builder = new StringBuilder();
-                builder.append("Total XP: " + data.getFloat("xp"));
-                builder.append("\nLevel: " + data.getInt("lvl"));
-                builder.append("\nRank: " + data.getInt("rank") + " - " + byteCode.tagName(data.getInt("rank")));
-                builder.append("\n<");
-                for (int i = 0; i < ten; i++) {
-                    builder.append("/");
+                    StringBuilder builder = new StringBuilder();
+                    builder.append("Total XP: " + data.getFloat("xp"));
+                    builder.append("\nLevel: " + data.getInt("lvl"));
+                    builder.append("\nRank: " + data.getInt("rank") + " - " + byteCode.tagName(data.getInt("rank")));
+                    builder.append("\n<");
+                    for (int i = 0; i < ten; i++) {
+                        builder.append("/");
+                    }
+                    for (int i = 0; i < 10 - ten; i++) {
+                        builder.append("-");
+                    }
+                    builder.append(">");
+                    builder.append("\n" + xpil + "XP / " + txptl + "XP until next level").append("\n");
+                    builder.append("name : ").append(player.name).append("\n");
+                    builder.append("times joined : ").append(player.getInfo().timesJoined).append("\n");
+                    builder.append("times kicked : ").append(player.getInfo().timesKicked).append("\n");
+                    builder.append("uuid : ").append(player.uuid).append("\n");
+                    for (String keyStr : data.keySet()) {
+                        Object keyvalue = data.get(keyStr);
+                        //Print key and value
+                        if (keyStr.equals("lvl")) continue;
+                        if (keyStr.equals("rank")) continue;
+                        if (keyStr.equals("xp")) continue;
+                        builder.append("[white]" + keyStr + ": [lightgray]" + keyvalue).append("\n");
+                    }
+                    player.sendMessage(builder.toString());
+                } else {
+                    player.sendMessage("[scarlet]You need to be level 2 to use this command!");
                 }
-                for (int i = 0; i < 10 - ten; i++) {
-                    builder.append("-");
-                }
-                builder.append(">");
-                builder.append("\n" + xpil + "XP / " + txptl + "XP until next level").append("\n");
-                builder.append("name : ").append(player.name).append("\n");
-                builder.append("times joined : ").append(player.getInfo().timesJoined).append("\n");
-                builder.append("times kicked : ").append(player.getInfo().timesKicked).append("\n");
-                builder.append("uuid : ").append(player.uuid).append("\n");
-                for (String keyStr : data.keySet()) {
-                    Object keyvalue = data.get(keyStr);
-                    //Print key and value
-                    if (keyStr.equals("lvl"))  continue;
-                    if (keyStr.equals("rank")) continue;
-                    if (keyStr.equals("xp")) continue;
-                    builder.append("[white]"+keyStr + ": [lightgray]" + keyvalue).append("\n");
-                }
-                player.sendMessage(builder.toString());
             } else {
                 player.sendMessage("[scarlet]/login or /register to use this command!");
             }
@@ -636,7 +653,7 @@ public class Main extends Plugin {
             for (Player p : playerGroup.all()) {
                 if (currentLogin.containsKey(p.uuid)) {
                     JSONObject data = Main.adata.getJSONObject(currentLogin.get(p.uuid));
-                    builder.append(byteCode.tag(data.getInt("rank"),data.getInt("lvl"))).append(" ").append(byteCode.nameR(p.name)).append(" [white]: #").append(p.id);
+                    builder.append(byteCode.tag(data.getInt("rank"),data.getInt("lvl"))).append(" ").append(byteCode.nameR(p.name)).append(" [white]: #").append(p.id).append("\n");
                 }
             }
             player.sendMessage(builder.toString());
@@ -773,34 +790,7 @@ public class Main extends Plugin {
                             "\nTotal: " + All +
                             "\n");
         });
-        //Toggles Spectator mode
-        handler.<Player>register("spectator","toggles your spectator mode", (arg, player) -> {
-            if (currentLogin.containsKey(player.uuid)) {
-                if (player.getTeam() == Team.sharded) {
-                    player.setTeam(Team.derelict);
-                    player.updateRespawning();
-                } else {
-                    JSONObject data = adata.getJSONObject(currentLogin.get(player.uuid));
-                    if (data.has("readRules") && data.getInt("readRules") == 1) {
-                        if (data.has("verified") && data.getInt("verified") == 1) {
-                            player.setTeam(Team.sharded);
-                            player.updateRespawning();
-                            Call.sendMessage("[accent]"+byteCode.noColors(player.name) + " has connected.");
-                        } else if (data.has("mp") && data.getInt("mp") > 15) {
-                            player.setTeam(Team.sharded);
-                            player.updateRespawning();
-                            Call.sendMessage("[accent]"+byteCode.noColors(player.name) + " has connected.");
-                        } else if (data.has("mp")) {
-                            player.sendMessage("[yellow] Wait " + (15 - data.getInt("mp")) + " more minutes or get Verified to be able to play");
-                        }
-                    } else {
-                        player.sendMessage("[yellow]Read the /rules to be able to play");
-                    }
-                }
-            } else {
-                player.sendMessage("[scarlet]/login or /register to use this command");
-            }
-        });
+
         handler.<Player>register("test","<something>","aaaaaaaaaaaaaa", (arg, player) -> {
         });
 

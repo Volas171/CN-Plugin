@@ -38,22 +38,32 @@ public class Cycle extends Thread{
             JSONObject data = new JSONObject();
             for (Player p : Vars.playerGroup.all()) {
                 if (Main.currentLogin.containsKey(p.uuid)) {
-                    data = Main.adata.getJSONObject(Main.currentLogin.get(p.uuid));
-                    data.put("mp", data.getInt("mp") + 1);
-                    Call.onInfoToast(p.con, "+1 Minutes Played", 7);
-                    if (data.has("verified") && data.getInt("verified") == 0 && data.has("mp") && data.getInt("mp") == 15) {
-                        p.sendMessage("Verification complete! You can now play!");
-                        p.setTeam(Team.sharded);
-                        p.updateRespawning();
-                        Call.sendMessage("[accent]"+byteCode.noColors(p.name)+" has connected.");
-                    }
+                    if (p.getTeam() == Team.sharded) {
+                        data = Main.adata.getJSONObject(Main.currentLogin.get(p.uuid));
+                        data.put("mp", data.getInt("mp") + 1);
+                        Call.onInfoToast(p.con, "+1 Minutes Played", 7);
+                        if (data.has("verified") && data.getInt("verified") == 0 && data.has("mp") && data.getInt("mp") == 15) {
+                            p.sendMessage("Verification complete! You can now play!");
+                            p.setTeam(Team.sharded);
+                            p.updateRespawning();
+                            Call.sendMessage("[accent]" + byteCode.noColors(p.name) + " has connected.");
+                        }
 
-                    int y = data.getInt("mp") / 60;
-                    float z = (float) data.getInt("mp") / 60;
-                    if ((float) y == z) {
-                        Call.sendMessage("Congratulations to " + p.name + " [white]for being acrive for " + y + " hours!");
+                        int y = data.getInt("mp") / 60;
+                        float z = (float) data.getInt("mp") / 60;
+                        if ((float) y == z) {
+                            Call.sendMessage("Congratulations to " + p.name + " [white]for being active for " + y + " hours!");
+                        }
+                    } else if (p.getTeam() == Team.derelict) {
+                        data = Main.adata.getJSONObject(Main.currentLogin.get(p.uuid));
+                        if (data.getInt("mp") < 16) data.put("mp", data.getInt("mp") + 1);
+                        if (data.has("verified") && data.getInt("verified") == 0 && data.has("mp") && data.getInt("mp") == 15) {
+                            p.sendMessage("Verification complete! You can now play!");
+                            p.setTeam(Team.sharded);
+                            p.updateRespawning();
+                            Call.sendMessage("[accent]" + byteCode.noColors(p.name) + " has connected.");
+                        }
                     }
-
                 }
             }
 

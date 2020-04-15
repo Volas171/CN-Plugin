@@ -303,7 +303,7 @@ public class discordia implements MessageCreateListener {
                                     }
                                     p.getInfo().timesKicked--;
                                     p.con.kick(reason, 1);
-
+                                    event.getChannel().sendMessage("<@" + event.getMessage().getAuthor().getIdAsString() + ">, Kicked!");
                                 } else if (arg[1].startsWith("#")) {
                                     event.getChannel().sendMessage("<@" + event.getMessage().getAuthor().getIdAsString() + ">, ID can only contain numbers!");
                                     return;

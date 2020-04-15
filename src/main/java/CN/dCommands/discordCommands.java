@@ -173,48 +173,12 @@ public class discordCommands implements MessageCreateListener {
                     Log.err("settings.cn does not contain `discord-accounts`");
                     Log.err("============");
                 }
-
-
-                /*AtomicInteger found = new AtomicInteger();
-                Main.database.forEach((k, p) -> {
-                    if (p.getDiscordTag().contentEquals(event.getMessage().getAuthor().getDiscriminatedName())) {
-                        found.set(found.get() + 1);
-                    }
-                });
-                if (found.get() > 2) {
-                    event.getChannel().sendMessage("You too many accounts using this tag! Removing tag from all other accounts...\nUse command again to get verified.");
-                    Main.database.forEach((k, p) -> {
-                        if (p.getDiscordTag().contentEquals(event.getMessage().getAuthor().getDiscriminatedName())) {
-                            p.setVerified(false);
-                            p.setDiscordTag("N/A");
-                        }
-                    });
-                } else {
-                    String hash = byteCode.hash(6);
-                    Main.keyList.put(hash, new key("verify", event.getMessage().getAuthor().getDiscriminatedName()));
-                    event.getChannel().sendMessage("By getting verified, you agree to the following:" +
-                            "\n```1) having your discord tag saved on server" +
-                            "\n2) having your discord tag sharable in-game" +
-                            "\n3) having your <verified> revoked at any given time ```" +
-                            "\n\ndo ||/key " + hash + "|| to get verified! You have 30s!");
-
-                    new Object() {
-                        private Timer.Task task;
-                        {
-                            task = Timer.schedule(() -> {
-                                if (Main.keyList.containsKey(hash)) {
-                                    Main.keyList.remove(hash);
-                                    event.getChannel().sendMessage("<@"+event.getMessage().getAuthor().getIdAsString()+ ">, Key Expired");
-                                    task.cancel();
-                                } else {
-                                    event.getChannel().sendMessage("<@"+event.getMessage().getAuthor().getIdAsString()+ ">, Success!");
-                                    task.cancel();
-                                }
-                            }, 30, 1);
-                        }
-                    };
+            }
+            //get verified
+            else if (event.getMessageContent().startsWith(data.getString("prefix") + "resetpassword")) {
+                if (data.has("reset_link")) {
+                    event.getChannel().sendMessage("<@" + event.getMessage().getAuthor().getIdAsString() + ">, reset your password by going to " + data.getString("reset_link"));
                 }
-                */
             }
         } else if (!data.has("prefix")) {
             arc.util.Log.err("============");

@@ -186,7 +186,7 @@ public class byteCode {
         }
     }
     public static int bbXPGainMili(float buildTime) {
-        return (int) (((0.0014457 * Math.pow(buildTime, 3)) - (0.0263212 * Math.pow(buildTime, 2)) + (buildTime * 2.31398) - (0.125684)) * 1000);
+        return (int) (((0.0014457 * Math.pow(buildTime, 3)) - (0.0263212 * Math.pow(buildTime, 2)) + (buildTime * 2.31398) - (0.115084)) * 1000);
         //0.0014457x^3 - 0.026313x^2 + 2.31398x - 0.125684
     }
     public static String tag(int rank, int lvl) {
