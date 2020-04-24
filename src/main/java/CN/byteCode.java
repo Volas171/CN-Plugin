@@ -2,22 +2,11 @@ package CN;
 
 import arc.util.Log;
 import arc.util.Strings;
-import arc.util.Time;
-import mindustry.content.Fx;
-import mindustry.entities.type.Player;
-import mindustry.gen.Call;
-import mindustry.graphics.Pal;
-import mindustry.net.Administration;
 import org.json.JSONObject;
+import org.json.JSONTokener;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.text.SimpleDateFormat;
-import java.util.*;
-
-import static mindustry.Vars.*;
+import java.io.*;
+import java.util.Random;
 
 public class byteCode {
     //storage
@@ -25,60 +14,30 @@ public class byteCode {
 
     //code
     public static String nameR(String name) {return name.replaceAll("\\[", "[[");}
-    public static String ban(String IDuuid, String reason, String who) {
-        //setup
-        Date thisDate = new Date();
-        SimpleDateFormat dateFormat = new SimpleDateFormat("[MM/dd/Y | HH:mm:ss] ");
-        String uuid = null;
-        String nameR = null;
-        boolean proceed = false;
-
-        //ban
-        if (IDuuid.startsWith("#") && IDuuid.length() > 3 && Strings.canParseInt(IDuuid.substring(1))) {
-            int id = Strings.parseInt(IDuuid.substring(1));
-            Player p = playerGroup.getByID(id);
-            if (p == null) {
-                return "Player ID " + id + " not found.";
-            } else if (p.isAdmin) {
-                return "Did you really expect to be able to ban a admin?";
-            }
-            Main.flaggedIP.add(p.getInfo().lastIP);
-            nameR = nameR(p.name);
-            uuid = p.uuid;
-            proceed = true;
-            p.con.kick(reason);
-        } else if (IDuuid.startsWith("#")) {
-            return "ID can only contain numbers!"; //if contains letters
-        } else if (netServer.admins.getInfo(IDuuid).timesJoined > 0) {
-            Administration.PlayerInfo p = netServer.admins.getInfo(IDuuid);
-            nameR = nameR(p.lastName);
-            uuid = IDuuid;
-            //check for admin
-            for (Administration.PlayerInfo pi : netServer.admins.getAdmins()) {
-                if (pi.id.equals(IDuuid)) {
-                    return "Did you really expected to ban a admin?";
-                }
-            }
-            proceed = true;
-        } else {
-            return "UUID not found!"; // not found
+    public static String rankI(int i) {
+        switch (i) {
+            case 7:
+                return "[accent]<[scarlet]\uE814[accent]>";
+            case 6:
+                return "[accent]<[royal]\uE828[accent]>";
+            case 5:
+                return "[accent]<[lightgray]\uE80F[accent]>";
+            case 4:
+                return "[accent]<[lime]\uE85B[accent]>";
+            case 3:
+                return "[accent]<[gold]\uE80E[accent]>";
+            case 2:
+                return "[accent]<\uE809>";
+            case 1:
+                return "[accent]<>";
+            case 0:
+                return "[lightgray]<>";
+            default:
+                return "ERR";
         }
-        if (proceed) {
-            netServer.admins.banPlayer(uuid);
-            try {
-                File file = new File("bl.cn");
-                FileWriter out = new FileWriter(file, true);
-                PrintWriter pw = new PrintWriter(out);
-                pw.println(dateFormat.format(thisDate) + nameR + " | " + uuid + " | " + reason + " | by: " + who + " ;");
-                out.close();
-            } catch (IOException i) {
-                i.printStackTrace();
-            }
-            Main.milisecondSinceBan = Time.millis() + 250;
-            return dateFormat.format(thisDate) + nameR + " | " + reason + " | by: " + who + " ;";
-        }
-        Log.err("Ban got past return!");
-        return "error";
+    }
+    public static String verifiedI() {
+        return "<[sky]\uE848[accent]>";
     }
     public static Integer sti(String Input) {
         if (Strings.canParseInt(Input)) {
@@ -147,107 +106,140 @@ public class byteCode {
         int rightLimit = 122; //z
         Random rand = new Random();
 
-        String hash = rand.ints(leftLimit, rightLimit + 1)
+        String hah = rand.ints(leftLimit, rightLimit + 1)
                 .filter(i -> (i <= 57 || i >= 65) && (i <= 90 || i >= 97))
                 .limit(length)
                 .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
                 .toString();
-        if (!Main.adata.has(hash)) {
-            return hash;
+        if (!has(hah)) {
+            return hah;
         }
         return hash(length);
     }
     public static String dec(String string) { //discord escape codes
         return string.replace("@", "\\@").replace("*","\\*").replace("~","\\~").replace("`","\\`").replace("|","\\|").replace("_","\\_");
     }
-    public static Boolean safeName(String name) {
-        if (noColors(name).equals("")) return false;
-        List<String> improper = Arrays.asList("IGGAMES","fuck","nazi","hitler");
-        name = noColors(name);
-        return improper.parallelStream().anyMatch(name::contains);
-    };
-    public static int xpn(int level) {
-        if(level >= 1 && level <= 16)
-        {
-            return (int)(Math.pow(level, 2) + 6 * level);
-        }
-        else if(level >= 17 && level <= 31)
-        {
-            return (int)( 2.5 * Math.pow(level, 2) - 40.5 * level + 360);
-        }
-        else if(level >= 32)
-        {
-            return (int)(4.5 * Math.pow(level, 2) - 162.5 * level + 2220);
-        }
-        else
-        {
-            return 0;
-        }
-    }
-    public static int bbXPGainMili(float buildTime) {
-        return (int) (((0.0014457 * Math.pow(buildTime, 3)) - (0.0263212 * Math.pow(buildTime, 2)) + (buildTime * 2.31398) - (0.115084)) * 1000);
-        //0.0014457x^3 - 0.026313x^2 + 2.31398x - 0.125684
-    }
-    public static String tag(int rank, int lvl) {
-        switch (rank) {
-            case 7:
-                return "[darkgray]<[white]" + lvl + "[darkgray]>[]";
-            case 6:
-                return "[scarlet]<[white]" + lvl + "[scarlet]>[]";
-            case 5:
-                return "[royal]<[white]" + lvl + "[royal]>[]";
-            case 4:
-                return "[lime]<[white]" + lvl + "[lime]>[]";
-            case 3:
-                return "[gold]<[white]" + lvl + "[gold]>[]";
-            case 2:
-                return "[sky]<[white]" + lvl + "[sky]>[]";
-            case 1:
-                return "[accent]<[white]" + lvl + "[accent]>[]";
-            case 0:
-                return "[lightgray]<[white]" + lvl + "[lightgray]>[]";
-            default:
-                return "<ERROR>";
-        }
-    }
-    public static String tagName (int rank) {
-        switch (rank) {
-            case 7:
-                return "Owner";
-            case 6:
-                return "Admin";
-            case 5:
-                return "Moderator";
-            case 4:
-                return "Semi-Moderator";
-            case 3:
-                return "Reactive";
-            case 2:
-                return "Active";
-            case 1:
-                return "Verified";
-            case 0:
-                return "Unverified";
-            default:
-                return "<ERROR>";
-        }
-    }
-    public static String censor(String string) {
-        StringBuilder builder = new StringBuilder();
-        String sentence[] = string.split(" ");
-        JSONObject badList = Main.adata.getJSONObject("badList");
-        for (String word: sentence) {
-            if (badList.has(word.toLowerCase())) {
-                builder.append(word.charAt(0));
-                for (int i = 1; i < word.length(); i++) {
-                    builder.append("*");
-                }
-            } else {
-                builder.append(word);
+    public static String make(String fileName, JSONObject object) {
+        try {
+            String userHomePath = System.getProperty("user.home");
+            File file = new File(userHomePath+"/mind_db/"+fileName+".cn");
+            File path = new File(userHomePath+"/mind_db/");
+            if (!path.isDirectory()) {
+                Log.err("404 - could not find directory "+userHomePath+"/mind_db/");
+                return null;
             }
-            builder.append(" ");
+            if (!file.exists()) file.createNewFile();
+            FileWriter out = new FileWriter(file, false);
+            PrintWriter pw = new PrintWriter(out);
+            pw.println(object.toString());
+            out.close();
+            return "Done";
+        } catch (IOException i) {
+            i.printStackTrace();
+            return "error: \n```"+i.getMessage().toString()+"\n```";
         }
-        return builder.toString();
+    }
+    public static JSONObject get(String fileName) {
+        try {
+            String userHomePath = System.getProperty("user.home");
+            File file = new File(userHomePath+"/mind_db/"+fileName+".cn");
+            File path = new File(userHomePath+"/mind_db/");
+            if (!path.isDirectory()) {
+                Log.err("404 - could not find directory "+userHomePath+"/mind_db/");
+                return null;
+            }
+            if (!file.exists()) {
+                Log.err("404 - "+userHomePath+"/mind_db/"+fileName+".cn"+" not found");
+                return null;
+            }
+            FileReader fr = new FileReader(file);
+            StringBuilder builder = new StringBuilder();
+            int i;
+            while((i=fr.read())!=-1) {
+                builder.append((char)i);
+            }
+            //return null;
+            return new JSONObject(new JSONTokener(builder.toString()));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+    public static String putInt(String fileName, String key, float valueNumber) {
+        try {
+            JSONObject data = get(fileName);
+            if (data == null) return null;
+            data.put(key, valueNumber);
+
+            return save(fileName, data);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+    public static String putStr(String fileName, String key, String value) {
+        try {
+            JSONObject data = get(fileName);
+            if (data == null) return null;
+            if (!value.equals("")) {
+                data.put(key, value);
+            } else {
+                return "Error - value == \"\" and valueNumber == 0";
+            }
+
+            return save(fileName, data);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+    public static String remove(String fileName, String key) {
+        try {
+            JSONObject data = get(fileName);
+            if (data == null) return null;
+            data.remove(key);
+
+            return save(fileName, data);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+    public static String save(String fileName, JSONObject object) {
+        String userHomePath = System.getProperty("user.home");
+        File file = new File(userHomePath+"/mind_db/"+fileName+".cn");
+        File path = new File(userHomePath+"/mind_db/");
+        if (!path.isDirectory()) {
+            Log.err("404 - could not find directory "+userHomePath+"/mind_db/");
+            return null;
+        }
+        if (!file.exists()) {
+            Log.err("404 - "+userHomePath+"/mind_db/"+fileName+".cn"+" not found");
+            return null;
+        }
+        try {
+            FileWriter out = new FileWriter(file, false);
+            PrintWriter pw = new PrintWriter(out);
+            pw.println(object.toString());
+            out.close();
+            return "Done";
+        } catch (IOException it) {
+            it.printStackTrace();
+            return "error: \n```"+it.getMessage().toString()+"\n```";
+        }
+    }
+    public static Boolean has(String fileName) {
+        String userHomePath = System.getProperty("user.home");
+        File file = new File(userHomePath+"/mind_db/"+fileName+".cn");
+        File path = new File(userHomePath+"/mind_db/");
+        if (!path.isDirectory()) {
+            Log.err("404 - could not find directory "+userHomePath+"/mind_db/");
+            return false;
+        }
+        if (file.exists()) {
+            return true;
+        }
+        return false;
     }
 }
 /*
@@ -259,6 +251,6 @@ if (arg[1].startsWith("#") && arg[1].length() > 3 && Strings.canParseInt(arg[1].
 } else if (netServer.admins.getInfo(arg[1]).timesJoined > 0) {
     //run
 } else {
-    player.sendMessage("UUID +not found!");
+    player.sendMessage("UUID not found!");
 }
 */

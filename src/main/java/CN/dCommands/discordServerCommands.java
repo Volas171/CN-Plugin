@@ -1,22 +1,17 @@
-package CN.dCommands;
+package D.dCommands;
 
 import CN.byteCode;
-import arc.ApplicationListener;
 import arc.Core;
 import arc.Events;
-import arc.util.Log;
-import arc.net.Server;
-
 
 import mindustry.game.EventType.*;
 import mindustry.Vars;
 import mindustry.core.GameState;
 import mindustry.game.Team;
-import mindustry.gen.Call;
 import mindustry.maps.Map;
 
+import mindustry.net.Administration;
 import org.javacord.api.DiscordApi;
-import org.javacord.api.entity.channel.TextChannel;
 import org.javacord.api.entity.message.MessageBuilder;
 import org.javacord.api.entity.permission.Role;
 import org.javacord.api.event.message.MessageCreateEvent;
@@ -24,10 +19,6 @@ import org.javacord.api.listener.message.MessageCreateListener;
 import org.json.JSONObject;
 
 import java.util.Optional;
-//change maps
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 public class discordServerCommands implements MessageCreateListener {
     final long minMapChangeTime = 30L; //30 seconds
@@ -37,14 +28,13 @@ public class discordServerCommands implements MessageCreateListener {
     private JSONObject data;
 
 
-    public discordServerCommands(JSONObject data){
-        this.data = data;
-    }
+    public discordServerCommands(){}
 
     @Override
     public void onMessageCreate(MessageCreateEvent event) {
-        if (data.has("prefix") && data.has("bot-channel-id") && event.getChannel().getIdAsString().equals(data.getString("bot-channel-id"))) {
-            if (event.getMessageContent().equalsIgnoreCase("//gameover") || event.getMessageContent().startsWith(data.getString("prefix") + "gameover")) {
+        data = byteCode.get("settings");
+        if (data.has("prefix"+ Administration.Config.port.num()) && data.has("bot_channel_id") && event.getChannel().getIdAsString().equals(data.getString("bot_channel_id"))) {
+            if (event.getMessageContent().equalsIgnoreCase("//gameover") || event.getMessageContent().startsWith(data.getString("prefix"+Administration.Config.port.num()) + "gameover")) {
                 if (!data.has("admin_role_id")) {
                     if (event.isPrivateMessage()) return;
                     event.getChannel().sendMessage(commandDisabled);
@@ -59,7 +49,7 @@ public class discordServerCommands implements MessageCreateListener {
                 }
                 //inExtraRound = false;
                 Events.fire(new GameOverEvent(Team.crux));
-            } else if (event.getMessageContent().equalsIgnoreCase("//maps") || event.getMessageContent().startsWith(data.getString("prefix") + "maps")) {
+            } else if (event.getMessageContent().equalsIgnoreCase("//maps") || event.getMessageContent().startsWith(data.getString("prefix"+Administration.Config.port.num()) + "maps")) {
                 StringBuilder mapLijst = new StringBuilder();
                 mapLijst.append("List of available maps:\n");
                 for (Map m : Vars.maps.customMaps()) {
@@ -68,7 +58,7 @@ public class discordServerCommands implements MessageCreateListener {
                 mapLijst.append("Total number of maps: " + Vars.maps.customMaps().size);
                 new MessageBuilder().appendCode("", mapLijst.toString()).send(event.getChannel());
 
-            } else if (event.getMessageContent().startsWith("//exit") || event.getMessageContent().startsWith(data.getString("prefix") + "exit")) {
+            } else if (event.getMessageContent().startsWith("//exit") || event.getMessageContent().startsWith(data.getString("prefix"+Administration.Config.port.num()) + "exit")) {
                 if (!data.has("owner_role_id")) {
                     if (event.isPrivateMessage()) return;
                     event.getChannel().sendMessage(commandDisabled);
@@ -106,7 +96,7 @@ public class discordServerCommands implements MessageCreateListener {
             } else {
                 return true;
             }
-        } catch (Exception _){
+        } catch (Exception e){
             return false;
         }
     }

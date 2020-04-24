@@ -2,17 +2,17 @@ package CN;
 
 import arc.Core;
 import arc.Events;
-import arc.struct.Array;
 import arc.util.*;
 import arc.util.Timer;
 import mindustry.Vars;
-import mindustry.content.Items;
+import mindustry.content.Blocks;
+import mindustry.entities.traits.Entity;
 import mindustry.entities.type.Player;
-import mindustry.entities.type.Unit;
 import mindustry.game.EventType;
 import mindustry.game.Team;
 import mindustry.game.Teams;
 import mindustry.gen.Call;
+import mindustry.net.Administration;
 import mindustry.plugin.Plugin;
 import mindustry.world.blocks.storage.CoreBlock;
 import org.javacord.api.DiscordApi;
@@ -22,6 +22,7 @@ import org.javacord.api.entity.channel.TextChannel;
 import org.javacord.api.entity.message.MessageBuilder;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.entity.permission.Role;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
@@ -32,329 +33,317 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static mindustry.Vars.*;
-import static mindustry.Vars.data;
+import static mindustry.Vars.player;
 
 public class Main extends Plugin {
     //variables
     private JSONObject settings;
 
-    public static JSONObject adata;
     public static HashMap<String, String> currentLogin = new HashMap<>();
+    public static HashMap<String, Player> currentKick = new HashMap<>();
     public static HashMap<String, key> keyList = new HashMap<>();
-    public static boolean chat = true;
     public static HashMap<Integer, Player> idTempDatabase = new HashMap<>();
-    public static Array<String> pjl = new Array<>();
-    public static long milisecondSinceBan = Time.millis();
-    public static Array<String> flaggedIP = new Array<>();
-    public static boolean sandbox = false;
-    public HashMap<String, Long> noXP = new HashMap<>();
     public HashMap<String, String> pastLogin = new HashMap<>();
     public HashMap<String, Integer> loginAttempts = new HashMap<>();
-    public int halpX;
-    public int halpY;
-    public String ruleKey;
     //discord shat
     private final Long CDT = 300L;
     private DiscordApi api = null;
     private HashMap<Long, String> cooldowns = new HashMap<Long, String>(); //uuid
+    private int radi = 15;
 
     public Main() throws InterruptedException {
-        try {
-            String pureJson = Core.settings.getDataDirectory().child("mods/database/settings.cn").readString();
-            adata = new JSONObject(new JSONTokener(pureJson));
-            if (!adata.has("settings")){
-                Log.err("============");
-                Log.err("CRITICAL ERROR - 404");
-                Log.err("settings.cn does not contain `settings`");
-                Log.err("============");
-                return;
-            } else {
-                settings = adata.getJSONObject("settings");
-                Log.info("settings loaded successfully");
-            }
-        } catch (Exception e) {
-            if (e.getMessage().contains("File not found: config\\mods\\database\\settings.cn")){
-                Log.err("404 - settings.cn not found!");
-                return;
-            } else {
-                Log.err("Initialization Error!");
-                e.printStackTrace();
-                return;
-            }
-        }
-        if (adata.has("token")) {
-            try {
-                api = new DiscordApiBuilder().setToken(adata.getString("token")).login().join();
-            } catch (Exception e) {
-                if (e.getMessage().contains("READY packet")) {
-                    System.out.println("\n[ERR!] discordplugin: invalid token.\n");
-                } else {
-                    e.printStackTrace();
+        if (byteCode.get("settings") == null) {
+            Log.err("Settings Directory or file not found!");
+            return;
+        } else {
+            JSONObject settings = byteCode.get("settings");
+            if (settings.has("token"+Administration.Config.port.num())) {
+                try {
+                    api = new DiscordApiBuilder().setToken(settings.getString("token")).login().join();
+                } catch (Exception e) {
+                    if (e.getMessage().contains("READY packet")) {
+                        Log.err("\ninvalid token.\n");
+                        return;
+                    } else {
+                        e.printStackTrace();
+                        return;
+                    }
                 }
+
+                BotThread bt = new BotThread(api, Thread.currentThread(), byteCode.get("settings"));
+                bt.setDaemon(false);
+                bt.start();
+            } else {
+                Log.err("`token"+Administration.Config.port.num()+"` not found, unable to start discord bot.");
             }
         }
-        //start botThread
-        BotThread bt = new BotThread(api, Thread.currentThread(), adata.getJSONObject("settings"));
-        bt.setDaemon(false);
-        bt.start();
 
-        if (!adata.has("login-info")) {
+        if (byteCode.get("login_info") == null) {
             Log.err("============");
             Log.err("CRITICAL ERROR - 404");
-            Log.err("settings.cn does not contain `login-info`");
+            Log.err("mind_db/ does not contain `login_info.cn`");
             Log.err("============");
             return;
         }
         Cycle c = new Cycle(Thread.currentThread());
         c.setDaemon(false);
         c.start();
-        byteCode.loadTips();
-        //Read rules key
-        ruleKey = byteCode.hash(8);
-        keyList.put(ruleKey, new key("Server", "readRules", "1"));
-        //auto =========================================================================================================
+        //auto
         Events.on(EventType.PlayerJoin.class, event -> {
             Player player = event.player;
-
-            if (true) { //autoban
-                if (player.getInfo().timesKicked * 10 > player.getInfo().timesJoined) {
-                    Log.info("[B] {0} : K/10J greater than 1/10", player.uuid);
-                    Call.onInfoMessage(player.con, "BANNED: kick / 10 join ratio grater than 1/10");
-                    Call.onInfoMessage(player.con, "BANNED: kick / 10 join ratio grater than 1/10");
-                    netServer.admins.banPlayer(player.uuid);
-                    player.getInfo().timesKicked--;
-                    player.con.kick("BANNED: kick / 10 join ratio grater than 1/10",1);
-                } else if (player.getInfo().timesKicked >= 10) {
-                    Log.info("[B] {0} : k >= 10", player.uuid);
-                    Call.onInfoMessage(player.con, "BANNED: times kicked >= 10");
-                    Call.onInfoMessage(player.con, "BANNED: times kicked >= 10");
-                    netServer.admins.banPlayer(player.uuid);
-                    player.getInfo().timesKicked--;
-                    player.con.kick("BANNED: times kicked >= 10",1);
-                }
+            settings = byteCode.get("settings");
+            if (settings == null){
+                Log.err("mind_db/ does not contain `settings.cn`");
+                return;
             }
-            if (true) { //autokick
-                if (byteCode.safeName(player.name)) {
-                    Log.info("[K] {0} : Invalid Name", player.uuid);
-                    player.getInfo().timesKicked--;
-                    player.con.kick("Invalid Name!");
-                }
-
-            }
-            //final
-
-            if (settings.has("welcome-message")) {
-                player.sendMessage(settings.getString("welcome-message"));//<---------------------------------------
+            if (settings.has("welcome_message")) {
+                player.sendMessage(settings.getString("welcome_message"));//<_______________________________________
             } else {
                 Log.err("============");
                 Log.err("ERROR - 404");
-                Log.err("settings.cn does not contain `welcome-message`");
+                Log.err("settings.cn does not contain `welcome_message`");
                 Log.err("============");
             }
             if (pastLogin.containsKey(player.uuid)) {
-                if (!currentLogin.containsValue(pastLogin.get(player.uuid))) {
-                    currentLogin.put(player.uuid, pastLogin.get(player.uuid));
-                    pastLogin.remove(player.uuid);
-
-                    JSONObject data = adata.getJSONObject(currentLogin.get(player.uuid));
-                    if (data.has("readRules") && data.getInt("readRules") == 1) {
-                        if (data.has("verified") && data.getInt("verified") == 1) {
-                            player.setTeam(Team.sharded);
-                            player.updateRespawning();
-                            Call.sendMessage("[accent]"+byteCode.noColors(player.name) + " has connected.");
-                            player.sendMessage("[sky]Welcome back!");
-                            //pjl
-                            Date thisDate = new Date();
-                            SimpleDateFormat dateFormat = new SimpleDateFormat("[MM/dd/Y | HH:mm:ss] ");
-                            pjl.add("[lime][+] [white]" + dateFormat.format(thisDate) + byteCode.nameR(player.name) + " | " + player.uuid + " | " +player.getInfo().lastIP);
-                        } else if (data.has("mp") && data.getInt("mp") > 15) {
-                            player.setTeam(Team.sharded);
-                            player.updateRespawning();
-                            Call.sendMessage("[accent]"+byteCode.noColors(player.name) + " has connected.");
-                            player.sendMessage("[sky]Welcome back!");
-                            //pjl
-                            Date thisDate = new Date();
-                            SimpleDateFormat dateFormat = new SimpleDateFormat("[MM/dd/Y | HH:mm:ss] ");
-                            pjl.add("[lime][+] [white]" + dateFormat.format(thisDate) + byteCode.nameR(player.name) + " | " + player.uuid + " | " +player.getInfo().lastIP);
-                        } else {
-                            player.sendMessage("[yellow] Wait " + (15 - data.getInt("mp")) + " more minutes or get Verified to be able to play");
-                            player.setTeam(Team.derelict);
-                            player.updateRespawning();
-                        }
-                    } else {
-                        player.sendMessage("[yellow]Read the /rules to be able to play");
-                    }
-                } else {
-                    player.sendMessage("[scarlet]Error! Account is already in use in this server! If this is not you, contact a Moderator immediately");
-                }
+                currentLogin.put(player.uuid, pastLogin.get(player.uuid));
+                pastLogin.remove(player.uuid);
+                player.sendMessage("[sky]Welcome back!");
+                Call.sendMessage("[accent]"+byteCode.noColors(player.name)+" has connected.");
+                Log.info(byteCode.noColors(player.name)+" : "+player.uuid+" > has connected");
             } else {
                 player.setTeam(Team.derelict);
                 player.updateRespawning();
                 player.sendMessage("[yellow] /register or /login to have full access to the server!");
-                new Object() {
-                    Player p = player;
-                    private Timer.Task task;
-
-                    {
-                        task = Timer.schedule(() -> {
-                            if (currentLogin.containsKey(p.uuid)) {
-                                task.cancel();
-                            } else if (pastLogin.containsKey(p.uuid)) {
-                                task.cancel();
-                            } else {
-                                if (p.con.isConnected()) {
-                                    p.getInfo().timesKicked--;
-                                    p.con.kick("Spectator session too long - You spent too much time as a spectator without login!");
-                                }
-                            }
-                            task.cancel();
-                        }, 20 * 60 * 60, 1);
-                    }
-                };
             }
         });
         Events.on(EventType.PlayerLeave.class, event -> {
             Player player = event.player;
-            if (currentLogin.containsKey(player.uuid)) {
-                pastLogin.put(player.uuid, currentLogin.get(player.uuid));
+            if (player.getInfo().lastKicked > Time.millis()) {
+                JSONObject data = byteCode.get(currentLogin.get(player.uuid));
+                if (data == null) {
+                    Log.err("Account for uuid `"+player.uuid+"` missing data id `"+currentLogin.get(player.uuid)+"`!");
+                    return;
+                }
+                if (data.has("timesKicked")) {
+                    data.put("timesKicked", data.getInt("timesKicked") + 1);
+                } else {
+                    data.put("timesKicked", 1);
+                }
                 currentLogin.remove(player.uuid);
-                new Object() {
-                    String uid = player.uuid;
-                    private Timer.Task task;
-
-                    {
-                        task = Timer.schedule(() -> {
-                            pastLogin.remove(uid);
-                            task.cancel();
-                        }, 30 * 60, 1);
-                    }
-                };
+                currentKick.put(player.name, player);
             }
-            //pjl
-            Date thisDate = new Date();
-            SimpleDateFormat dateFormat = new SimpleDateFormat("[MM/dd/Y | HH:mm:ss] ");
-            pjl.add("[scarlet][-] [white]" + dateFormat.format(thisDate) + byteCode.nameR(player.name) + " | " + player.uuid + " | " +player.getInfo().lastIP);
+
+            idTempDatabase.put(player.id, player);
+            pastLogin.put(player.uuid, currentLogin.get(player.uuid));
+            currentLogin.remove(player.uuid);
+            Call.sendMessage("[accent]"+byteCode.noColors(player.name)+" has disconnected.");
+            Log.info(byteCode.noColors(player.name)+" : "+player.uuid+" > has disconnected");
+            new Object() {
+                String uid = player.uuid;
+                private Timer.Task task;
+
+                {
+                    task = Timer.schedule(() -> {
+                        pastLogin.remove(uid);
+                        task.cancel();
+                    }, 30 * 60, 1);
+                }
+            };
+
         });
         Events.on(EventType.PlayerBanEvent.class, event -> {
             Player player = event.player;
-
-        });
-
-        Events.on(EventType.BlockBuildEndEvent.class, event -> {
-            Player player = event.player;
-            if (player == null) return;
-            if (event.breaking) return;
             if (currentLogin.containsKey(player.uuid)) {
-                JSONObject data = adata.getJSONObject(currentLogin.get(player.uuid));
-                //auto congratulations
-                if (data.has("bb")) {
-                    data.put("bb", data.getInt("bb") + 1);
-
-                    int y = data.getInt("bb") / 10000;
-                    float z = (float) data.getInt("bb") / 10000;
-                    if ((float) y == z) {
-                        Call.sendMessage("Congratulations to " + player.name + " [white]for building his/her " + y * 10000 + " Block!");
-                    }
-                }
-                //add xp
-                if (sandbox) return;
-                if (noXP.containsKey(player.uuid) && noXP.get(player.uuid) > Time.millis()) {
+                JSONObject data = byteCode.get(currentLogin.get(player.uuid));
+                if (data == null) {
+                    Log.err("Account for uuid `"+player.uuid+"` missing data id `"+currentLogin.get(player.uuid)+"`!");
                     return;
                 }
-                noXP.put(player.uuid, (long) (Time.millis() + (1000 / 2.51 * event.tile.block().buildCost / 60)));
-                data.put("xp", data.getFloat("xp") + ((float) byteCode.bbXPGainMili(event.tile.block().buildCost / 60) / 10000));
-                if (byteCode.xpn(data.getInt("lvl") + 1) < data.getFloat("xp")) {
-                    Call.onInfoToast(player.con, "[lime]Leveled Up!", 10);
-                    data.put("lvl", data.getInt("lvl") + 1);
-                }
-            }
-            //event.tile.block().stats.
-            /*
-            //auto congratulations
-                        int y = Main.database.get(p.uuid).getTP() / 60;
-                        float z = (float) Main.database.get(p.uuid).getTP()/60;
-                        if ((float) y == z) {
-                            Call.sendMessage("Congratulations to " + p.name + " [white]for staying active for " + y + " Hours!");
-                            Main.liveChat = Main.liveChat + "Congratulations to " + p.name + " [white]for staying active for " + y + " Hours!\n";
-                        }
-             */
-        });
-        Events.on(EventType.ServerLoadEvent.class, event -> {
-            netServer.admins.addChatFilter((player, text) -> null);
-        });
-        Events.on(EventType.PlayerChatEvent.class, event -> {
-            Player player = event.player;
-            if (!event.message.startsWith("/")) {
-                if (chat || player.isAdmin) {
-                    if (currentLogin.containsKey(player.uuid)) {
-                        JSONObject data = adata.getJSONObject(currentLogin.get(player.uuid));
-                        if (data.has("lvl") && data.has("rank")) {
-                            Call.sendMessage(byteCode.tag(data.getInt("rank"),data.getInt("lvl")) + " " + player.name + " [white]> " + byteCode.censor(event.message));
-                            Log.info(byteCode.noColors(byteCode.tag(data.getInt("rank"),data.getInt("lvl")) + " " + player.name + " [white]> " + event.message));
-                        } else {
-                            Call.sendMessage(player.name + " [white]> " + byteCode.censor(event.message));
-                            Log.err("============");
-                            Log.err("ERROR - 404");
-                            Log.err("`" + player.uuid + "` does not contain `lvl` or `data`");
-                            Log.err("============");
-                        }
-                    } else {
-                        Call.sendMessage("[lightgray]<SPECTATOR> []"+player.name + " [white]> " + byteCode.censor(event.message));
-                        Log.info("[lightgray]<SPECTATOR> []"+player.name + " [white]> " + byteCode.noColors(event.message));
-                    }
+                if (data.has("banned")) {
+                    data.put("banned", data.getInt("banned") +1);
                 } else {
-                    player.sendMessage("[lightgray]Chat is Disabled.");
+                    data.put("Banned", 1);
                 }
+                data.put("rank", 0);
+                currentLogin.remove(player.uuid);
             }
+        });
+        Events.on(EventType.GameOverEvent.class, event -> {
+            new Object() {
+                private Timer.Task task;
+                {
+                    task = Timer.schedule(() -> {
+                        for (Player p : Vars.playerGroup.all()) {
+                            if (!Main.currentLogin.containsKey(p.uuid)) {
+                                p.con.close();
+                            }
+                        }
+                        task.cancel();
+                    }, 12, 1);
+                }
+            };
         });
         Events.on(EventType.WorldLoadEvent.class, event -> {
-            sandbox = false;
-            if(state.rules.infiniteResources) {
-                sandbox = true;
-                state.wave=2222;
+            for (Player p : Vars.playerGroup.all()) {
+                if (!Main.currentLogin.containsKey(p.uuid)) {
+                    p.con.close();
+                }
             }
-        });
-        Events.on(EventType.WaveEvent.class, event -> {
-            //Sandbox
-            if(sandbox && state.wave!=2222) state.wave=2222;
+            settings = byteCode.get("settings");
+            if (settings == null) {
+                Log.err("mind_db/ does not contain `settings.cn`");
+                return;
+            }
+            if (settings.has("coreProtection_radius")) {
+                radi = settings.getInt("coreProtection_radius");
+            } else {
+                Log.err("settings.cn does not contain key `coreProtection_radius`");
+            }
+
+            Vars.netServer.admins.addActionFilter(action -> {
+                player = action.player;
+                if (player == null) return true;
+                String uuid = player.uuid;
+                if (uuid == null) return true;
+                JSONObject data = byteCode.get(Main.currentLogin.get(uuid));
+                if (data == null) {Log.err(uuid + " doesnt have dataID " + Main.currentLogin.get(uuid)); player.sendMessage("ERROR - No dataID"); return false;}
+                settings = byteCode.get("settings");
+                if (settings == null) {
+                    Log.err("mind_db/ does not contain `settings.cn`");
+                    return true;
+                }
+
+                if (action.type == Administration.ActionType.placeBlock || action.type == Administration.ActionType.breakBlock) {
+                    if (data.has("rank") && data.getInt("rank") <= 1) {
+
+                        Teams.TeamData teamData = state.teams.get(player.getTeam());
+                        if (teamData.hasCore()) {
+                            CoreBlock.CoreEntity core = teamData.cores.first();
+                            if (action.tile.x >= ((core.x / 8) - radi) && ((core.x / 8) + radi) >= action.tile.x && action.tile.y >= ((core.y / 8) - radi) && ((core.y / 8) + radi) >= action.tile.y) {
+                                if (!settings.has("needPermissions_core")) {
+                                    Log.err("settings.cn does not contain key `needPermissions_core`");
+                                    Call.onInfoToast(player.con, "Unable to edit core - You need to be rank 2", 10);
+                                    return false;
+                                }
+                                Call.onInfoToast(player.con, settings.getString("needPermissions_core"), 15);
+                                return false;
+                            }
+                        }
+                        if (action.block == Blocks.thoriumReactor || action.block == Blocks.impactReactor) {
+                            if (!settings.has("needPermissions")) {
+                                Log.err("settings does not contain key `needPermissions`");
+                                player.sendMessage("Unable to build. Rank needed: 2 or above.");
+                                return false;
+                            }
+                            player.sendMessage(settings.getString("needPermissions"));
+                            return false;
+                        }
+                    }
+                }
+                if (action.type == Administration.ActionType.rotate) {
+                    if (data.has("rank") && data.getInt("rank") >= 2) return true;
+                    return false;
+                }
+                return true; //thx fuzz
+            });
         });
     }
     @Override
     public void registerServerCommands(CommandHandler handler) {
-        handler.register("clearplayer", "<uuid>", "description", arg -> {
-            if (netServer.admins.getInfo(arg[0]).timesJoined > 0) {
-                netServer.admins.getInfo(arg[0]).timesKicked = 0;
-                netServer.admins.getInfo(arg[0]).lastKicked = Time.millis();
+        handler.register("settings", "sends all settings as message", arg -> {
+            settings = byteCode.get("settings");
+            if (settings == null) {
+                Log.err("mind_db/ does not contain `settings.cn`");
+                return;
+            }
+            StringBuilder builder = new StringBuilder();
+            builder.append("\n");
+            for (String keyStr : settings.keySet()) {
+                Object keyvalue = settings.get(keyStr);
+                //Print key and value
+                builder.append(keyStr + " : " + keyvalue).append("\n");
+            }
+            Log.info(builder.toString());
+        });
+        handler.register("get","<fileName>", "gets everything inside the json.cn", arg -> {
+            JSONObject data = byteCode.get(arg[0]);
+            if (data != null) {
+                StringBuilder builder = new StringBuilder();
+                builder.append("\n");
+                for (String keyStr : data.keySet()) {
+                    Object keyvalue = data.get(keyStr);
+                    //Print key and value
+                    builder.append(keyStr + " : " + keyvalue).append("\n");
+                }
+                Log.info(builder.toString());
             }
         });
-        handler.register("badlist", "<word>", "description", arg -> {
-            JSONObject badlist = adata.getJSONObject("badList");
-            if (badlist.has(arg[0])) {
-                Log.err("badList already containg `{}`!", arg[0]);
+        handler.register("make","<fileName>", "puts a basic object in into the json.cn", arg -> {
+            JSONObject object = new JSONObject();
+            object.put("Key", "Value");
+            Log.info(byteCode.make(arg[0],object));
+        });
+        handler.register("putstr","<fileName> <key> <value>", "puts a basic object in into the json.cn", arg -> {
+            Log.info(byteCode.putStr(arg[0], arg[1], arg[2]));
+        });
+        handler.register("putint","<fileName> <key> <value>", "puts a basic object in into the json.cn", arg -> {
+            int i = Strings.parseInt(arg[2]);
+            Log.info(byteCode.putInt(arg[0], arg[1], i));
+        });
+        handler.register("debug", "check all critical info is present", arg -> {
+            Log.info("Step 1 - core files are present");
+            Log.info("settings.cn is present : " + byteCode.has("settings"));
+            Log.info("discord_accounts.cn is present : " + byteCode.has("discord_accounts"));
+            Log.info("login_info.cn is present : " + byteCode.has("login_info"));
+
+            Log.info("Step 2 - account has DataID");
+            int accounts = 0;
+            int dataIDs = 0;
+            StringBuilder missing = new StringBuilder();
+            missing.append("Accounts missing dataID:\n");
+            JSONObject login = byteCode.get("login_info");
+            JSONObject user;
+            if (login == null) {
+                Log.err("mind_db/ does not contain `login_info.cn`");
             } else {
-                badlist.put(arg[0], "bad");
+                for (String keyStr : login.keySet()) {
+                    user = login.getJSONObject(keyStr);
+                    accounts++;
+                    if (byteCode.get(user.getString("dataID")) == null) {
+                        missing.append(keyStr + " : " + user.getString("dataID"));
+                    } else {
+                        dataIDs++;
+                    }
+                }
+                Log.info("Found " + accounts + " accounts and " + dataIDs + " data IDs.");
+                Log.info(missing.toString());
             }
-            try {
-                File file = new File("config\\mods\\database\\settings.cn");
-                FileWriter out = new FileWriter(file, false);
-                PrintWriter pw = new PrintWriter(out);
-                pw.println(Main.adata.toString());
-                out.close();
-            } catch (IOException i) {
-                i.printStackTrace();
+        });
+        handler.register("cr", "<rankInt>", "changes rank of player", arg -> {
+            if (Strings.canParseInt(arg[0])) {
+                String hash = byteCode.hash(8);
+                keyList.put(hash, new key(null, "cr", arg[0]));
+                Log.info("do `/key " + hash + "` to receive rank change");
+            } else {
+                Log.err("rank must contain numbers!");
             }
-            Log.info("Succesfully added {0} to badList!", arg[0]);
         });
     }
     @Override
     public void registerClientCommands(CommandHandler handler) {
         handler.<Player>register("register", "<Username> <Password>", "Register your account", (arg, player) -> {
             if (!currentLogin.containsKey(player.uuid)) {
-                JSONObject login = adata.getJSONObject("login-info");
+                JSONObject login = byteCode.get("login_info");
+                if (login == null) {
+                    Log.err("mind_db/ does not contain `login_info.cn`");
+                    player.sendMessage("ERROR: Please contact a mindustry admin\nERROR: Missing login_info.cn");
+                    return;
+                }
                 if (!login.has(arg[0])) {
                     Pattern pa = Pattern.compile("[a-zA-Z]", Pattern.CASE_INSENSITIVE);
                     Matcher ma = pa.matcher(arg[1]);
@@ -368,46 +357,43 @@ public class Main extends Plugin {
                     Matcher ms = ps.matcher(arg[1]);
                     boolean special = ms.find();
 
-                    if (a && number && special && arg[1].length() >= 8) {
+                    if (a && number && special) {
                         //register username and password
                         JSONObject user = new JSONObject();
                         user.put("password", arg[1]);
                         user.put("dataID", byteCode.hash(32)); //give data ID
-                        login.put(arg[0], user); //end registration
+                        login.put(arg[0], user);
+                        byteCode.save("login_info", login);
+                        //end registration
                         JSONObject data = new JSONObject(); //register user data
                         //date joined
                         Date thisDate = new Date();
                         SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/Y");
-                        data.put("date-joined", dateFormat.format(thisDate));
+                        data.put("date_joined", dateFormat.format(thisDate));
                         data.put("username",arg[0]);
                         data.put("mp",0);
                         data.put("bb",0);
-                        data.put("rank",0);
-                        data.put("lvl",0);
-                        data.put("xp",0.0000);
+                        data.put("rank",1);
                         data.put("verified", 0);
                         //create user data and add time joined
-                        adata.put(user.getString("dataID"), data);
+                        byteCode.make(user.getString("dataID"), data);
                         //finishing off
-                        player.sendMessage("[lime]Account created Successfully! Now try to /login");
-                        player.sendMessage("[yellow]Requirements (0/2):");
-                        player.sendMessage("[yellow]> Get Verified to have full access to the server or wait 15 minutes.");
-                        player.sendMessage("[yellow]> Read the /rules");
-                        player.sendMessage("[sky]Complete all the requirements to be able to play.");
+                        player.sendMessage("[lime]Account created Successfully!");
+                        player.sendMessage("[sky]Get Verified to have full access to the server. (See Discord)"+ (settings.getString("discord_text")) );
+                        //login player
+                        currentLogin.put(player.uuid, user.getString("dataID"));
                     } else if (!a) {
-                        player.sendMessage("[scarlet]Your password must contain a letter");
+                        player.sendMessage("Your password must contain a letter");
                     } else if (!number) {
-                        player.sendMessage("[scarlet]Your password must contain a number");
-                    } else if (arg[1].length() < 8) {
-                        player.sendMessage("[scarlet]Your password must be at least 8 characters long");
+                        player.sendMessage("Your password must contain a number");
                     } else {
-                        player.sendMessage("[scarlet]Your password must contain a special character");
+                        player.sendMessage("Your password must contain a special character");
                     }
                 } else {
-                    player.sendMessage("[yellow]Username is unavailable");
+                    player.sendMessage("[sky]Username is unavailable");
                 }
             } else {
-                player.sendMessage("[scarlet]You are already logged in!");
+                player.sendMessage("You are already logged in!");
             }
         });
         handler.<Player>register("login", "<Username> <Password>", "Login into your account.", (arg, player) -> {
@@ -430,41 +416,56 @@ public class Main extends Plugin {
                     }
                     return;
                 }
-                JSONObject login = adata.getJSONObject("login-info");
+                JSONObject login = byteCode.get("login_info");
+                if (login == null) {
+                    Log.err("mind_db/ does not contain `login_info.cn`");
+                    player.sendMessage("ERROR: Please contact a mindustry admin\nERROR: Missing login_info.cn");
+                    return;
+                }
                 if (login.has(arg[0])) {
                     JSONObject user = login.getJSONObject(arg[0]);
                     if (user.get("password").equals(arg[1])) {
-                        if (!currentLogin.containsValue(user.getString("dataID"))) {
-                            currentLogin.put(player.uuid, user.getString("dataID"));
-                            player.sendMessage("[lime]Login Successful!");
-                            if (adata.has(currentLogin.get(player.uuid))) { //if adata has info of player
-                                JSONObject data = adata.getJSONObject(currentLogin.get(player.uuid));
-                                if (data.has("readRules") && data.getInt("readRules") == 1) {
-                                    if (data.has("verified") && data.getInt("verified") == 1) {
-                                        player.setTeam(Team.sharded);
-                                        player.updateRespawning();
-                                        Call.sendMessage("[accent]"+byteCode.noColors(player.name) + " has connected.");
-                                        //pjl
-                                        Date thisDate = new Date();
-                                        SimpleDateFormat dateFormat = new SimpleDateFormat("[MM/dd/Y | HH:mm:ss] ");
-                                        pjl.add("[lime][+] [white]" + dateFormat.format(thisDate) + byteCode.nameR(player.name) + " | " + player.uuid + " | " +player.getInfo().lastIP);
-                                    } else if (data.has("mp") && data.getInt("mp") > 15) {
-                                        player.setTeam(Team.sharded);
-                                        player.updateRespawning();
-                                        Call.sendMessage("[accent]"+byteCode.noColors(player.name) + " has connected.");
-                                        //pjl
-                                        Date thisDate = new Date();
-                                        SimpleDateFormat dateFormat = new SimpleDateFormat("[MM/dd/Y | HH:mm:ss] ");
-                                        pjl.add("[lime][+] [white]" + dateFormat.format(thisDate) + byteCode.nameR(player.name) + " | " + player.uuid + " | " +player.getInfo().lastIP);
-                                    } else if (data.has("mp")) {
-                                        player.sendMessage("[yellow] Wait " + (15 - data.getInt("mp")) + " more minutes or get Verified to be able to play");
-                                    }
+                        if (user.has("rank") && user.getInt("rank") == 0) {
+                            if (user.has("Banned")) {
+                                if (user.has("banID") && user.has("banReason")) {
+                                    String reason = user.getString("banReason");
+                                    String bid = user.getString("banID");
+                                    player.getInfo().timesKicked--;
+                                    player.con.kick("Your Account is [scarlet]Banned[], and so are you." +
+                                            "\nBan Reason: " + reason +
+                                            "\nBan ID: " + bid);
                                 } else {
-                                    player.sendMessage("[yellow]Read the /rules to be able to play");
+                                    player.getInfo().timesKicked--;
+                                    player.con.kick("Your Account is [scarlet]Banned[], and so are you.");
                                 }
+                            } else {
+                                player.getInfo().timesKicked--;
+                                player.con.kick("Your Account is [scarlet]Banned[], and so are you.");
                             }
                         } else {
-                            player.sendMessage("[scarlet]Error! Account is already in use in this server! If this is not you, contact a Moderator immediately");
+                            Main.currentLogin.forEach((k, p) -> {
+                                if (p == user.getString("dataID")) {
+                                    player.sendMessage("You are already logged in! If this is not you, contact a mindustry Admin");
+                                    return;
+                                }
+                            });
+                            currentLogin.put(player.uuid, user.getString("dataID"));
+                            player.sendMessage("[lime]Login Successful!");
+                            //spawn player
+                            JSONObject data = byteCode.get(currentLogin.get(player.uuid));
+                            if (data == null) {
+                                Log.err("mind_db/ does not contain `"+currentLogin.get(player.uuid)+".cn`");
+                                player.sendMessage("ERROR: Please contact a mindustry admin\nERROR: Missing account data");
+                                return;
+                            }
+                            if (data.has("verified") && data.getInt("verified") == 1) {
+                                player.setTeam(Team.sharded);
+                                player.updateRespawning();
+                                Call.sendMessage("[accent]"+byteCode.noColors(player.name)+" has connected.");
+                                Log.info(byteCode.noColors(player.name)+" : "+player.uuid+" > has connected");
+                            } else {
+                                player.sendMessage("[sky]Get Verified to have full access to the server. (See Discord) "+ (settings.getString("discord_text")) );
+                            }
                         }
                     } else {
                         player.sendMessage("[yellow]Username or Password is incorrect.");
@@ -483,69 +484,39 @@ public class Main extends Plugin {
                     }
                 }
             } else {
-                player.sendMessage("You are already logged in!");
+                player.sendMessage("You are already logged in! If this is not you, contact a mindustry Admin");
             }
         });
-        handler.<Player>register("key", "<key>", "Enter key to redeem Rank or pi.", (arg, player) -> {
+        handler.<Player>register("key", "<key>", "Enter key to redeem Rank or cake.", (arg, player) -> {
             if (currentLogin.containsKey(player.uuid)) {
-                JSONObject data = adata.getJSONObject(currentLogin.get(player.uuid));
+                JSONObject data = byteCode.get(currentLogin.get(player.uuid));
+                if (data == null) {
+                    Log.err("mind_db/ does not contain `"+currentLogin.get(player.uuid)+".cn`");
+                    player.sendMessage("ERROR: Please contact a mindustry admin\nERROR: Missing Account data");
+                    return;
+                }
                 if (keyList.containsKey(arg[0])) {
                     switch (keyList.get(arg[0]).getAction()) {
                         case "cr":
+                            if (data.has("rank") && data.getInt("rank") < Strings.parseInt(keyList.get(arg[0]).getValue())) {
+                                byteCode.putInt(currentLogin.get(player.uuid),"rank", Strings.parseInt(keyList.get(arg[0]).getValue()));
+                                player.sendMessage("Rank updated to "+ keyList.get(arg[0]).getValue());
+                            } else {
+                                player.sendMessage("unable to change rank");
+                            }
+                            keyList.remove(arg[0]);
                             break;
                         case "verify":
                             if (keyList.get(arg[0]).getUsername().equals(data.getString("username"))) {
-                                data.put("discord-tag", keyList.get(arg[0]).getValue());
-                                data.put("verified", 1);
-                                if (!data.has("rank") || data.getInt("rank") == 0) data.put("rank", 1);
+                                byteCode.putStr(currentLogin.get(player.uuid), "discord_tag", keyList.get(arg[0]).getValue());
+                                byteCode.putInt(currentLogin.get(player.uuid), "verified", 1);
+                                if (data.getInt("rank") == 1) byteCode.putInt(currentLogin.get(player.uuid), "rank", 2);
                                 keyList.remove(arg[0]);
                                 player.sendMessage("[lime]Successfully verified your account!");
-                                if (data.has("readRules") && data.getInt("readRules") == 1) {
-                                    player.setTeam(Team.sharded);
-                                    player.updateRespawning();
-                                    Call.sendMessage("[accent]"+byteCode.noColors(player.name) + " has connected.");
-                                    //pjl
-                                    Date thisDate = new Date();
-                                    SimpleDateFormat dateFormat = new SimpleDateFormat("[MM/dd/Y | HH:mm:ss] ");
-                                    pjl.add("[lime][+] [white]" + dateFormat.format(thisDate) + byteCode.nameR(player.name) + " | " + player.uuid + " | " +player.getInfo().lastIP);
-                                } else {
-                                    player.sendMessage("[yellow]Read the /rules to be able to play");
-                                }
+                                player.setTeam(Team.sharded);
+                                player.updateRespawning();
                             }
                             break;
-                        case "readRules":
-                            if (data.has("readRules")) {
-                                if (data.getInt("readRules") == 1) {
-                                    player.sendMessage("[scarlet]You already read the Rules!");
-                                } else {
-                                    data.put("readRules", 1);
-                                    player.sendMessage("[lime]You read the Rules!");
-                                }
-                            } else {
-                                data.put("readRules", 1);
-                                player.sendMessage("[lime]You read the Rules!");
-                            }
-
-                            if (data.has("verified") && data.getInt("verified") == 1) {
-                                player.setTeam(Team.sharded);
-                                player.updateRespawning();
-                                Call.sendMessage("[accent]"+byteCode.noColors(player.name) + " has connected.");
-                                //pjl
-                                Date thisDate = new Date();
-                                SimpleDateFormat dateFormat = new SimpleDateFormat("[MM/dd/Y | HH:mm:ss] ");
-                                pjl.add("[lime][+] [white]" + dateFormat.format(thisDate) + byteCode.nameR(player.name) + " | " + player.uuid + " | " +player.getInfo().lastIP);
-                            } else if (data.has("mp") && data.getInt("mp") > 15) {
-                                player.setTeam(Team.sharded);
-                                player.updateRespawning();
-                                Call.sendMessage("[accent]"+byteCode.noColors(player.name) + " has connected.");
-                                //pjl
-                                Date thisDate = new Date();
-                                SimpleDateFormat dateFormat = new SimpleDateFormat("[MM/dd/Y | HH:mm:ss] ");
-                                pjl.add("[lime][+] [white]" + dateFormat.format(thisDate) + byteCode.nameR(player.name) + " | " + player.uuid + " | " +player.getInfo().lastIP);
-                            } else {
-                                player.sendMessage("[yellow] Wait " + (15 - data.getInt("mp")) + " more minutes or get Verified to be able to play");
-                            }
-                            return;
                         default:
                             player.sendMessage("---ERROR---");
                             keyList.remove(arg[0]);
@@ -554,239 +525,35 @@ public class Main extends Plugin {
                     player.sendMessage("Invalid Key.");
                 }
             } else {
-                player.sendMessage("[scarlet]/login or /register to use this command!");
+                player.sendMessage("[scarlet]/register or /login to use this command!");
             }
         });
-        handler.<Player>register("rules","Sends you the server rules", (arg, player) -> {
-            player.sendMessage("Rules:\n" +
-                    "\nGeneral Rules:\n" +
-                    "1) Grief or Spam.\n" +
-                    "2) Ban/Kick evade.\n" +
-                    "3) Use exploits.\n" +
-                    "4) Nuke/Explode core, just /rtv to vhange maps.\n" +
-                    "5) Use multiple accounts.\n" +
-                    "6) Making and/or using a AFK machine will result in kick/ban.\n" +
-                    "\nDiscord Rules:\n" +
-                    "1) Name must be similar to that of in-game.\n" +
-                    "2) Spamming Caps or messages can result in ban.\n" +
-                    "3) Posting of NSFW and/or Personal information is strictly prohibited.\n" +
-                    "4) Insulting and/or bullying is not tolerated.\n" +
-                    "5) Exploiting bots will result in ban.\n" +
-                    "6) Planning to Grief, Raid or harass will result in ban.\n" +
-                    "\nServer Specific rules:\nautoban:\n" +
-                    "You will be auto banned if:\n" +
-                    "1) If kicked more 10 times.\n" +
-                    "2) If kick to join ratio is more than 1/10\n" +
-                    "\nSurvival:\n" +
-                    "1) Pixel art permitted but must be at most 32x32. Pixel art may be removed at any point by anyone. Spamming will result in ban.\n" +
-                    "2) Thorium reactors must be far away from core.\n" +
-                    "3) No more than 50 draught miners per map.\n" +
-                    "4) Absolutely no exploits allowed; whether beneficial or not.\n" +
-                    "5) Power sources must be dioded." +
-                    "\nSandbox:\n" +
-                    "1) Spamming will result in ban.\n" +
-                    "2) Builds must be constrained to 1 box. (48x48)\n" +
-                    "3) Trying to lag/crash server will result in ban.\n" +
-                    "4) Any machine that purposely makes fire or explosion will result in ban.\n\n" +
-                    "Now that you read the rules, do `[lightgray]/key " + ruleKey + "[]` to confirm you read the rules.");
-        });
-        //Shows player info
-        handler.<Player>register("stats","Shows your stats", (arg, player) -> {
+        handler.<Player>register("stats", "Displays your basic info", (arg, player) -> {
             if (currentLogin.containsKey(player.uuid)) {
-                JSONObject data = adata.getJSONObject(currentLogin.get(player.uuid));
-                if (data.getInt("lvl") >= 2) {
-                    int txptl = byteCode.xpn(data.getInt("lvl") + 1) - byteCode.xpn(data.getInt("lvl"));
-                    int xpil = (int) data.getFloat("xp") - byteCode.xpn(data.getInt("lvl"));
-                    int ten = xpil / (txptl / 10);
-
-                    StringBuilder builder = new StringBuilder();
-                    builder.append("Total XP: " + data.getFloat("xp"));
-                    builder.append("\nLevel: " + data.getInt("lvl"));
-                    builder.append("\nRank: " + data.getInt("rank") + " - " + byteCode.tagName(data.getInt("rank")));
-                    builder.append("\n<");
-                    for (int i = 0; i < ten; i++) {
-                        builder.append("/");
-                    }
-                    for (int i = 0; i < 10 - ten; i++) {
-                        builder.append("-");
-                    }
-                    builder.append(">");
-                    builder.append("\n" + xpil + "XP / " + txptl + "XP until next level").append("\n");
-                    builder.append("name : ").append(player.name).append("\n");
-                    builder.append("times joined : ").append(player.getInfo().timesJoined).append("\n");
-                    builder.append("times kicked : ").append(player.getInfo().timesKicked).append("\n");
-                    builder.append("uuid : ").append(player.uuid).append("\n");
-                    for (String keyStr : data.keySet()) {
-                        Object keyvalue = data.get(keyStr);
-                        //Print key and value
-                        if (keyStr.equals("lvl")) continue;
-                        if (keyStr.equals("rank")) continue;
-                        if (keyStr.equals("xp")) continue;
-                        builder.append("[white]" + keyStr + ": [lightgray]" + keyvalue).append("\n");
-                    }
-                    player.sendMessage(builder.toString());
+                if (byteCode.has(currentLogin.get(player.uuid))) {
+                    JSONObject data = byteCode.get(currentLogin.get(player.uuid));
+                    if (data.has("rank")) player.sendMessage("Rank : " + data.getInt("rank"));
+                    if (data.has("bb")) player.sendMessage("Buildings Built : " + data.getInt("bb"));
+                    if (data.has("mp")) player.sendMessage("Minutes Played : " + data.getInt("mp"));
+                    if (data.has("discord_tag")) player.sendMessage("Discord Tag : " + data.getString("discord_tag"));
+                    player.sendMessage("Info about current UUID");
+                    player.sendMessage("Times Joined : "+player.getInfo().timesJoined);
+                    player.sendMessage("Current ID : "+player.getInfo().id);
+                    player.sendMessage("Name Raw : [[#"+player.color+"]"+byteCode.nameR(player.name));
                 } else {
-                    player.sendMessage("[scarlet]You need to be level 2 to use this command!");
+                    player.sendMessage("ERROR - No dataID");
                 }
             } else {
-                player.sendMessage("[scarlet]/login or /register to use this command!");
+                player.sendMessage("[scarlet]/register or /login to use this command!");
             }
         });
-        //list of all players
-        handler.<Player>register("players","list of all players", (arg, player) -> {
-            StringBuilder builder = new StringBuilder();
-            builder.append("[accent]List of players: \n");
-            for (Player p : playerGroup.all()) {
-                if (currentLogin.containsKey(p.uuid)) {
-                    JSONObject data = Main.adata.getJSONObject(currentLogin.get(p.uuid));
-                    builder.append(byteCode.tag(data.getInt("rank"),data.getInt("lvl"))).append(" ").append(byteCode.nameR(p.name)).append(" [white]: #").append(p.id).append("\n");
-                }
-            }
-            player.sendMessage(builder.toString());
-        });
-        //calls for help and location
-        handler.<Player>register("halp","Calls for help and setups /go", (arg, player) -> {
-            halpX = (int) (player.x/8);
-            halpY = (int) (player.y/8);
-            Call.sendMessage("[coral][[[white]" + player.name + " [coral]]: [white]Need help at ([lightgray]" + halpX + "[white],[lightgray]" + halpY + "[white]). \ndo `[lightgray]/go[white]` to come to me.");
-            Log.info("[coral][[[white]"+player.name + " [coral]]: [white]Need help at ([lightgray]" + halpX + "[white],[lightgray]" + halpY + "[white]). do `[lightgray]/go[white]` to come to me.");
-        });
-        //goes to position
-        handler.<Player>register("go","goes to location from /here or /halp", (arg, player) -> {
-            player.set(halpX*8,halpY*8);
-            player.setNet(halpX*8,halpY*8);
-            player.set(halpX*8,halpY*8);
-        });
-        //calls location
-        handler.<Player>register("here","setups /go to go to your location", (arg, player) -> {
-            halpX = (int) (player.x/8);
-            halpY = (int) (player.y/8);
-            Call.sendMessage("[coral][[[white]" + player.name + " [coral]]: [white]Here at ([lightgray]" + halpX + "[white],[lightgray]" + halpY + "[white]). \ndo `[lightgray]/go[white]` to come to me.");
-            Log.info("[coral][[[white]" + player.name + " [coral]]: [white]Here at ([lightgray]" + halpX + "[white],[lightgray]" + halpY + "[white]). do `[lightgray]/go[white]` to come to me.");
-        });
-        //Shows team info
-        handler.<Player>register("myteam", "Gives team info", (arg, player) -> {
-            Teams.TeamData teamData = state.teams.get(player.getTeam());
-            if (!teamData.hasCore()) {
-                player.sendMessage("Your team doesn't have a core!");
-                return;
-            }
-            CoreBlock.CoreEntity core = teamData.cores.first();
-            if (core == null) {
-                player.sendMessage("Your team doesn't have a core.");
-                return;
-            }
-            String playerTeam = player.getTeam().name;
-            switch (playerTeam) {
-                case "sharded":
-                    playerTeam = "[accent]" + playerTeam;
-                    break;
-                case "crux":
-                    playerTeam = "[scarlet]" + playerTeam;
-                    break;
-                case "blue":
-                    playerTeam = "[royal]" + playerTeam;
-                    break;
-                case "derelict":
-                    playerTeam = "[gray]" + playerTeam;
-                    break;
-                case "green":
-                    playerTeam = "[lime]" + playerTeam;
-                    break;
-                case "purple":
-                    playerTeam = "[purple]" + playerTeam;
-                    break;
-            }
-            //
-            int players = 0;
-            for (Player p : playerGroup.all()) {
-                if (p.getTeam() == player.getTeam()) {
-                    players++;
-                }
-            }
-            int draug = 0;
-            int spirit = 0;
-            int phantom = 0;
-            int dagger = 0;
-            int crawler = 0;
-            int titan = 0;
-            int fortress = 0;
-            int eruptor = 0;
-            int chaosArray = 0;
-            int eradicator = 0;
-            int wraith = 0;
-            int ghoul = 0;;
-            int revenant = 0;
-            int lich = 0;
-            int reaper = 0;
-
-            int All = 0;
-            //
-            for (Unit u : unitGroup.all()) {
-                if(u.getTeam() == player.getTeam()) {
-                    if (u.getTypeID().name.equals("draug")) draug = draug + 1;
-                    if (u.getTypeID().name.equals("spirit")) spirit = spirit + 1;
-                    if (u.getTypeID().name.equals("phantom")) phantom = phantom + 1;
-                    if (u.getTypeID().name.equals("dagger")) dagger = dagger + 1;
-                    if (u.getTypeID().name.equals("crawler")) crawler = crawler + 1;
-                    if (u.getTypeID().name.equals("titan")) titan = titan + 1;
-                    if (u.getTypeID().name.equals("fortress")) fortress = fortress + 1;
-                    if (u.getTypeID().name.equals("eruptor")) eruptor = eruptor + 1;
-                    if (u.getTypeID().name.equals("chaos-array")) chaosArray = chaosArray + 1;
-                    if (u.getTypeID().name.equals("eradicator")) eradicator = eradicator + 1;
-                    if (u.getTypeID().name.equals("wraith")) wraith = wraith + 1;
-                    if (u.getTypeID().name.equals("ghoul")) ghoul = ghoul + 1;
-                    if (u.getTypeID().name.equals("revenant")) revenant = revenant + 1;
-                    if (u.getTypeID().name.equals("lich")) lich = lich + 1;
-                    if (u.getTypeID().name.equals("reaper")) reaper = reaper + 1;
-                    All = All + 1;
-                }
-            }
-
-            Call.onInfoMessage(player.con,
-                    "Your team is " + playerTeam +
-                            "\n[]Your team has " + players + " players" +
-                            "\n\n[accent]Core Resources[white]:" +
-                            "\n[white]" + core.items.get(Items.copper) +        " \uF838 [#d99d73]copper" +
-                            "\n[white]" + core.items.get(Items.lead) +          " \uF837 [#8c7fa9]lead" +
-                            "\n[white]" + core.items.get(Items.metaglass) +     " \uF836 [#ebeef5]metaglass" +
-                            "\n[white]" + core.items.get(Items.graphite) +      " \uF835 [#b2c6d2]graphite" +
-                            "\n[white]" + core.items.get(Items.titanium) +      " \uF832 [#8da1e3]titanium" +
-                            "\n[white]" + core.items.get(Items.thorium) +       " \uF831 [#f9a3c7]thorium" +
-                            "\n[white]" + core.items.get(Items.silicon) +       " \uF82F [#53565c]Silicon" +
-                            "\n[white]" + core.items.get(Items.plastanium) +    " \uF82E [#cbd97f]plastanium" +
-                            "\n[white]" + core.items.get(Items.phasefabric) +   " \uF82D [#f4ba6e]phase fabric" +
-                            "\n[white]" + core.items.get(Items.surgealloy) +    " \uF82C [#f3e979]surge alloy" +
-                            "\n\n[accent]Team Units: [white]" +
-                            "\nDraug Miner Drone: " + draug +
-                            "\nSpirit Repair Drone: " + spirit +
-                            "\nPhantom Builder Drone: " + phantom +
-                            "\n Dagger: " + dagger +
-                            "\nCrawlers: " + crawler +
-                            "\nTitan: " + titan +
-                            "\nFortress: " + fortress +
-                            "\nEruptor: " + eruptor +
-                            "\nChaos Array: " + chaosArray +
-                            "\nEradicator: " + eradicator +
-                            "\nWraith Fighter: " + wraith +
-                            "\nGhoul Bomber: " + ghoul +
-                            "\nRevenant: " + revenant +
-                            "\nLich: " + lich +
-                            "\nReaper: " + reaper +
-                            "\nTotal: " + All +
-                            "\n");
-        });
-
-        handler.<Player>register("test","<something>","aaaaaaaaaaaaaa", (arg, player) -> {
-        });
-
         if (api != null) {
             handler.<Player>register("d", "<text...>", "Sends a message to discord.", (args, player) -> {
 
-                if (!settings.has("dchannel-id")) {
+                if (!settings.has("dchannel_id")) {
                     player.sendMessage("[scarlet]This command is disabled.");
                 } else {
-                    TextChannel tc = this.getTextChannel(settings.getString("dchannel-id"));
+                    TextChannel tc = this.getTextChannel(settings.getString("dchannel_id"));
                     if (tc == null) {
                         player.sendMessage("[scarlet]This command is disabled.");
                         return;
@@ -820,7 +587,7 @@ public class Main extends Plugin {
 
                 if (args.length == 0) {
                     StringBuilder builder = new StringBuilder();
-                    builder.append("[orange]List or reportable players: \n");
+                    builder.append("[orange]List of reportable players: \n");
                     for (Player p : Vars.playerGroup.all()) {
                         if (p.isAdmin || p.con == null) continue;
 
@@ -882,7 +649,7 @@ public class Main extends Plugin {
                                         .send(tc);
                                 tc.sendMessage(r.getMentionTag());
                             }
-                            Call.sendMessage(found.name + "[sky] is reported to discord.");
+                            player.sendMessage(found.name + "[sky] is reported to discord.");
                             cooldowns.put(System.currentTimeMillis() / 1000L, player.uuid);
                         }
                     } else {

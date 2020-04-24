@@ -2,6 +2,6 @@
   "name": "CN-Plugin",
   "author": "L0615T1C5.216AC:9437 [Impact Phd]",
   "main": "CN.Main",
-  "description": "CN's Plugin, has a few features.",
-  "version": 104.10
+  "description": "CN Official plugin",
+  "version": 104
 }
