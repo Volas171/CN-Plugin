@@ -1,4 +1,4 @@
-package D.dCommands;
+package CN.dCommands;
 
 import CN.byteCode;
 import arc.Core;

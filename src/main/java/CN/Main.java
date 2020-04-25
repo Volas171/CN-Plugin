@@ -46,7 +46,9 @@ public class Main extends Plugin {
 
     public static HashMap<String, String> currentLogin = new HashMap<>();
     public static HashMap<String, Player> currentKick = new HashMap<>();
+    public static HashMap<String, xpg> currentBuild = new HashMap<>();
     public static HashMap<String, key> keyList = new HashMap<>();
+    public HashMap<String, Long> noXP = new HashMap<>();
     public static HashMap<Integer, Player> idTempDatabase = new HashMap<>();
     public HashMap<String, String> pastLogin = new HashMap<>();
     public HashMap<String, Integer> loginAttempts = new HashMap<>();
@@ -64,7 +66,7 @@ public class Main extends Plugin {
             JSONObject settings = byteCode.get("settings");
             if (settings.has("token"+Administration.Config.port.num())) {
                 try {
-                    api = new DiscordApiBuilder().setToken(settings.getString("token")).login().join();
+                    api = new DiscordApiBuilder().setToken(settings.getString("token"+Administration.Config.port.num())).login().join();
                 } catch (Exception e) {
                     if (e.getMessage().contains("READY packet")) {
                         Log.err("\ninvalid token.\n");
@@ -217,33 +219,8 @@ public class Main extends Plugin {
                     Log.err("mind_db/ does not contain `settings.cn`");
                     return true;
                 }
-
-                if (action.type == Administration.ActionType.placeBlock || action.type == Administration.ActionType.breakBlock) {
-                    if (data.has("rank") && data.getInt("rank") <= 1) {
-
-                        Teams.TeamData teamData = state.teams.get(player.getTeam());
-                        if (teamData.hasCore()) {
-                            CoreBlock.CoreEntity core = teamData.cores.first();
-                            if (action.tile.x >= ((core.x / 8) - radi) && ((core.x / 8) + radi) >= action.tile.x && action.tile.y >= ((core.y / 8) - radi) && ((core.y / 8) + radi) >= action.tile.y) {
-                                if (!settings.has("needPermissions_core")) {
-                                    Log.err("settings.cn does not contain key `needPermissions_core`");
-                                    Call.onInfoToast(player.con, "Unable to edit core - You need to be rank 2", 10);
-                                    return false;
-                                }
-                                Call.onInfoToast(player.con, settings.getString("needPermissions_core"), 15);
-                                return false;
-                            }
-                        }
-                        if (action.block == Blocks.thoriumReactor || action.block == Blocks.impactReactor) {
-                            if (!settings.has("needPermissions")) {
-                                Log.err("settings does not contain key `needPermissions`");
-                                player.sendMessage("Unable to build. Rank needed: 2 or above.");
-                                return false;
-                            }
-                            player.sendMessage(settings.getString("needPermissions"));
-                            return false;
-                        }
-                    }
+                if (action.type == Administration.ActionType.placeBlock) {
+                    currentBuild.put(player.uuid, new xpg(action.block, action.tile.x, action.tile.y, Time.millis()));
                 }
                 if (action.type == Administration.ActionType.rotate) {
                     if (data.has("rank") && data.getInt("rank") >= 2) return true;
@@ -251,6 +228,99 @@ public class Main extends Plugin {
                 }
                 return true; //thx fuzz
             });
+        });
+        Events.on(EventType.BlockBuildEndEvent.class, event -> {
+            Player player = event.player;
+            if (player == null) return;
+            if (event.breaking) {
+                if (currentBuild.containsKey(player.uuid)) currentBuild.remove(player.uuid);
+                return;
+            }
+            if (currentLogin.containsKey(player.uuid)) {
+                if (byteCode.has(currentLogin.get(player.uuid))) {
+                    JSONObject data = byteCode.get(currentLogin.get(player.uuid));
+                    if (data == null) {
+                        Log.err("mind_db/ does not contain `"+currentLogin.get(player.uuid)+".cn`");
+                        player.sendMessage("ERROR: Please contact a mindustry admin\nERROR: Missing account data");
+                        return;
+                    } else {
+                        //bb
+                        if (data.has("bb")) {
+                            byteCode.putInt(currentLogin.get(player.uuid), "bb", data.getInt("bb")+1);
+                        } else {
+                            byteCode.putInt(currentLogin.get(player.uuid), "bb", 1);
+                        }
+                        //xp
+                        if (currentBuild.containsKey(player.uuid)) {
+                            if (event.tile.x == currentBuild.get(player.uuid).getx() && event.tile.y == currentBuild.get(player.uuid).gety()) {
+                                if (Time.millis() - currentBuild.get(player.uuid).getTime() > (event.tile.block().buildCost/60)/2.4) {
+                                    if (data.has("xp")) {
+                                        data.put("xp", data.getFloat("xp") + (float) byteCode.bbXPGainMili(event.tile.block().buildCost/60)/10000);
+                                    } else {
+                                        data.put("xp", (float) byteCode.bbXPGainMili(event.tile.block().buildCost/60)/10000);
+                                    }
+                                } else {
+                                    if (data.has("xp")) {
+                                        data.put("xp", data.getFloat("xp") + (float) byteCode.bbXPGainMili((float) (Time.millis() - currentBuild.get(player.uuid).getTime())/1000)/10000);
+                                    } else {
+                                        data.put("xp", (float) byteCode.bbXPGainMili((float) (Time.millis() - currentBuild.get(player.uuid).getTime())/1000)/10000);
+                                    }
+                                }
+                                if (data.has("lvl")) {
+                                    if (byteCode.xpn(data.getInt("lvl") + 1) < data.getFloat("xp")) {
+                                        Call.onInfoToast(player.con, "[lime]Leveled Up!", 10);
+                                        data.put("lvl", data.getInt("lvl") + 1);
+                                    }
+                                } else {
+                                    data.put("lvl", 0);
+                                }
+                                byteCode.save(currentLogin.get(player.uuid), data);
+                            }
+                        } else {
+                            if (noXP.containsKey(player.uuid) && noXP.get(player.uuid) > Time.millis()) {
+                                return;
+                            }
+                            noXP.put(player.uuid, (long) (Time.millis() + (1000 / 2.51 * event.tile.block().buildCost / 60)));
+                            data.put("xp", data.getFloat("xp") + ((float) byteCode.bbXPGainMili(event.tile.block().buildCost / 60) / 10000));
+                            if (byteCode.xpn(data.getInt("lvl") + 1) < data.getFloat("xp")) {
+                                Call.onInfoToast(player.con, "[lime]Leveled Up!", 10);
+                                data.put("lvl", data.getInt("lvl") + 1);
+                            }
+                            byteCode.save(currentLogin.get(player.uuid), data);
+                        }
+                    }
+                }
+            }
+        });
+        Events.on(EventType.ServerLoadEvent.class, event -> {
+            netServer.admins.addChatFilter((player, text) -> null);
+        });
+        Events.on(EventType.PlayerChatEvent.class, event -> {
+            Player player = event.player;
+            if (!event.message.startsWith("/")) {
+                if (currentLogin.containsKey(player.uuid)) {
+                    JSONObject data = byteCode.get(currentLogin.get(player.uuid));
+                    if (data == null) {
+                        Log.err("mind_db/ does not contain `"+currentLogin.get(player.uuid)+".cn`");
+                        player.sendMessage("ERROR: Please contact a mindustry admin\nERROR: Missing account data");
+                        return;
+                    }
+                    if (data.has("lvl") && data.has("rank")) {
+                        Call.sendMessage(byteCode.tag(data.getInt("rank"),data.getInt("lvl")) + " " + player.name + " [white]> " + byteCode.censor(event.message));
+                        Log.info(byteCode.noColors(byteCode.tag(data.getInt("rank"),data.getInt("lvl")) + " " + player.name + " [white]> " + event.message));
+                    } else {
+                        Call.sendMessage(player.name + " [white]> " + byteCode.censor(event.message));
+                        Log.err("============");
+                        Log.err("ERROR - 404");
+                        Log.err("`" + player.uuid + "` does not contain `lvl` or `data`");
+                        Log.err("============");
+                    }
+                } else {
+                    Call.sendMessage("[lightgray]<SPECTATOR> []"+player.name + " [white]> " + byteCode.censor(event.message));
+                    Log.info("[lightgray]<SPECTATOR> []"+player.name + " [white]> " + byteCode.noColors(event.message));
+                }
+
+            }
         });
     }
     @Override
@@ -283,15 +353,15 @@ public class Main extends Plugin {
                 Log.info(builder.toString());
             }
         });
-        handler.register("make","<fileName>", "puts a basic object in into the json.cn", arg -> {
+        handler.register("make","<fileName>", "puts a basic object in into the filename.cn", arg -> {
             JSONObject object = new JSONObject();
             object.put("Key", "Value");
             Log.info(byteCode.make(arg[0],object));
         });
-        handler.register("putstr","<fileName> <key> <value>", "puts a basic object in into the json.cn", arg -> {
+        handler.register("putstr","<fileName> <key> <value>", "puts a key and value into the filename.cn", arg -> {
             Log.info(byteCode.putStr(arg[0], arg[1], arg[2]));
         });
-        handler.register("putint","<fileName> <key> <value>", "puts a basic object in into the json.cn", arg -> {
+        handler.register("putint","<fileName> <key> <value>", "puts a key and value into the filename.cn", arg -> {
             int i = Strings.parseInt(arg[2]);
             Log.info(byteCode.putInt(arg[0], arg[1], i));
         });
@@ -331,6 +401,15 @@ public class Main extends Plugin {
                 Log.info("do `/key " + hash + "` to receive rank change");
             } else {
                 Log.err("rank must contain numbers!");
+            }
+        });
+        handler.register("badlist", "<badword>", "adds bad word to badlist", arg -> {
+            if (byteCode.has("badList.cn")) {
+                if (byteCode.get("badList").has(arg[0])) {
+                    Log.err("badList already contains " + arg[0]);
+                    return;
+                }
+                byteCode.putStr("badList", arg[0], "bad");
             }
         });
     }
@@ -463,8 +542,13 @@ public class Main extends Plugin {
                                 player.updateRespawning();
                                 Call.sendMessage("[accent]"+byteCode.noColors(player.name)+" has connected.");
                                 Log.info(byteCode.noColors(player.name)+" : "+player.uuid+" > has connected");
+                            } else if (data.has("mp") && data.getInt("mp") >= 15) {
+                                player.setTeam(Team.sharded);
+                                player.updateRespawning();
+                                Call.sendMessage("[accent]"+byteCode.noColors(player.name)+" has connected.");
+                                Log.info(byteCode.noColors(player.name)+" : "+player.uuid+" > has connected");
                             } else {
-                                player.sendMessage("[sky]Get Verified to have full access to the server. (See Discord) "+ (settings.getString("discord_text")) );
+                                player.sendMessage("[sky]Get Verified, or wait 15min, to have full access to the server. "+ (settings.getString("discord_text")) );
                             }
                         }
                     } else {
@@ -538,8 +622,10 @@ public class Main extends Plugin {
                     if (data.has("discord_tag")) player.sendMessage("Discord Tag : " + data.getString("discord_tag"));
                     player.sendMessage("Info about current UUID");
                     player.sendMessage("Times Joined : "+player.getInfo().timesJoined);
-                    player.sendMessage("Current ID : "+player.getInfo().id);
+                    player.sendMessage("Current ID : "+player.id);
                     player.sendMessage("Name Raw : [[#"+player.color+"]"+byteCode.nameR(player.name));
+                    player.sendMessage("xp : " + data.getFloat("xp"));
+                    player.sendMessage("lvl : " + data.getInt("lvl"));
                 } else {
                     player.sendMessage("ERROR - No dataID");
                 }
@@ -567,7 +653,6 @@ public class Main extends Plugin {
             });
 
             handler.<Player>register("gr", "[player] [reason...]", "Report a griefer by id (use '/gr' to get a list of ids)", (args, player) -> {
-                //https://github.com/Anuken/Mindustry/blob/master/core/src/io/anuke/mindustry/core/NetServer.java#L300-L351
                 if (!(settings.has("gr_channel_id") && settings.has("mod_role_id"))) {
                     player.sendMessage("[scarlet]This command is disabled.");
                     return;

@@ -37,7 +37,7 @@ public class byteCode {
         }
     }
     public static String verifiedI() {
-        return "<[sky]\uE848[accent]>";
+        return "<[sky]\uE848[]>";
     }
     public static Integer sti(String Input) {
         if (Strings.canParseInt(Input)) {
@@ -240,6 +240,71 @@ public class byteCode {
             return true;
         }
         return false;
+    }
+    public static int xpn(int level) {
+        if(level >= 1 && level <= 16)
+        {
+            return (int)(Math.pow(level, 2) + 6 * level);
+        }
+        else if(level >= 17 && level <= 31)
+        {
+            return (int)( 2.5 * Math.pow(level, 2) - 40.5 * level + 360);
+        }
+        else if(level >= 32)
+        {
+            return (int)(4.5 * Math.pow(level, 2) - 162.5 * level + 2220);
+        }
+        else
+        {
+            return 0;
+        }
+    }
+    public static int bbXPGainMili(float buildTime) {
+        return (int) (((0.0014457 * Math.pow(buildTime, 3)) - (0.0263212 * Math.pow(buildTime, 2)) + (buildTime * 2.31398) - (0.115084)) * 1000);
+        //0.0014457x^3 - 0.026313x^2 + 2.31398x - 0.125684
+    }
+    public static String tag(int rank, int lvl) {
+        switch (rank) {
+            case 7:
+                return "[darkgray]<[white]" + lvl + "[darkgray]>[]";
+            case 6:
+                return "[scarlet]<[white]" + lvl + "[scarlet]>[]";
+            case 5:
+                return "[royal]<[white]" + lvl + "[royal]>[]";
+            case 4:
+                return "[lime]<[white]" + lvl + "[lime]>[]";
+            case 3:
+                return "[gold]<[white]" + lvl + "[gold]>[]";
+            case 2:
+                return "[sky]<[white]" + lvl + "[sky]>[]";
+            case 1:
+                return "[accent]<[white]" + lvl + "[accent]>[]";
+            case 0:
+                return "[lightgray]<[white]" + lvl + "[lightgray]>[]";
+            default:
+                return "<ERROR>";
+        }
+    }
+    public static String censor(String string) {
+        StringBuilder builder = new StringBuilder();
+        String sentence[] = string.split(" ");
+        JSONObject badList = byteCode.get("badList");
+        if (badList == null) {
+            Log.err("badList.cn does not exist!");
+            return string;
+        }
+        for (String word: sentence) {
+            if (badList.has(word.toLowerCase())) {
+                builder.append(word.charAt(0));
+                for (int i = 1; i < word.length(); i++) {
+                    builder.append("*");
+                }
+            } else {
+                builder.append(word);
+            }
+            builder.append(" ");
+        }
+        return builder.toString();
     }
 }
 /*

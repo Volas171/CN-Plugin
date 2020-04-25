@@ -1,7 +1,7 @@
 package CN;
 
 import CN.dCommands.discordCommands;
-import D.dCommands.discordServerCommands;
+import CN.dCommands.discordServerCommands;
 import CN.dCommands.discordia;
 import org.javacord.api.DiscordApi;
 
