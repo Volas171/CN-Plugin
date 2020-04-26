@@ -3,6 +3,7 @@ package CN;
 import CN.dCommands.discordCommands;
 import CN.dCommands.discordServerCommands;
 import CN.dCommands.discordia;
+import mindustry.net.Administration;
 import org.javacord.api.DiscordApi;
 
 import org.javacord.api.entity.channel.Channel;
@@ -34,13 +35,26 @@ public class BotThread extends Thread{
             Thread.sleep(60 * 1000);
         } catch (Exception e) {
         }
-
+        int sixT = 0;
         while (this.mt.isAlive()) {
             try {
                 Thread.sleep(1000);
+                sixT++;
             } catch (Exception e) {
             }
             //run stuff
+            if (data.has("lc_id"+Administration.Config.port.num())) {
+                if (!Main.liveChatQueue.equals("")) {
+                    TextChannel lc = this.getTextChannel(data.getString("lc_id"+Administration.Config.port.num()));
+                    lc.sendMessage(Main.liveChatQueue);
+                    Main.liveChatQueue = "";
+                }
+            }
+            //60s timer
+            if (sixT == 60) {
+                sixT = 0;
+                data = byteCode.get("settings");
+            }
         }
         api.disconnect();
     }

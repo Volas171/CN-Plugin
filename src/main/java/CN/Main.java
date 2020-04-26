@@ -52,6 +52,7 @@ public class Main extends Plugin {
     public static HashMap<Integer, Player> idTempDatabase = new HashMap<>();
     public HashMap<String, String> pastLogin = new HashMap<>();
     public HashMap<String, Integer> loginAttempts = new HashMap<>();
+    public static String liveChatQueue = "";
     //discord shat
     private final Long CDT = 300L;
     private DiscordApi api = null;
@@ -140,23 +141,41 @@ public class Main extends Plugin {
                 currentKick.put(player.name, player);
             }
 
-            idTempDatabase.put(player.id, player);
-            pastLogin.put(player.uuid, currentLogin.get(player.uuid));
-            currentLogin.remove(player.uuid);
-            Call.sendMessage("[accent]"+byteCode.noColors(player.name)+" has disconnected.");
-            Log.info(byteCode.noColors(player.name)+" : "+player.uuid+" > has disconnected");
-            new Object() {
-                String uid = player.uuid;
-                private Timer.Task task;
-
-                {
-                    task = Timer.schedule(() -> {
-                        pastLogin.remove(uid);
-                        task.cancel();
-                    }, 30 * 60, 1);
+            if (player.getInfo().banned) {
+                if (currentLogin.containsKey(player.uuid)) {
+                    JSONObject data = byteCode.get(currentLogin.get(player.uuid));
+                    if (data == null) {
+                        Log.err("Account for uuid `"+player.uuid+"` missing data id `"+currentLogin.get(player.uuid)+"`!");
+                        return;
+                    }
+                    if (data.has("banned")) {
+                        data.put("banned", data.getInt("banned") +1);
+                    } else {
+                        data.put("banned", 1);
+                    }
+                    data.put("rank", 0);
+                    currentLogin.remove(player.uuid);
                 }
-            };
+            }
 
+            if (currentLogin.containsKey(player.uuid)) {
+                idTempDatabase.put(player.id, player);
+                pastLogin.put(player.uuid, currentLogin.get(player.uuid));
+                currentLogin.remove(player.uuid);
+                Call.sendMessage("[accent]" + byteCode.noColors(player.name) + " has disconnected.");
+                Log.info(byteCode.noColors(player.name) + " : " + player.uuid + " > has disconnected");
+                new Object() {
+                    String uid = player.uuid;
+                    private Timer.Task task;
+
+                    {
+                        task = Timer.schedule(() -> {
+                            pastLogin.remove(uid);
+                            task.cancel();
+                        }, 30 * 60, 1);
+                    }
+                };
+            }
         });
         Events.on(EventType.PlayerBanEvent.class, event -> {
             Player player = event.player;
@@ -219,20 +238,24 @@ public class Main extends Plugin {
                     Log.err("mind_db/ does not contain `settings.cn`");
                     return true;
                 }
-                if (action.type == Administration.ActionType.placeBlock) {
-                    currentBuild.put(player.uuid, new xpg(action.block, action.tile.x, action.tile.y, Time.millis()));
-                }
                 if (action.type == Administration.ActionType.rotate) {
                     if (data.has("rank") && data.getInt("rank") >= 2) return true;
                     return false;
                 }
                 return true; //thx fuzz
             });
+
+            if (!settings.has("lc_id")) Log.err("settings.cn does not contain key lc_id"+Administration.Config.port.num());
+        });
+        Events.on(EventType.BlockBuildBeginEvent.class, event -> {
+            if (event.breaking) currentBuild.remove(event.tile.x+","+event.tile.y);
+            currentBuild.put(event.tile.x+","+event.tile.y, new xpg(event.tile.cblock(), Time.millis()));
         });
         Events.on(EventType.BlockBuildEndEvent.class, event -> {
             Player player = event.player;
             if (player == null) return;
             if (event.breaking) {
+                if (!noXP.containsKey(player.uuid)) noXP.put(player.uuid, (long) (Time.millis() + (1000 / 2.51 * event.tile.cblock().buildCost / 60)));
                 if (currentBuild.containsKey(player.uuid)) currentBuild.remove(player.uuid);
                 return;
             }
@@ -251,19 +274,19 @@ public class Main extends Plugin {
                             byteCode.putInt(currentLogin.get(player.uuid), "bb", 1);
                         }
                         //xp
-                        if (currentBuild.containsKey(player.uuid)) {
-                            if (event.tile.x == currentBuild.get(player.uuid).getx() && event.tile.y == currentBuild.get(player.uuid).gety()) {
-                                if (Time.millis() - currentBuild.get(player.uuid).getTime() > (event.tile.block().buildCost/60)/2.4) {
+                        if (currentBuild.containsKey(event.tile.x+","+event.tile.y)) {
+                            if (currentBuild.get(event.tile.x + "," + event.tile.y).getBlock() == event.tile.cblock()) {
+                                if (Time.millis() - currentBuild.get(event.tile.x + "," + event.tile.y).getTime() > (event.tile.cblock().buildCost / 60) / 2.6 * 1000) {
                                     if (data.has("xp")) {
-                                        data.put("xp", data.getFloat("xp") + (float) byteCode.bbXPGainMili(event.tile.block().buildCost/60)/10000);
+                                        data.put("xp", data.getFloat("xp") + (float) byteCode.bbXPGainMili(event.tile.cblock().buildCost / 60) / 10000);
                                     } else {
-                                        data.put("xp", (float) byteCode.bbXPGainMili(event.tile.block().buildCost/60)/10000);
+                                        data.put("xp", (float) byteCode.bbXPGainMili(event.tile.block().buildCost / 60) / 10000);
                                     }
                                 } else {
                                     if (data.has("xp")) {
-                                        data.put("xp", data.getFloat("xp") + (float) byteCode.bbXPGainMili((float) (Time.millis() - currentBuild.get(player.uuid).getTime())/1000)/10000);
+                                        data.put("xp", data.getFloat("xp") + (float) byteCode.bbXPGainMili((float) (Time.millis() - currentBuild.get(event.tile.x + "," + event.tile.y).getTime()) / 1000) / 10000);
                                     } else {
-                                        data.put("xp", (float) byteCode.bbXPGainMili((float) (Time.millis() - currentBuild.get(player.uuid).getTime())/1000)/10000);
+                                        data.put("xp", (float) byteCode.bbXPGainMili((float) (Time.millis() - currentBuild.get(event.tile.x + "," + event.tile.y).getTime()) / 1000) / 10000);
                                     }
                                 }
                                 if (data.has("lvl")) {
@@ -280,7 +303,7 @@ public class Main extends Plugin {
                             if (noXP.containsKey(player.uuid) && noXP.get(player.uuid) > Time.millis()) {
                                 return;
                             }
-                            noXP.put(player.uuid, (long) (Time.millis() + (1000 / 2.51 * event.tile.block().buildCost / 60)));
+                            //noXP.put(player.uuid, (long) (Time.millis() + (1000 / 2.51 * event.tile.block().buildCost / 60)));
                             data.put("xp", data.getFloat("xp") + ((float) byteCode.bbXPGainMili(event.tile.block().buildCost / 60) / 10000));
                             if (byteCode.xpn(data.getInt("lvl") + 1) < data.getFloat("xp")) {
                                 Call.onInfoToast(player.con, "[lime]Leveled Up!", 10);
@@ -294,6 +317,9 @@ public class Main extends Plugin {
         });
         Events.on(EventType.ServerLoadEvent.class, event -> {
             netServer.admins.addChatFilter((player, text) -> null);
+            currentBuild.clear();
+            currentLogin.clear();
+            pastLogin.clear();
         });
         Events.on(EventType.PlayerChatEvent.class, event -> {
             Player player = event.player;
@@ -308,6 +334,7 @@ public class Main extends Plugin {
                     if (data.has("lvl") && data.has("rank")) {
                         Call.sendMessage(byteCode.tag(data.getInt("rank"),data.getInt("lvl")) + " " + player.name + " [white]> " + byteCode.censor(event.message));
                         Log.info(byteCode.noColors(byteCode.tag(data.getInt("rank"),data.getInt("lvl")) + " " + player.name + " [white]> " + event.message));
+                        liveChatQueue += "\n<"+data.getInt("lvl")+"> " + byteCode.dec(byteCode.noColors(player.name)) + " > " + byteCode.dec(byteCode.noColors(byteCode.censor(event.message.replace("\\@here","").replaceAll("\\@everyone","@every1").replaceAll("\\@here","@h3r3").replaceAll("\\@(.*)#(.*)","<someone's tag>").replaceAll("<@(.*)>", "<someone's tag>"))));
                     } else {
                         Call.sendMessage(player.name + " [white]> " + byteCode.censor(event.message));
                         Log.err("============");
@@ -364,6 +391,9 @@ public class Main extends Plugin {
         handler.register("putint","<fileName> <key> <value>", "puts a key and value into the filename.cn", arg -> {
             int i = Strings.parseInt(arg[2]);
             Log.info(byteCode.putInt(arg[0], arg[1], i));
+        });
+        handler.register("remove","<fileName> <key>", "removes a key in the filename.cn", arg -> {
+            Log.info(byteCode.remove(arg[0], arg[1]));
         });
         handler.register("debug", "check all critical info is present", arg -> {
             Log.info("Step 1 - core files are present");
@@ -651,7 +681,6 @@ public class Main extends Plugin {
                 }
 
             });
-
             handler.<Player>register("gr", "[player] [reason...]", "Report a griefer by id (use '/gr' to get a list of ids)", (args, player) -> {
                 if (!(settings.has("gr_channel_id") && settings.has("mod_role_id"))) {
                     player.sendMessage("[scarlet]This command is disabled.");
