@@ -220,7 +220,7 @@ public class byteCode {
         try {
             FileWriter out = new FileWriter(file, false);
             PrintWriter pw = new PrintWriter(out);
-            pw.println(object.toString());
+            pw.println(object.toString(4));
             out.close();
             return "Done";
         } catch (IOException it) {

@@ -53,6 +53,13 @@ public class Cycle extends Thread{
                     Main.currentKick.remove(k);
                 }
             });
+
+            if (!Main.currentLogin.isEmpty()) {
+                Main.currentLogin.forEach((k, p) -> {
+                    if (p == null) Main.currentLogin.remove(k);
+                });
+            }
+
         }
         Log.info(">>> Cycle Terminated");
     }

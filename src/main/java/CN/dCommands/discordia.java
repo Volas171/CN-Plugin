@@ -116,30 +116,6 @@ public class discordia implements MessageCreateListener {
                         } else {
                             event.getChannel().sendMessage("<@" + event.getMessage().getAuthor().getIdAsString() + "> sends everyone a info message, *usage: //oim <message>*");
                         }
-                    case "graduate":
-                        if (arg.length > 1) {
-                            if (login.has(arg[1])) {
-                                JSONObject user = login.getJSONObject(arg[1]);
-                                JSONObject data = byteCode.get(user.getString("dataID"));
-                                if (data == null) {
-                                    event.getChannel().sendMessage("ERROR - Account missing dataID");
-                                    return;
-                                }
-                                if (data.has("rank") && data.getInt("rank") == 0) {
-                                    event.getChannel().sendMessage("<@" + event.getMessage().getAuthor().getIdAsString() + ">, " + arg[1] + " is banned!");
-                                    return;
-                                }
-                                if (data.has("rank") && data.getInt("rank") < 2) {
-                                    byteCode.putInt(user.getString("dataID"), "rank", 2);
-                                    event.getChannel().sendMessage("<@" + event.getMessage().getAuthor().getIdAsString() + ">, successfully graduated " + arg[1] + "!");
-                                } else {
-                                    event.getChannel().sendMessage("<@" + event.getMessage().getAuthor().getIdAsString() + ">, account rank >= 2!");
-                                }
-                            } else {
-                                event.getChannel().sendMessage("<@" + event.getMessage().getAuthor().getIdAsString() + ">, Username `" + arg[1] + "` not found!");
-                            }
-                        }
-                        event.getChannel().sendMessage("<@" + event.getMessage().getAuthor().getIdAsString() + "> Graduates player from mindustry school, *usage: uuid*");
                         break;
                 }
             }

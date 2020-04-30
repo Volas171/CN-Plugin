@@ -113,6 +113,10 @@ public class Main extends Plugin {
                 Log.err("============");
             }
             if (pastLogin.containsKey(player.uuid)) {
+                if (pastLogin.get(player.uuid) == null || !byteCode.has(pastLogin.get(player.uuid))) {
+                    pastLogin.remove(player.uuid);
+                    return;
+                }
                 currentLogin.put(player.uuid, pastLogin.get(player.uuid));
                 pastLogin.remove(player.uuid);
                 player.sendMessage("[sky]Welcome back!");
@@ -245,7 +249,7 @@ public class Main extends Plugin {
                 return true; //thx fuzz
             });
 
-            if (!settings.has("lc_id")) Log.err("settings.cn does not contain key lc_id"+Administration.Config.port.num());
+            if (!settings.has("lc_id"+Administration.Config.port.num())) Log.err("settings.cn does not contain key lc_id"+Administration.Config.port.num());
         });
         Events.on(EventType.BlockBuildBeginEvent.class, event -> {
             if (event.breaking) currentBuild.remove(event.tile.x+","+event.tile.y);
@@ -304,7 +308,8 @@ public class Main extends Plugin {
                                 return;
                             }
                             //noXP.put(player.uuid, (long) (Time.millis() + (1000 / 2.51 * event.tile.block().buildCost / 60)));
-                            data.put("xp", data.getFloat("xp") + ((float) byteCode.bbXPGainMili(event.tile.block().buildCost / 60) / 10000));
+                            if (data.has("xp")) {data.put("xp", data.getFloat("xp") + ((float) byteCode.bbXPGainMili(event.tile.block().buildCost / 60) / 10000));} else {data.put("xp", ((float) byteCode.bbXPGainMili(event.tile.block().buildCost / 60) / 10000));}
+                            if (!data.has("lvl")) data.put("lvl", 1);
                             if (byteCode.xpn(data.getInt("lvl") + 1) < data.getFloat("xp")) {
                                 Call.onInfoToast(player.con, "[lime]Leveled Up!", 10);
                                 data.put("lvl", data.getInt("lvl") + 1);
@@ -345,6 +350,7 @@ public class Main extends Plugin {
                 } else {
                     Call.sendMessage("[lightgray]<SPECTATOR> []"+player.name + " [white]> " + byteCode.censor(event.message));
                     Log.info("[lightgray]<SPECTATOR> []"+player.name + " [white]> " + byteCode.noColors(event.message));
+                    liveChatQueue += "\n<S0> " + byteCode.dec(byteCode.noColors(player.name)) + " > " + byteCode.dec(byteCode.noColors(byteCode.censor(event.message.replace("\\@here","").replaceAll("\\@everyone","@every1").replaceAll("\\@here","@h3r3").replaceAll("\\@(.*)#(.*)","<someone's tag>").replaceAll("<@(.*)>", "<someone's tag>"))));
                 }
 
             }
@@ -385,7 +391,7 @@ public class Main extends Plugin {
             object.put("Key", "Value");
             Log.info(byteCode.make(arg[0],object));
         });
-        handler.register("putstr","<fileName> <key> <value>", "puts a key and value into the filename.cn", arg -> {
+        handler.register("putstr","<fileName> <key> <value...>", "puts a key and value into the filename.cn", arg -> {
             Log.info(byteCode.putStr(arg[0], arg[1], arg[2]));
         });
         handler.register("putint","<fileName> <key> <value>", "puts a key and value into the filename.cn", arg -> {
