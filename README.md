@@ -1,3 +1,4 @@
+![Java CI](https://github.com/L0615T1C5-216AC-9437/CN-Plugin/workflows/Java%20CI/badge.svg)
 ### Description
 CN's Official Plugin. Has useful commands, admin commands and a reaper spawner.
 
