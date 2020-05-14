@@ -99,6 +99,7 @@ public class Main extends Plugin {
         //auto
         Events.on(EventType.PlayerJoin.class, event -> {
             Player player = event.player;
+            Log.info(byteCode.noColors(player.name)+" : "+player.uuid+" > has connected - spectator");
             settings = byteCode.get("settings");
             if (settings == null){
                 Log.err("mind_db/ does not contain `settings.cn`");
@@ -179,6 +180,8 @@ public class Main extends Plugin {
                         }, 30 * 60, 1);
                     }
                 };
+            } else {
+                Log.info(byteCode.noColors(player.name)+" : "+player.uuid+" > has disconnected - spectator");
             }
         });
         Events.on(EventType.PlayerBanEvent.class, event -> {
@@ -494,7 +497,7 @@ public class Main extends Plugin {
                         byteCode.make(user.getString("dataID"), data);
                         //finishing off
                         player.sendMessage("[lime]Account created Successfully!");
-                        player.sendMessage("[sky]Get Verified to have full access to the server. (See Discord)"+ (settings.getString("discord_text")) );
+                        player.sendMessage("[sky]Wait [gold]10 minutes[] or get []Verified []to have full access to the server. (See Discord)"+ (settings.getString("discord_text")) );
                         //login player
                         currentLogin.put(player.uuid, user.getString("dataID"));
                     } else if (!a) {
@@ -584,7 +587,13 @@ public class Main extends Plugin {
                                 Call.sendMessage("[accent]"+byteCode.noColors(player.name)+" has connected.");
                                 Log.info(byteCode.noColors(player.name)+" : "+player.uuid+" > has connected");
                             } else {
-                                player.sendMessage("[sky]Get Verified, or wait 15min, to have full access to the server. "+ (settings.getString("discord_text")) );
+                                if (data.has("mp")) {
+                                    int x = 10 - data.getInt("mp");
+                                    player.sendMessage("[sky]Get Verified, or wait "+x+" more minutes, to have full access to the server. ");
+                                } else {
+                                    player.sendMessage("[sky]Get Verified, or wait 10 more minutes, to have full access to the server. ");
+                                    byteCode.putInt(currentLogin.get(player.uuid), "mp", 1);
+                                }
                             }
                         }
                     } else {

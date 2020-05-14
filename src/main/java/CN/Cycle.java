@@ -34,7 +34,7 @@ public class Cycle extends Thread{
                         Call.onInfoToast(p.con, "+1 Minutes Played", 7);
                         if (p.getTeam().equals(Team.derelict)) {
                             if (data.has("rank") && data.getInt("rank") == 1) {
-                                if (data.getInt("mp") > 14) {
+                                if (data.getInt("mp") > 9) {
                                     p.setTeam(Team.sharded);
                                     p.updateRespawning();
                                     Call.sendMessage("[accent]" + byteCode.noColors(p.name) + " has connected.");
