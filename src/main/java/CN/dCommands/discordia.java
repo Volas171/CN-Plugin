@@ -65,15 +65,16 @@ public class discordia implements MessageCreateListener {
                                     return;
                                 }
                                 StringBuilder builder = new StringBuilder();
+                                builder.append("```\n");
                                 builder.append("name : ").append(p.name).append("\n");
                                 builder.append("times joined : ").append(p.getInfo().timesJoined).append("\n");
                                 builder.append("times kicked : ").append(p.getInfo().timesKicked).append("\n");
-                                builder.append("uuid : ").append(p.uuid).append("\n");
                                 for (String keyStr : data.keySet()) {
                                     Object keyvalue = data.get(keyStr);
                                     //Print key and value
                                     builder.append(keyStr + " : " + keyvalue).append("\n");
                                 }
+                                builder.append("```");
                                 event.getChannel().sendMessage(builder.toString());
                             } else if (arg[1].startsWith("#")) {
                                 event.getChannel().sendMessage("<@" + event.getMessage().getAuthor().getIdAsString() + ">, ID can only contain numbers!");

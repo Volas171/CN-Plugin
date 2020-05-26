@@ -671,8 +671,9 @@ public class Main extends Plugin {
                     player.sendMessage("Name Raw : [[#"+player.color+"]"+byteCode.nameR(player.name));
                     player.sendMessage("xp : " + data.getFloat("xp"));
                     player.sendMessage("lvl : " + data.getInt("lvl"));
+                    player.sendMessage("lvl : " + data.getInt("lvl"));
                 } else {
-                    player.sendMessage("ERROR - No dataID");
+                    Call.onKick(player.con,"ERROR - No dataID");
                 }
             } else {
                 player.sendMessage("[scarlet]/register or /login to use this command!");

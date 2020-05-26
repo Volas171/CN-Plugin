@@ -47,12 +47,13 @@ public class Cycle extends Thread{
                     }
                 }
             }
-
-            Main.currentKick.forEach((k,p) -> {
-                if (p.getInfo().lastKicked < Time.millis()) {
-                    Main.currentKick.remove(k);
-                }
-            });
+            if (!Main.currentKick.isEmpty()) {
+                Main.currentKick.forEach((k,p) -> {
+                    if (p.getInfo().lastKicked < Time.millis()) {
+                        Main.currentKick.remove(k);
+                    }
+                });
+            }
 
             if (!Main.currentLogin.isEmpty()) {
                 Main.currentLogin.forEach((k, p) -> {
