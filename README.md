@@ -3,7 +3,7 @@
 CN's Official Plugin. Has useful commands, admin commands and a reaper spawner.
 
 ### Downloading a Jar
-1) go to https://github.com/L0615T1C5-216AC-9437/CN-Plugin/releases and download latest version, (not recommended to use alpha)
+1) go to actions tab and download latest version, (not recommended to use alpha)
 2) follow #Installing
 
 ### Building a Jar
