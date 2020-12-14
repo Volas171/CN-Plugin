@@ -17,3 +17,8 @@ jobs:
       run: chmod +x gradlew
     - name: Build with Gradle
       run: ./gradlew build
+    - name: Upload built jar file
+      uses: actions/upload-artifact@v2
+      with:
+        name: CN-plugin.jar
+        path: build/libs/plugin.jar
