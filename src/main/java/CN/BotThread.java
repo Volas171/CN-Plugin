@@ -5,13 +5,11 @@ import CN.dCommands.discordServerCommands;
 import CN.dCommands.discordia;
 import mindustry.net.Administration;
 import org.javacord.api.DiscordApi;
-
 import org.javacord.api.entity.channel.Channel;
 import org.javacord.api.entity.channel.TextChannel;
 import org.javacord.api.entity.permission.Role;
 import org.json.JSONObject;
 
-import java.lang.Thread;
 import java.util.Optional;
 
 public class BotThread extends Thread{

@@ -1,16 +1,12 @@
 package CN;
 
 import arc.util.Log;
-
 import arc.util.Time;
 import mindustry.Vars;
 import mindustry.entities.type.Player;
 import mindustry.game.Team;
 import mindustry.gen.Call;
 import org.json.JSONObject;
-
-import javax.swing.*;
-import java.io.*;
 
 public class Cycle extends Thread{
     private Thread main;
