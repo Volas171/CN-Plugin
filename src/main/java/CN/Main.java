@@ -1,20 +1,14 @@
 package CN;
 
-import arc.Core;
 import arc.Events;
 import arc.util.*;
-import arc.util.Timer;
 import mindustry.Vars;
-import mindustry.content.Blocks;
-import mindustry.entities.traits.Entity;
-import mindustry.entities.type.Player;
 import mindustry.game.EventType;
 import mindustry.game.Team;
-import mindustry.game.Teams;
 import mindustry.gen.Call;
+import mindustry.gen.Player;
+import mindustry.mod.Plugin;
 import mindustry.net.Administration;
-import mindustry.plugin.Plugin;
-import mindustry.world.blocks.storage.CoreBlock;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.DiscordApiBuilder;
 import org.javacord.api.entity.channel.Channel;
@@ -22,22 +16,17 @@ import org.javacord.api.entity.channel.TextChannel;
 import org.javacord.api.entity.message.MessageBuilder;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.entity.permission.Role;
-import org.json.JSONArray;
 import org.json.JSONObject;
-import org.json.JSONTokener;
 
 import java.awt.*;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static mindustry.Vars.*;
+import static mindustry.Vars.netServer;
 import static mindustry.Vars.player;
 
 public class Main extends Plugin {

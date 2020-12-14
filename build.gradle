@@ -1,9 +1,11 @@
+
 apply plugin: "java"
-apply plugin: "maven"
 
 version '1.0'
 
 sourceCompatibility = 1.8
+
+sourceSets.main.java.srcDirs = ["src"]
 
 repositories{
     mavenCentral()
@@ -12,21 +14,21 @@ repositories{
 
 ext{
     //the build number that this plugin is made for
-    mindustryVersion = 'v104'
+    mindustryVersion = 'v120'
 }
 
 dependencies{
     compileOnly "com.github.Anuken.Arc:arc-core:$mindustryVersion"
     compileOnly "com.github.Anuken.Mindustry:core:$mindustryVersion"
-    compileOnly "com.github.Anuken.Mindustry:server:$mindustryVersion"
-    implementation 'org.javacord:javacord:3.0.5'
-    compile group: 'org.json', name: 'json', version: '20190722'
 }
 
 jar{
-    version = null
+    archiveFileName = "${project.archivesBaseName}.jar"
     from{
         configurations.runtimeClasspath.collect{it.isDirectory() ? it : zipTree(it)}
     }
+
+    from(rootDir){
+        include "plugin.json"
+    }
 }
-compileJava.options.encoding = 'UTF-8'
